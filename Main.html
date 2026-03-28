@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SchoolExams - Digital Portal</title>
+<title>SchoolExams - V1</title>
 <style>
 :root {
     --bg0: #000814; --bg1: #001d3d; --bg2: #003566;
@@ -21,15 +21,21 @@ header.topbar { position: fixed; top: 0; left:0; right:0; height: 64px; backgrou
 .brand { font-weight: 900; font-size: 22px; color: var(--p1); text-decoration: none; letter-spacing: -1px; }
 .btn-nav { background: var(--p2); border: 1px solid var(--p0); color: var(--w); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 13px; }
 .btn-nav:hover { background: var(--p0); color: #fff; }
+
 .main { padding: 100px 24px 40px; max-width: 1200px; margin: 0 auto; }
 .hero { text-align: center; margin-bottom: 40px; }
-.hero h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--p1); }
-.searchWrap input { width: 100%; padding: 16px 24px; border-radius: var(--r); background: var(--bg1); border: 1px solid var(--p0); color: #fff; font-size: 16px; outline: none; }
+.hero h1 { font-size: 3rem; margin-bottom: 10px; color: var(--p1); text-shadow: 0 0 15px var(--p0); }
+.hero p { color: var(--d); font-size: 1.1rem; }
+
+.searchWrap input { width: 100%; padding: 16px 24px; border-radius: var(--r); background: var(--bg1); border: 1px solid var(--p0); color: #fff; font-size: 16px; outline: none; transition: 0.3s; }
+.searchWrap input:focus { border-color: var(--p1); box-shadow: 0 0 15px rgba(144, 224, 239, 0.3); }
+
 .gamesGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 30px; }
 .gameCard { background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; cursor: pointer; transition: 0.2s; position: relative; }
 .gameCard:hover { transform: translateY(-5px); border-color: var(--p1); box-shadow: var(--shadow); }
 .gameIcon { height: 80px; background: var(--p2); display: flex; align-items: center; justify-content: center; font-size: 32px; }
 .gameName { padding: 10px; font-size: 11px; font-weight: 700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 .overlay { position: fixed; inset: 0; background: var(--bg0); z-index: 2000; display: none; flex-direction: column; }
 .overlay.open { display: flex; }
 .overlay-bar { height: 50px; background: var(--bg1); display: flex; align-items: center; padding: 0 15px; border-bottom: 2px solid var(--p0); justify-content: space-between; }
@@ -41,22 +47,23 @@ iframe { flex: 1; border: none; background: #000; }
 <div class="bg-grid"></div>
 <header class="topbar">
     <a href="#" class="brand">SchoolExams 🔵</a>
-    <button class="btn-nav" onclick="openBrowser()">🌐 Web Browser</button>
+    <button class="btn-nav" onclick="openGame('https://mb.webs.vc', 'Browser')">🌐 Web Browser</button>
 </header>
 
 <main class="main">
     <section class="hero">
         <h1>Digital Modules</h1>
-        <p>Resource Portal - 250+ Tools Available</p>
+        <p>Verified Educational Resources & Simulation Tools</p>
     </section>
-    <div class="searchWrap"><input type="text" id="searchInput" placeholder="Search resources..."></div>
+
+    <div class="searchWrap"><input type="text" id="searchInput" placeholder="Search modules or resources..."></div>
     <div class="gamesGrid" id="gamesGrid"></div>
 </main>
 
 <div class="overlay" id="gameOverlay">
     <div class="overlay-bar">
         <div id="activeTitle" style="font-weight:800; color:var(--p1)">Resource</div>
-        <button class="btn-close" onclick="closeGame()">X</button>
+        <button class="btn-close" onclick="closeGame()">CLOSE X</button>
     </div>
     <iframe id="gameFrame"></iframe>
 </div>
@@ -111,14 +118,14 @@ const GAMES = [
     {"f":"clAwesomePirates.html","name":"Pirate Battle"},
     {"f":"clB3313.html","name":"B3313 Module"},
     {"f":"clBBB.html","name":"Broken Bones"},
-    {"f":"clBMX2.html","name":"BMX Training"},
+    {"f":"clBMX2.html","name":"BMX 2"},
     {"f":"clBTD1.html","name":"Bloons TD 1"},
     {"f":"clBig_Time_Butter_Baron.html","name":"Butter Baron"},
-    {"f":"clBountyOfOne.html","name":"Bounty One"},
-    {"f":"clCartoonNetworkTableTennisUltimateTournament.html","name":"CN Tennis"},
+    {"f":"clBountyOfOne.html","name":"Bounty Of One"},
+    {"f":"clCartoonNetworkTableTennisUltimateTournament.html","name":"CN Table Tennis"},
     {"f":"clCircloO2.html","name":"CircloO 2"},
-    {"f":"clDragonBallZTheLegacyofGoku.html","name":"Legacy Goku"},
-    {"f":"clDragonQuestIX.html","name":"Dragon Quest"},
+    {"f":"clDragonBallZTheLegacyofGoku.html","name":"DBZ Legacy"},
+    {"f":"clDragonQuestIX.html","name":"Dragon Quest IX"},
     {"f":"clFF3.html","name":"Final Fantasy 3"},
     {"f":"clFFsonic1.html","name":"Sonic FF1"},
     {"f":"clFFsonic2.html","name":"Sonic FF2"},
@@ -143,29 +150,29 @@ const GAMES = [
     {"f":"clFNAF2.html","name":"FNAF Module 2"},
     {"f":"clFNAF3.html","name":"FNAF Module 3"},
     {"f":"clFNAF4.html","name":"FNAF Module 4"},
-    {"f":"clGettothetopalthoughthereisnotop.html","name":"The Climb"},
+    {"f":"clGettothetopalthoughthereisnotop.html","name":"Top Climb"},
     {"f":"clGoldenSunTheLostAge.html","name":"Golden Sun 2"},
     {"f":"clHaroldsbadday.html","name":"Harold's Day"},
     {"f":"clHiNoHomo.html","name":"Hi No Homo"},
-    {"f":"clJUMP.html","name":"Jump Exercise"},
-    {"f":"clKenGriffeyJrPresentsMajorLeagueBaseball.html","name":"Ken Griffey MLB"},
-    {"f":"clMarioisMissingDoneRight.html","name":"Missing Module"},
+    {"f":"clJUMP.html","name":"JUMP"},
+    {"f":"clKenGriffeyJrPresentsMajorLeagueBaseball.html","name":"MLB Baseball"},
+    {"f":"clMarioisMissingDoneRight.html","name":"Mario Missing"},
     {"f":"clMetalSonicHyperdrive.html","name":"Metal Sonic"},
     {"f":"clNBAhangtime.html","name":"NBA Hangtime"},
     {"f":"clNBAjam.html","name":"NBA Jam"},
-    {"f":"clNautilusOS.html","name":"Nautilus System"},
-    {"f":"clNewSuperMarioWorld2AroundtheWorld.html","name":"World Explore"},
-    {"f":"clNicktoonsFreezeFrameFrenzy.html","name":"Freeze Frame"},
+    {"f":"clNautilusOS.html","name":"Nautilus OS"},
+    {"f":"clNewSuperMarioWorld2AroundtheWorld.html","name":"SMW 2 World"},
+    {"f":"clNicktoonsFreezeFrameFrenzy.html","name":"Nicktoons FF"},
     {"f":"clNutsandBoltsScrewingPuzzle.html","name":"Nuts & Bolts"},
-    {"f":"clPokemonemeraldrouge.html","name":"Emerald Rouge"},
-    {"f":"clPokemonrocketedition.html","name":"Rocket Edition"},
-    {"f":"clPokémonstunningsteel.html","name":"Stunning Steel"},
+    {"f":"clPokemonemeraldrouge.html","name":"Pokemon Rouge"},
+    {"f":"clPokemonrocketedition.html","name":"Pokemon Rocket"},
+    {"f":"clPokémonstunningsteel.html","name":"Pokemon Steel"},
     {"f":"clSINGLEFILE.html","name":"Single File"},
-    {"f":"clSonic1ScoreRush.html","name":"Score Rush 1"},
-    {"f":"clSonic2ScoreRush.html","name":"Score Rush 2"},
-    {"f":"clSonicHellfireSaga.html","name":"Hellfire Saga"},
+    {"f":"clSonic1ScoreRush.html","name":"Sonic Rush 1"},
+    {"f":"clSonic2ScoreRush.html","name":"Sonic Rush 2"},
+    {"f":"clSonicHellfireSaga.html","name":"Sonic Hellfire"},
     {"f":"clStickmanKingdomclash.html","name":"Stickman Clash"},
-    {"f":"clSuperMarioWorldThe SecretOfThe7GoldenStatues.html","name":"7 Statues"},
+    {"f":"clSuperMarioWorldThe SecretOfThe7GoldenStatues.html","name":"SMW 7 Statues"},
     {"f":"clTaikonoTatsujin.html","name":"Taiko Rhythm"},
     {"f":"clUZG.html","name":"UZG Module"},
     {"f":"clUltimatecardrivingsimulator.html","name":"Car Driving Sim"},
@@ -351,7 +358,9 @@ function openGame(file, title) {
     const overlay = document.getElementById('gameOverlay');
     const frame = document.getElementById('gameFrame');
     document.getElementById('activeTitle').textContent = title;
-    frame.src = BASE_URL + file;
+    
+    // Set source: check if it's an external link or local file
+    frame.src = file.startsWith('http') ? file : BASE_URL + file;
     overlay.classList.add('open');
 }
 
@@ -362,11 +371,9 @@ function closeGame() {
     overlay.classList.remove('open');
 }
 
-function openBrowser() {
-    openGame('https://mb.webs.vc', 'Digital Browser');
-}
-
 document.getElementById('searchInput').oninput = (e) => renderGrid(e.target.value);
+
+// Initialize Grid
 renderGrid();
 </script>
 </body>
