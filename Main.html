@@ -1,47 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SchoolExams - V1</title>
-<style>
-:root {
-    --bg0: #000814; --bg1: #001d3d; --bg2: #003566;
-    --p0: #0077b6; --p1: #90e0ef; --p2: #03045e;
-    --w: #caf0f8; --m: #90e0ef; --d: #48cae4;
-    --line: rgba(144, 224, 239, 0.2);
-    --glass: rgba(0, 29, 61, 0.85);
-    --shadow: 0 12px 40px rgba(0,0,0,0.7);
-    --r: 16px;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg0); color: var(--w); overflow-x: hidden; }
-.bg-grid { position: fixed; inset: 0; z-index: -1; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 40px 40px; }
-header.topbar { position: fixed; top: 0; left:0; right:0; height: 64px; background: var(--bg1); border-bottom: 2px solid var(--p0); display: flex; align-items: center; padding: 0 24px; z-index: 1000; justify-content: space-between; }
-.brand { font-weight: 900; font-size: 22px; color: var(--p1); text-decoration: none; letter-spacing: -1px; }
-.btn-nav { background: var(--p2); border: 1px solid var(--p0); color: var(--w); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 13px; }
-.btn-nav:hover { background: var(--p0); color: #fff; }
-
-.main { padding: 100px 24px 40px; max-width: 1200px; margin: 0 auto; }
-.hero { text-align: center; margin-bottom: 40px; }
-.hero h1 { font-size: 3rem; margin-bottom: 10px; color: var(--p1); text-shadow: 0 0 15px var(--p0); }
-.hero p { color: var(--d); font-size: 1.1rem; }
-
-.searchWrap input { width: 100%; padding: 16px 24px; border-radius: var(--r); background: var(--bg1); border: 1px solid var(--p0); color: #fff; font-size: 16px; outline: none; transition: 0.3s; }
-.searchWrap input:focus { border-color: var(--p1); box-shadow: 0 0 15px rgba(144, 224, 239, 0.3); }
-
-.gamesGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 30px; }
-.gameCard { background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; cursor: pointer; transition: 0.2s; position: relative; }
-.gameCard:hover { transform: translateY(-5px); border-color: var(--p1); box-shadow: var(--shadow); }
-.gameIcon { height: 80px; background: var(--p2); display: flex; align-items: center; justify-content: center; font-size: 32px; }
-.gameName { padding: 10px; font-size: 11px; font-weight: 700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.overlay { position: fixed; inset: 0; background: var(--bg0); z-index: 2000; display: none; flex-direction: column; }
-.overlay.open { display: flex; }
-.overlay-bar { height: 50px; background: var(--bg1); display: flex; align-items: center; padding: 0 15px; border-bottom: 2px solid var(--p0); justify-content: space-between; }
-.btn-close { background: #c42b1c; border: none; color: #fff; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: 800; }
-iframe { flex: 1; border: none; background: #000; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>SchoolExams - V1</title>
+    <style>
+        :root {
+            --bg0: #000814; --bg1: #001d3d; --bg2: #003566;
+            --p0: #0077b6; --p1: #90e0ef; --p2: #03045e;
+            --w: #caf0f8; --m: #90e0ef; --d: #48cae4;
+            --line: rgba(144, 224, 239, 0.2);
+            --glass: rgba(0, 29, 61, 0.85);
+            --shadow: 0 12px 40px rgba(0,0,0,0.7);
+            --r: 16px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg0); color: var(--w); overflow-x: hidden; }
+        .bg-grid { position: fixed; inset: 0; z-index: -1; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 40px 40px; }
+        header.topbar { position: fixed; top: 0; left:0; right:0; height: 64px; background: var(--bg1); border-bottom: 2px solid var(--p0); display: flex; align-items: center; padding: 0 24px; z-index: 1000; justify-content: space-between; }
+        .brand { font-weight: 900; font-size: 22px; color: var(--p1); text-decoration: none; letter-spacing: -1px; }
+        .btn-nav { background: var(--p2); border: 1px solid var(--p0); color: var(--w); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 13px; }
+        .btn-nav:hover { background: var(--p0); color: #fff; }
+        .main { padding: 100px 24px 40px; max-width: 1200px; margin: 0 auto; }
+        .hero { text-align: center; margin-bottom: 40px; }
+        .hero h1 { font-size: 3rem; margin-bottom: 10px; color: var(--p1); text-shadow: 0 0 15px var(--p0); }
+        .searchWrap input { width: 100%; padding: 16px 24px; border-radius: var(--r); background: var(--bg1); border: 1px solid var(--p0); color: #fff; font-size: 16px; outline: none; }
+        .gamesGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 30px; }
+        .gameCard { background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; cursor: pointer; transition: 0.2s; }
+        .gameCard:hover { transform: translateY(-5px); border-color: var(--p1); box-shadow: var(--shadow); }
+        .gameIcon { height: 80px; background: var(--p2); display: flex; align-items: center; justify-content: center; font-size: 32px; }
+        .gameName { padding: 10px; font-size: 11px; font-weight: 700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .overlay { position: fixed; inset: 0; background: var(--bg0); z-index: 2000; display: none; flex-direction: column; }
+        .overlay.open { display: flex; }
+        .overlay-bar { height: 50px; background: var(--bg1); display: flex; align-items: center; padding: 0 15px; border-bottom: 2px solid var(--p0); justify-content: space-between; }
+        .btn-close { background: #c42b1c; border: none; color: #fff; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: 800; }
+        iframe { flex: 1; border: none; background: #000; }
+    </style>
 </head>
 <body>
 <div class="bg-grid"></div>
@@ -53,10 +47,9 @@ iframe { flex: 1; border: none; background: #000; }
 <main class="main">
     <section class="hero">
         <h1>Digital Modules</h1>
-        <p>Verified Educational Resources & Simulation Tools</p>
+        <p>Resource Portal - Hardcoded Library</p>
     </section>
-
-    <div class="searchWrap"><input type="text" id="searchInput" placeholder="Search modules or resources..."></div>
+    <div class="searchWrap"><input type="text" id="searchInput" placeholder="Search resources..."></div>
     <div class="gamesGrid" id="gamesGrid"></div>
 </main>
 
@@ -118,14 +111,14 @@ const GAMES = [
     {"f":"clAwesomePirates.html","name":"Pirate Battle"},
     {"f":"clB3313.html","name":"B3313 Module"},
     {"f":"clBBB.html","name":"Broken Bones"},
-    {"f":"clBMX2.html","name":"BMX 2"},
+    {"f":"clBMX2.html","name":"BMX Training"},
     {"f":"clBTD1.html","name":"Bloons TD 1"},
     {"f":"clBig_Time_Butter_Baron.html","name":"Butter Baron"},
     {"f":"clBountyOfOne.html","name":"Bounty Of One"},
-    {"f":"clCartoonNetworkTableTennisUltimateTournament.html","name":"CN Table Tennis"},
+    {"f":"clCartoonNetworkTableTennisUltimateTournament.html","name":"CN Tennis"},
     {"f":"clCircloO2.html","name":"CircloO 2"},
     {"f":"clDragonBallZTheLegacyofGoku.html","name":"DBZ Legacy"},
-    {"f":"clDragonQuestIX.html","name":"Dragon Quest IX"},
+    {"f":"clDragonQuestIX.html","name":"Dragon Quest"},
     {"f":"clFF3.html","name":"Final Fantasy 3"},
     {"f":"clFFsonic1.html","name":"Sonic FF1"},
     {"f":"clFFsonic2.html","name":"Sonic FF2"},
@@ -140,7 +133,7 @@ const GAMES = [
     {"f":"clFIFA2000(1).html","name":"FIFA 2000"},
     {"f":"clFIFA99.html","name":"FIFA 99"},
     {"f":"clFIFAinternationalsoccer.html","name":"FIFA Intl"},
-    {"f":"clFIFAroadtoworldcup98.html","name":"FIFA 98"},
+    {"f":"clFIFAroadtoworldcup98.html","name":"FIFA WC 98"},
     {"f":"clFIFAsoccer06.html","name":"FIFA 06"},
     {"f":"clFIFAsoccer95.html","name":"FIFA 95"},
     {"f":"clFIFAsoccer96.html","name":"FIFA 96"},
@@ -150,29 +143,29 @@ const GAMES = [
     {"f":"clFNAF2.html","name":"FNAF Module 2"},
     {"f":"clFNAF3.html","name":"FNAF Module 3"},
     {"f":"clFNAF4.html","name":"FNAF Module 4"},
-    {"f":"clGettothetopalthoughthereisnotop.html","name":"Top Climb"},
+    {"f":"clGettothetopalthoughthereisnotop.html","name":"The Climb"},
     {"f":"clGoldenSunTheLostAge.html","name":"Golden Sun 2"},
     {"f":"clHaroldsbadday.html","name":"Harold's Day"},
     {"f":"clHiNoHomo.html","name":"Hi No Homo"},
-    {"f":"clJUMP.html","name":"JUMP"},
-    {"f":"clKenGriffeyJrPresentsMajorLeagueBaseball.html","name":"MLB Baseball"},
-    {"f":"clMarioisMissingDoneRight.html","name":"Mario Missing"},
+    {"f":"clJUMP.html","name":"Jump Exercise"},
+    {"f":"clKenGriffeyJrPresentsMajorLeagueBaseball.html","name":"Ken Griffey MLB"},
+    {"f":"clMarioisMissingDoneRight.html","name":"Missing Module"},
     {"f":"clMetalSonicHyperdrive.html","name":"Metal Sonic"},
     {"f":"clNBAhangtime.html","name":"NBA Hangtime"},
     {"f":"clNBAjam.html","name":"NBA Jam"},
-    {"f":"clNautilusOS.html","name":"Nautilus OS"},
-    {"f":"clNewSuperMarioWorld2AroundtheWorld.html","name":"SMW 2 World"},
-    {"f":"clNicktoonsFreezeFrameFrenzy.html","name":"Nicktoons FF"},
+    {"f":"clNautilusOS.html","name":"Nautilus System"},
+    {"f":"clNewSuperMarioWorld2AroundtheWorld.html","name":"World Explore"},
+    {"f":"clNicktoonsFreezeFrameFrenzy.html","name":"Freeze Frame"},
     {"f":"clNutsandBoltsScrewingPuzzle.html","name":"Nuts & Bolts"},
-    {"f":"clPokemonemeraldrouge.html","name":"Pokemon Rouge"},
-    {"f":"clPokemonrocketedition.html","name":"Pokemon Rocket"},
-    {"f":"clPokémonstunningsteel.html","name":"Pokemon Steel"},
+    {"f":"clPokemonemeraldrouge.html","name":"Emerald Rouge"},
+    {"f":"clPokemonrocketedition.html","name":"Rocket Edition"},
+    {"f":"clPokémonstunningsteel.html","name":"Stunning Steel"},
     {"f":"clSINGLEFILE.html","name":"Single File"},
-    {"f":"clSonic1ScoreRush.html","name":"Sonic Rush 1"},
-    {"f":"clSonic2ScoreRush.html","name":"Sonic Rush 2"},
-    {"f":"clSonicHellfireSaga.html","name":"Sonic Hellfire"},
+    {"f":"clSonic1ScoreRush.html","name":"Score Rush 1"},
+    {"f":"clSonic2ScoreRush.html","name":"Score Rush 2"},
+    {"f":"clSonicHellfireSaga.html","name":"Hellfire Saga"},
     {"f":"clStickmanKingdomclash.html","name":"Stickman Clash"},
-    {"f":"clSuperMarioWorldThe SecretOfThe7GoldenStatues.html","name":"SMW 7 Statues"},
+    {"f":"clSuperMarioWorldThe SecretOfThe7GoldenStatues.html","name":"7 Statues"},
     {"f":"clTaikonoTatsujin.html","name":"Taiko Rhythm"},
     {"f":"clUZG.html","name":"UZG Module"},
     {"f":"clUltimatecardrivingsimulator.html","name":"Car Driving Sim"},
