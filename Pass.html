@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>SchoolExams - Battle Pass</title>
+    <style>
+        :root {
+            --bg0: #000814; --bg1: #001d3d; --p0: #0077b6;
+            --p1: #90e0ef; --w: #caf0f8; --r: 16px;
+        }
+
+        /* HIDE DEFAULT CURSOR */
+        *, html, body, button, a, input { margin: 0; padding: 0; box-sizing: border-box; cursor: none !important; }
+
+        /* DOM-BASED CUSTOM CURSOR */
+        #dom-cursor {
+            position: fixed; top: 0; left: 0; width: 32px; pointer-events: none; z-index: 9999999;
+            transform: translate(-2px, -2px); display: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            will-change: transform;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg0); color: var(--w); overflow-x: hidden; padding-top: 100px; }
+        .bg-grid { position: fixed; inset: 0; z-index: -1; background-image: linear-gradient(rgba(144, 224, 239, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(144, 224, 239, 0.1) 1px, transparent 1px); background-size: 40px 40px; }
+        
+        header.topbar { position: fixed; top: 0; left:0; right:0; height: 70px; background: rgba(0, 29, 61, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid var(--p0); display: flex; align-items: center; padding: 0 30px; z-index: 1000; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; font-size: 24px; color: var(--p1); text-decoration: none; letter-spacing: -1px; }
+        .brand img { height: 45px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        
+        .coin-tracker { background: rgba(0,0,0,0.5); border: 1px solid var(--p1); padding: 8px 16px; border-radius: 20px; font-weight: 800; color: #ffd700; display: flex; align-items: center; gap: 8px; font-size: 14px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
+        .btn-nav { background: #d00000; border: none; color: #fff; padding: 10px 20px; border-radius: 20px; font-weight: 900; text-decoration: none; transition: 0.2s; }
+        .btn-nav:hover { background: #ff0000; box-shadow: 0 0 15px #ff0000; transform: translateY(-2px); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; text-align: center; }
+        h1 { font-size: 3rem; color: #9b59b6; text-shadow: 0 0 20px rgba(155, 89, 182, 0.5); margin-bottom: 10px; }
+        p { font-size: 1.2rem; color: var(--p1); margin-bottom: 30px; }
+
+        .progress-header { background: var(--bg1); border: 2px solid #9b59b6; padding: 20px; border-radius: var(--r); margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .level-badge { background: linear-gradient(135deg, #8e44ad, #9b59b6); color: #fff; padding: 10px 30px; border-radius: 30px; font-size: 1.5rem; font-weight: 900; box-shadow: 0 0 15px rgba(155, 89, 182, 0.6); }
+        .time-left { font-size: 1.1rem; color: #ffd700; font-weight: bold; }
+        
+        .bp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .bp-card { background: var(--bg1); border: 2px solid var(--p0); border-radius: var(--r); padding: 20px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; gap: 15px; position: relative; overflow: hidden; }
+        .bp-card .lvl { font-size: 14px; font-weight: 900; color: var(--p1); text-transform: uppercase; letter-spacing: 1px; }
+        .bp-card .reward { font-size: 18px; font-weight: bold; color: #fff; flex: 1; display: flex; align-items: center; justify-content: center; }
+        
+        /* STATES */
+        .bp-card.locked { opacity: 0.6; filter: grayscale(0.8); border-color: #333; }
+        .bp-card.unlocked { border-color: #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); transform: scale(1.02); }
+        .bp-card.claimed { border-color: #3ba55c; background: rgba(59, 165, 92, 0.1); }
+        
+        .btn-claim { background: #ffd700; color: #000; border: none; padding: 10px; border-radius: 10px; font-weight: bold; width: 100%; transition: 0.2s; }
+        .btn-claim:hover { background: #ffea00; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+        .btn-claim.locked { background: #333; color: #777; pointer-events: none; }
+        .btn-claim.claimed { background: #3ba55c; color: #fff; pointer-events: none; }
+
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #9b59b6; color: #fff; padding: 16px 24px; border-radius: 12px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transform: translateY(100px); opacity: 0; transition: 0.4s; z-index: 3000; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body>
+
+<img id="dom-cursor" src="https://marabou-cat.github.io/GamesV1/DefMouse.png" alt="">
+<div class="bg-grid"></div>
+
+<header class="topbar">
+    <a href="index.html" class="brand">
+        <img src="https://marabou-cat.github.io/GamesV1/logo.png" alt="Logo" onerror="this.style.display='none'">
+        SchoolExams
+    </a>
+    <div style="display:flex; gap: 15px; align-items:center;">
+        <div class="coin-tracker">🪙 <span id="coinDisplay">0</span> ExamCoins</div>
+        <a href="index.html" class="btn-nav">⬅ Back to Portal</a>
+    </div>
+</header>
+
+<div class="container">
+    <h1>Season 1 Battle Pass</h1>
+    <p>Earn 1 Level for every 5 Minutes of Playtime!</p>
+
+    <div class="progress-header">
+        <div class="level-badge">Current Level: <span id="currLvl">0</span> / 50</div>
+        <div class="time-left" id="timeLeft">Next level in: --:--</div>
+    </div>
+
+    <div class="bp-grid" id="bpGrid"></div>
+</div>
+
+<div class="toast" id="bpToast">🎁 Reward Claimed!</div>
+
+<script>
+// --- CUSTOM CURSOR TRACKING ---
+const domCursor = document.getElementById('dom-cursor');
+let currentCursorSrc = localStorage.getItem('currentCursorSrc') || "https://marabou-cat.github.io/GamesV1/DefMouse.png";
+domCursor.src = currentCursorSrc;
+
+let mouseX = 0, mouseY = 0;
+let cursorVisible = false;
+
+document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (!cursorVisible) { domCursor.style.display = 'block'; cursorVisible = true; }
+});
+
+function updateCursorPosition() {
+    if (cursorVisible) { domCursor.style.transform = `translate3d(${mouseX - 2}px, ${mouseY - 2}px, 0)`; }
+    requestAnimationFrame(updateCursorPosition);
+}
+requestAnimationFrame(updateCursorPosition);
+
+document.addEventListener('mouseout', (e) => {
+    if (!e.relatedTarget) { domCursor.style.display = 'none'; cursorVisible = false; }
+});
+
+// --- GLOBAL STATS ---
+let examCoins = parseInt(localStorage.getItem('schoolExamsCoins') || '0');
+document.getElementById('coinDisplay').innerText = examCoins.toLocaleString();
+
+function showToast(msg) {
+    const toast = document.getElementById('bpToast');
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// --- BATTLE PASS DATA ---
+// Levels 10, 25, 35 -> Silver Pack
+// Level 50 -> Golden Pack
+// All others -> 50 Coins
+const BP_REWARDS = [
+    { lvl: 1, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 2, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 3, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 4, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 5, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 6, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 7, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 8, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 9, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 10, text: "Silver Cursor Pack", type: "silver_pack", amount: 0 },
+    { lvl: 11, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 12, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 13, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 14, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 15, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 16, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 17, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 18, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 19, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 20, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 21, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 22, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 23, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 24, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 25, text: "Silver Cursor Pack", type: "silver_pack", amount: 0 },
+    { lvl: 26, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 27, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 28, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 29, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 30, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 31, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 32, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 33, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 34, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 35, text: "Silver Cursor Pack", type: "silver_pack", amount: 0 },
+    { lvl: 36, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 37, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 38, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 39, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 40, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 41, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 42, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 43, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 44, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 45, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 46, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 47, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 48, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 49, text: "50 ExamCoins", type: "coins", amount: 50 },
+    { lvl: 50, text: "👑 Golden Cursor Pack", type: "golden_pack", amount: 0 }
+];
+
+let claimedLevels = JSON.parse(localStorage.getItem('schoolExamsBPClaimed')) || [];
+let currentLevel = 0;
+
+function renderBP() {
+    const grid = document.getElementById('bpGrid');
+    grid.innerHTML = "";
+
+    BP_REWARDS.forEach(reward => {
+        const isClaimed = claimedLevels.includes(reward.lvl);
+        const isUnlocked = currentLevel >= reward.lvl && !isClaimed;
+        let statusClass = isClaimed ? "claimed" : (isUnlocked ? "unlocked" : "locked");
+        
+        let btnHTML = "";
+        if (isClaimed) {
+            btnHTML = `<button class="btn-claim claimed">Claimed ✓</button>`;
+        } else if (isUnlocked) {
+            btnHTML = `<button class="btn-claim" onclick="claimReward(${reward.lvl})">🎁 Claim</button>`;
+        } else {
+            btnHTML = `<button class="btn-claim locked">🔒 Locked</button>`;
+        }
+
+        grid.innerHTML += `
+            <div class="bp-card ${statusClass}">
+                <div class="lvl">Level ${reward.lvl}</div>
+                <div class="reward" style="color: ${reward.type.includes('pack') ? '#ffd700' : '#fff'};">${reward.text}</div>
+                ${btnHTML}
+            </div>
+        `;
+    });
+}
+
+function claimReward(lvl) {
+    if (claimedLevels.includes(lvl)) return;
+    const reward = BP_REWARDS.find(r => r.lvl === lvl);
+    if (!reward) return;
+
+    if (reward.type === "coins") {
+        examCoins += reward.amount;
+        localStorage.setItem('schoolExamsCoins', examCoins);
+        document.getElementById('coinDisplay').innerText = examCoins.toLocaleString();
+        showToast(`+${reward.amount} Coins Claimed!`);
+        
+    } else if (reward.type === "silver_pack") {
+        const bpCursors = [
+            { id: "bp1", name: "Silver Arrow Cursor" },
+            { id: "bp2", name: "Silver Crosshair Cursor" },
+            { id: "bp3", name: "Silver Target Cursor" }
+        ];
+        const wonCursor = bpCursors[Math.floor(Math.random() * 3)];
+        
+        let owned = JSON.parse(localStorage.getItem('ownedCursors')) || ["def"];
+        if (!owned.includes(wonCursor.id)) {
+            owned.push(wonCursor.id);
+            localStorage.setItem('ownedCursors', JSON.stringify(owned));
+            alert(`📦 Opening Silver Cursor Pack...\n\n✨ FANTASTIC! You got the ${wonCursor.name}!\nIt has been permanently added to your Shop.`);
+        } else {
+            alert(`📦 Opening Silver Cursor Pack...\n\n✨ You got the ${wonCursor.name}!\n(You already owned this item).`);
+        }
+        showToast(`Silver Pack Opened!`);
+        
+    } else if (reward.type === "golden_pack") {
+        const bpGoldenCursors = [
+            { id: "bp4", name: "Golden Arrow Cursor" },
+            { id: "bp5", name: "Golden Crosshair Cursor" },
+            { id: "bp6", name: "Golden Target Cursor" }
+        ];
+        const wonCursor = bpGoldenCursors[Math.floor(Math.random() * 3)];
+        
+        let owned = JSON.parse(localStorage.getItem('ownedCursors')) || ["def"];
+        if (!owned.includes(wonCursor.id)) {
+            owned.push(wonCursor.id);
+            localStorage.setItem('ownedCursors', JSON.stringify(owned));
+            alert(`🌟 Opening Golden Cursor Pack...\n\n👑 LEGENDARY! You got the ${wonCursor.name}!\nIt has been permanently added to your Shop.`);
+        } else {
+            alert(`🌟 Opening Golden Cursor Pack...\n\n👑 You got the ${wonCursor.name}!\n(You already owned this item).`);
+        }
+        showToast(`Golden Pack Opened!`);
+    }
+
+    claimedLevels.push(lvl);
+    localStorage.setItem('schoolExamsBPClaimed', JSON.stringify(claimedLevels));
+    renderBP();
+}
+
+function updateProgress() {
+    let playSeconds = parseInt(localStorage.getItem('schoolExamsPlayTimeSecs') || '0');
+    currentLevel = Math.min(50, Math.floor(playSeconds / 300));
+    document.getElementById('currLvl').innerText = currentLevel;
+
+    if (currentLevel >= 50) {
+        document.getElementById('timeLeft').innerText = "MAX LEVEL REACHED!";
+        document.getElementById('timeLeft').style.color = "#3ba55c";
+    } else {
+        let secondsTowardsNext = playSeconds % 300;
+        let secondsLeft = 300 - secondsTowardsNext;
+        let m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
+        let s = (secondsLeft % 60).toString().padStart(2, '0');
+        document.getElementById('timeLeft').innerText = `Next level in: ${m}:${s}`;
+    }
+
+    playSeconds++;
+    localStorage.setItem('schoolExamsPlayTimeSecs', playSeconds);
+    if (playSeconds > 0 && playSeconds % 600 === 0) {
+        examCoins += 100;
+        localStorage.setItem('schoolExamsCoins', examCoins);
+        document.getElementById('coinDisplay').innerText = examCoins.toLocaleString();
+    }
+}
+
+updateProgress();
+renderBP();
+setInterval(() => {
+    updateProgress();
+    const unlockedCount = BP_REWARDS.filter(r => currentLevel >= r.lvl && !claimedLevels.includes(r.lvl)).length;
+    if(unlockedCount > 0 && document.querySelector('.bp-card.locked .lvl') && document.querySelector('.bp-card.locked .lvl').innerText === `LEVEL ${currentLevel}`) {
+        renderBP();
+    }
+}, 1000);
+</script>
+</body>
+</html>
