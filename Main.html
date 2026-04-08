@@ -103,6 +103,8 @@
 
         .toast { position: fixed; bottom: 30px; right: 30px; background: var(--p0); color: #fff; padding: 16px 24px; border-radius: 12px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transform: translateY(100px); opacity: 0; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 3000; display: flex; align-items: center; gap: 10px; }
         .toast.show { transform: translateY(0); opacity: 1; }
+        
+        .pet-warning-box { grid-column: 1 / -1; background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4444; border-radius: 12px; padding: 15px; text-align: center; color: #ffbbbb; font-size: 14px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -126,7 +128,6 @@
         <button class="btn-nav btn-redeem" onclick="redeemCode()">🎁 Redeem</button>
         
         <button class="btn-nav" onclick="openPetShop()" style="background: linear-gradient(135deg, #3ba55c, #2ecc71); color: #fff; border: none;">🐾 Pets</button>
-        
         <button class="btn-nav" onclick="openShop()" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none;">🛒 Shop</button>
         <button class="btn-nav" onclick="openGame('https://mb.webs.vc', 'Encrypted Web Browser')">🌐 Browser</button>
     </div>
@@ -180,7 +181,8 @@
         <div class="bar-title" style="color: #2ecc71;">🐾 Pet Adoption Center</div>
         <button class="btn-close" onclick="closePetShop()">CLOSE SHOP ✕</button>
     </div>
-    <div class="shop-container" id="petShopContainer"></div>
+    <div class="shop-container" id="petShopContainer">
+        </div>
 </div>
 
 <div class="toast" id="coinToast">
@@ -317,15 +319,53 @@ let examCoins = parseInt(localStorage.getItem('schoolExamsCoins') || '0');
 let playSeconds = parseInt(localStorage.getItem('schoolExamsPlayTimeSecs') || '0');
 let gameStartTime = null;
 
-// PET DATA
+// EXPANDED PET DATA
 const PET_SHOP = [
     { id: "doge", name: "Pixel Doge", icon: "🐕", price: 1000, baseCoin: 5 },
     { id: "cat", name: "Cyber Kitty", icon: "🐈", price: 3000, baseCoin: 15 },
-    { id: "dragon", name: "Neon Dragon", icon: "🐲", price: 10000, baseCoin: 50 }
+    { id: "frog", name: "Ninja Frog", icon: "🐸", price: 5000, baseCoin: 25 },
+    { id: "dragon", name: "Neon Dragon", icon: "🐲", price: 10000, baseCoin: 50 },
+    { id: "panda", name: "Ghost Panda", icon: "🐼", price: 20000, baseCoin: 100 },
+    { id: "kraken", name: "Cosmic Kraken", icon: "🦑", price: 50000, baseCoin: 300 }
 ];
+
 let ownedPets = JSON.parse(localStorage.getItem('schoolExamsOwnedPets')) || [];
 let activePet = localStorage.getItem('schoolExamsActivePet') || null;
 let petAges = JSON.parse(localStorage.getItem('schoolExamsPetAges')) || {};
+
+// 🚨 OFFLINE PET NEGLECT CALCULATION 🚨
+function calculatePetNeglect() {
+    let lastOnline = parseInt(localStorage.getItem('schoolExamsLastOnline') || Date.now().toString());
+    let timeNow = Date.now();
+    let hoursOffline = (timeNow - lastOnline) / (1000 * 60 * 60);
+
+    // If offline for 12+ hours and they actually own pets
+    if (hoursOffline >= 12 && Object.keys(petAges).length > 0) {
+        let levelsToLose = Math.floor(hoursOffline / 12);
+        let secondsToLose = levelsToLose * 600; // 600 secs = 1 level
+        let lostLevelsAlert = false;
+
+        for (let key in petAges) {
+            if (petAges[key] >= 600) { // Only demote if they have levels to lose
+                petAges[key] -= secondsToLose;
+                if (petAges[key] < 0) petAges[key] = 0; // Minimum is level 1 (0 seconds)
+                lostLevelsAlert = true;
+            }
+        }
+        
+        if (lostLevelsAlert) {
+            savePetData();
+            setTimeout(() => {
+                alert(`🚨 ANIMAL CONTROL ALERT 🚨\n\nYou abandoned your digital pets for ${Math.floor(hoursOffline)} hours! Out of pure boredom and neglect, they forgot their training and became dumber.\n\nYour pets have LOST ${levelsToLose} LEVEL(S)! 📉🧠\n\nLog in more often to keep their brains wrinkly!`);
+            }, 1000);
+        }
+    }
+    // Update it so it doesn't loop
+    localStorage.setItem('schoolExamsLastOnline', Date.now());
+}
+
+// Run the neglect check immediately on load
+calculatePetNeglect();
 
 function savePetData() {
     localStorage.setItem('schoolExamsOwnedPets', JSON.stringify(ownedPets));
@@ -351,6 +391,9 @@ setInterval(() => {
     playSeconds++;
     localStorage.setItem('schoolExamsPlayTimeSecs', playSeconds);
     
+    // Continuously update the last online tracker so it knows exactly when you leave
+    localStorage.setItem('schoolExamsLastOnline', Date.now());
+    
     // Base Playtime Reward (100 per 10 min)
     if (playSeconds > 0 && playSeconds % 600 === 0) {
         examCoins += 100;
@@ -367,8 +410,8 @@ setInterval(() => {
         if (playSeconds % 10 === 0) {
             const petInfo = PET_SHOP.find(p => p.id === activePet);
             if (petInfo) {
-                const level = Math.floor(petAges[activePet] / 600) + 1; // Level up every 10 mins
-                const reward = petInfo.baseCoin + (level * 2); // Boosted by level
+                const level = Math.floor(petAges[activePet] / 600) + 1; 
+                const reward = petInfo.baseCoin + (level * 2); 
                 examCoins += reward;
                 localStorage.setItem('schoolExamsCoins', examCoins);
                 updateStatsUI();
@@ -386,7 +429,11 @@ setInterval(() => {
 // --- PET SHOP UI FUNCTIONS ---
 function renderPetShop() {
     const container = document.getElementById('petShopContainer');
-    container.innerHTML = "";
+    container.innerHTML = `
+        <div class="pet-warning-box">
+            <strong>⚠️ Neglect Warning:</strong> Pets get lonely! Every 12 hours you are offline, they forget their training and <strong>LOSE 1 Level</strong>. Don't let them get smooth-brained! 🧠📉
+        </div>
+    `;
     
     PET_SHOP.forEach(pet => {
         const isOwned = ownedPets.includes(pet.id);
@@ -440,8 +487,14 @@ function equipPet(id) {
 }
 
 function feedPet() {
-    const feedCost = 50;
-    if (examCoins >= feedCost && activePet) {
+    if (!activePet) return;
+    
+    // Dynamic Feed Cost Calculation
+    const ageSecs = petAges[activePet] || 0;
+    const level = Math.floor(ageSecs / 600) + 1;
+    const feedCost = 50 + ((level - 1) * 25); 
+
+    if (examCoins >= feedCost) {
         examCoins -= feedCost;
         petAges[activePet] = (petAges[activePet] || 0) + 600; // Adds 10 mins of age
         savePetData();
@@ -456,7 +509,7 @@ function feedPet() {
             setTimeout(() => petIcon.style.transform = 'scale(1)', 200);
         }
     } else {
-        alert("You need 50 ExamCoins to feed your pet!");
+        alert(`You need ${feedCost} ExamCoins to feed your level ${level} pet!`);
     }
 }
 
@@ -472,13 +525,14 @@ function updatePetUI() {
     const ageSecs = petAges[activePet] || 0;
     const level = Math.floor(ageSecs / 600) + 1; 
     const currentReward = petInfo.baseCoin + (level * 2); 
+    const feedCost = 50 + ((level - 1) * 25); // Show dynamic cost on button
 
     document.getElementById('petPanelContent').innerHTML = `
         <div class="rec-game">
             <div class="rec-icon" id="activePetIcon" style="transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);">${petInfo.icon}</div>
             <div class="rec-title" style="font-size: 20px;">${petInfo.name} <span style="font-size: 14px; color: var(--p1);">Lvl ${level}</span></div>
             <p style="font-size: 13px; color: #ffd700; margin-bottom: 12px; font-weight: bold;">Earns: +${currentReward} 🪙 / 10s</p>
-            <button class="rec-btn" style="background: #3ba55c;" onclick="feedPet(); event.stopPropagation();">🍖 Feed (50 🪙)</button>
+            <button class="rec-btn" style="background: #3ba55c;" onclick="feedPet(); event.stopPropagation();">🍖 Feed (${feedCost} 🪙)</button>
         </div>
     `;
 }
@@ -527,6 +581,7 @@ function renderShop() {
     const container = document.getElementById('shopContainer');
     container.innerHTML = "";
     
+    // Refresh owned state in case they opened a BP pack in the other tab
     ownedCursors = JSON.parse(localStorage.getItem('ownedCursors')) || ["def"];
 
     CURSORS.forEach(item => {
@@ -589,7 +644,10 @@ function equipCursor(id) {
     }
 }
 
-function openShop() { document.getElementById('shopOverlay').classList.add('open'); renderShop(); }
+function openShop() { 
+    document.getElementById('shopOverlay').classList.add('open'); 
+    renderShop(); 
+}
 function closeShop() { document.getElementById('shopOverlay').classList.remove('open'); }
 
 document.getElementById('customCursorInput').addEventListener('change', function(e) {
