@@ -29,12 +29,12 @@
         header.topbar { position: fixed; top: 0; left:0; right:0; height: 70px; background: rgba(0, 29, 61, 0.95); backdrop-filter: blur(10px); border-bottom: 2px solid var(--p0); display: flex; align-items: center; padding: 0 30px; z-index: 1000; justify-content: space-between; }
         .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; font-size: 24px; color: var(--p1); text-decoration: none; letter-spacing: -1px; }
         .brand img { height: 45px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         
         .coin-tracker { background: rgba(0,0,0,0.5); border: 1px solid var(--p1); padding: 8px 16px; border-radius: 20px; font-weight: 800; color: #ffd700; display: flex; align-items: center; gap: 8px; font-size: 14px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
         .coin-tracker span { color: #fff; font-size: 16px; }
 
-        .btn-nav { background: var(--p2); border: 1px solid var(--p0); color: var(--w); padding: 10px 15px; border-radius: 20px; font-weight: 700; transition: 0.3s; font-size: 13px; text-decoration: none; display: inline-block; }
+        .btn-nav { background: var(--p2); border: 1px solid var(--p0); color: var(--w); padding: 10px 15px; border-radius: 20px; font-weight: 700; transition: 0.3s; font-size: 13px; text-decoration: none; display: inline-block; cursor: pointer; }
         .btn-nav:hover { background: var(--p0); color: #fff; box-shadow: 0 0 15px rgba(144, 224, 239, 0.4); transform: translateY(-2px); }
         
         .btn-bp { background: linear-gradient(135deg, #8e44ad, #9b59b6); border: none; color: #fff; box-shadow: 0 0 10px rgba(155, 89, 182, 0.5); }
@@ -52,7 +52,8 @@
         .hero { margin-bottom: 20px; }
         .hero h1 { font-size: 3.5rem; margin-bottom: 10px; color: var(--p1); text-shadow: 0 0 20px rgba(144, 224, 239, 0.3); letter-spacing: -1px; }
         
-        .recommended-wrapper { margin: 0 auto 30px; max-width: 600px; background: linear-gradient(135deg, var(--bg1), var(--bg2)); border: 2px solid var(--p0); border-radius: var(--r); padding: 25px; text-align: center; box-shadow: var(--glow); position: relative; overflow: hidden; }
+        .hero-panels { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; max-width: 1000px; margin-left: auto; margin-right: auto; }
+        .recommended-wrapper { flex: 1; min-width: 300px; max-width: 400px; background: linear-gradient(135deg, var(--bg1), var(--bg2)); border: 2px solid var(--p0); border-radius: var(--r); padding: 25px; text-align: center; box-shadow: var(--glow); position: relative; overflow: hidden; }
         .rec-header { font-size: 12px; color: var(--p1); text-transform: uppercase; letter-spacing: 2px; font-weight: 900; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .rec-header::before, .rec-header::after { content: ""; height: 2px; width: 40px; background: var(--line); }
         .rec-game { display: flex; flex-direction: column; align-items: center; animation: fadeUp 0.5s ease-out forwards; }
@@ -93,7 +94,7 @@
         .shop-item.equipped { border-color: #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
         .shop-item.event-item { border-color: #ff0000; }
         .shop-preview { width: 50px; height: 50px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
-        .shop-btn { background: var(--p0); border: none; color: #fff; padding: 8px 15px; border-radius: 10px; font-weight: bold; width: 100%; transition: 0.2s; }
+        .shop-btn { background: var(--p0); border: none; color: #fff; padding: 8px 15px; border-radius: 10px; font-weight: bold; width: 100%; transition: 0.2s; cursor: pointer; }
         .shop-btn.buy { background: #ffd700; color: #000; }
         .shop-btn.buy:hover { background: #ffea00; }
         .shop-btn.equip { background: var(--p0); }
@@ -116,13 +117,16 @@
         SchoolExams
     </a>
     <div class="nav-right">
-        <div class="coin-tracker" title="Earn 100 ExamCoins every 10 minutes!">
+        <div class="coin-tracker" title="Earn ExamCoins by playing and from Pets!">
             🪙 <span id="coinDisplay">0</span> ExamCoins
         </div>
         
         <a href="Pass.html" class="btn-nav btn-bp">🎫 Battle Pass</a>
         <a href="https://marabou-cat.github.io/GamesV1/Event.html" target="_blank" class="btn-nav btn-event">🎡 Spin Event</a>
         <button class="btn-nav btn-redeem" onclick="redeemCode()">🎁 Redeem</button>
+        
+        <button class="btn-nav" onclick="openPetShop()" style="background: linear-gradient(135deg, #3ba55c, #2ecc71); color: #fff; border: none;">🐾 Pets</button>
+        
         <button class="btn-nav" onclick="openShop()" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none;">🛒 Shop</button>
         <button class="btn-nav" onclick="openGame('https://mb.webs.vc', 'Encrypted Web Browser')">🌐 Browser</button>
     </div>
@@ -133,10 +137,17 @@
         <h1>Digital Portal</h1>
     </section>
 
-    <div class="recommended-wrapper" onclick="document.querySelector('#recGameContainer .rec-btn').click()">
-        <div class="rec-header">✨ Featured Modules ✨</div>
-        <div id="recGameContainer"></div>
-        <div class="rec-progress progress-animate" id="recProgress"></div>
+    <div class="hero-panels">
+        <div class="recommended-wrapper" onclick="document.querySelector('#recGameContainer .rec-btn').click()">
+            <div class="rec-header">✨ Featured Modules ✨</div>
+            <div id="recGameContainer"></div>
+            <div class="rec-progress progress-animate" id="recProgress"></div>
+        </div>
+
+        <div class="recommended-wrapper" id="petPanel" style="display: none; cursor: default;">
+            <div class="rec-header">🐾 Active Pet 🐾</div>
+            <div id="petPanelContent"></div>
+        </div>
     </div>
 
     <div class="stats-bar">
@@ -162,6 +173,14 @@
         <button class="btn-close" onclick="closeShop()">CLOSE SHOP ✕</button>
     </div>
     <div class="shop-container" id="shopContainer"></div>
+</div>
+
+<div class="overlay" id="petShopOverlay">
+    <div class="overlay-bar">
+        <div class="bar-title" style="color: #2ecc71;">🐾 Pet Adoption Center</div>
+        <button class="btn-close" onclick="closePetShop()">CLOSE SHOP ✕</button>
+    </div>
+    <div class="shop-container" id="petShopContainer"></div>
 </div>
 
 <div class="toast" id="coinToast">
@@ -293,10 +312,26 @@ function updateRecommended() {
 updateRecommended();
 setInterval(updateRecommended, 5000);
 
-// --- PLAYTIME & EXAM COINS SYSTEM ---
+// --- PLAYTIME, COINS & PET SYSTEM INTEGRATION ---
 let examCoins = parseInt(localStorage.getItem('schoolExamsCoins') || '0');
 let playSeconds = parseInt(localStorage.getItem('schoolExamsPlayTimeSecs') || '0');
 let gameStartTime = null;
+
+// PET DATA
+const PET_SHOP = [
+    { id: "doge", name: "Pixel Doge", icon: "🐕", price: 1000, baseCoin: 5 },
+    { id: "cat", name: "Cyber Kitty", icon: "🐈", price: 3000, baseCoin: 15 },
+    { id: "dragon", name: "Neon Dragon", icon: "🐲", price: 10000, baseCoin: 50 }
+];
+let ownedPets = JSON.parse(localStorage.getItem('schoolExamsOwnedPets')) || [];
+let activePet = localStorage.getItem('schoolExamsActivePet') || null;
+let petAges = JSON.parse(localStorage.getItem('schoolExamsPetAges')) || {};
+
+function savePetData() {
+    localStorage.setItem('schoolExamsOwnedPets', JSON.stringify(ownedPets));
+    localStorage.setItem('schoolExamsActivePet', activePet || "");
+    localStorage.setItem('schoolExamsPetAges', JSON.stringify(petAges));
+}
 
 function updateStatsUI() {
     document.getElementById('coinDisplay').innerText = examCoins.toLocaleString();
@@ -311,16 +346,145 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('show'), 4000);
 }
 
+// MAIN INTERVAL LOOP (1 Second)
 setInterval(() => {
     playSeconds++;
     localStorage.setItem('schoolExamsPlayTimeSecs', playSeconds);
+    
+    // Base Playtime Reward (100 per 10 min)
     if (playSeconds > 0 && playSeconds % 600 === 0) {
         examCoins += 100;
         localStorage.setItem('schoolExamsCoins', examCoins);
         updateStatsUI();
         showToast("Time Reward! +100 ExamCoins added.");
     }
+
+    // Pet Reward Logic
+    if (activePet) {
+        petAges[activePet] = (petAges[activePet] || 0) + 1; // Age pet by 1 second
+        
+        // Give pet coins every 10 seconds
+        if (playSeconds % 10 === 0) {
+            const petInfo = PET_SHOP.find(p => p.id === activePet);
+            if (petInfo) {
+                const level = Math.floor(petAges[activePet] / 600) + 1; // Level up every 10 mins
+                const reward = petInfo.baseCoin + (level * 2); // Boosted by level
+                examCoins += reward;
+                localStorage.setItem('schoolExamsCoins', examCoins);
+                updateStatsUI();
+            }
+        }
+        
+        // Update UI every 5 seconds so the age looks live
+        if (playSeconds % 5 === 0) {
+            savePetData();
+            updatePetUI();
+        }
+    }
 }, 1000);
+
+// --- PET SHOP UI FUNCTIONS ---
+function renderPetShop() {
+    const container = document.getElementById('petShopContainer');
+    container.innerHTML = "";
+    
+    PET_SHOP.forEach(pet => {
+        const isOwned = ownedPets.includes(pet.id);
+        const isEquipped = activePet === pet.id;
+        const ageSecs = petAges[pet.id] || 0;
+        const level = Math.floor(ageSecs / 600) + 1;
+        const reward = pet.baseCoin + (level * 2);
+
+        const card = document.createElement('div');
+        card.className = `shop-item ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`;
+        
+        let btnHTML = "";
+        if (isEquipped) {
+            btnHTML = `<button class="shop-btn equipped">Equipped ✓</button>`;
+        } else if (isOwned) {
+            btnHTML = `<button class="shop-btn equip" onclick="equipPet('${pet.id}')" style="background:#3ba55c">Equip</button>`;
+        } else {
+            btnHTML = `<button class="shop-btn buy" onclick="buyPet('${pet.id}', ${pet.price})">Adopt 🪙 ${pet.price}</button>`;
+        }
+
+        card.innerHTML = `
+            <div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));">${pet.icon}</div>
+            <h3 style="font-size: 16px; margin-bottom: 5px; color: #fff;">${pet.name}</h3>
+            <p style="font-size: 12px; color: #ffd700; margin-bottom: 5px;">Earns: +${reward} 🪙/10s</p>
+            ${isOwned ? `<p style="font-size: 11px; color: var(--p1); margin-bottom: 10px;">Level ${level}</p>` : '<p style="margin-bottom:10px;"></p>'}
+            ${btnHTML}
+        `;
+        container.appendChild(card);
+    });
+}
+
+function buyPet(id, price) {
+    if (examCoins >= price) {
+        examCoins -= price;
+        ownedPets.push(id);
+        petAges[id] = 0; 
+        savePetData();
+        updateStatsUI();
+        showToast("Pet Adopted!");
+        equipPet(id);
+    } else {
+        alert("You need more ExamCoins to adopt this pet!");
+    }
+}
+
+function equipPet(id) {
+    activePet = id;
+    savePetData();
+    renderPetShop();
+    updatePetUI();
+}
+
+function feedPet() {
+    const feedCost = 50;
+    if (examCoins >= feedCost && activePet) {
+        examCoins -= feedCost;
+        petAges[activePet] = (petAges[activePet] || 0) + 600; // Adds 10 mins of age
+        savePetData();
+        updateStatsUI();
+        updatePetUI();
+        showToast("🍖 Pet Fed! +1 Age Level");
+        
+        // Quick visual pop
+        const petIcon = document.getElementById('activePetIcon');
+        if(petIcon) {
+            petIcon.style.transform = 'scale(1.3)';
+            setTimeout(() => petIcon.style.transform = 'scale(1)', 200);
+        }
+    } else {
+        alert("You need 50 ExamCoins to feed your pet!");
+    }
+}
+
+function updatePetUI() {
+    const panel = document.getElementById('petPanel');
+    if (!activePet) {
+        panel.style.display = "none";
+        return;
+    }
+    
+    panel.style.display = "block";
+    const petInfo = PET_SHOP.find(p => p.id === activePet);
+    const ageSecs = petAges[activePet] || 0;
+    const level = Math.floor(ageSecs / 600) + 1; 
+    const currentReward = petInfo.baseCoin + (level * 2); 
+
+    document.getElementById('petPanelContent').innerHTML = `
+        <div class="rec-game">
+            <div class="rec-icon" id="activePetIcon" style="transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);">${petInfo.icon}</div>
+            <div class="rec-title" style="font-size: 20px;">${petInfo.name} <span style="font-size: 14px; color: var(--p1);">Lvl ${level}</span></div>
+            <p style="font-size: 13px; color: #ffd700; margin-bottom: 12px; font-weight: bold;">Earns: +${currentReward} 🪙 / 10s</p>
+            <button class="rec-btn" style="background: #3ba55c;" onclick="feedPet(); event.stopPropagation();">🍖 Feed (50 🪙)</button>
+        </div>
+    `;
+}
+
+function openPetShop() { document.getElementById('petShopOverlay').classList.add('open'); renderPetShop(); }
+function closePetShop() { document.getElementById('petShopOverlay').classList.remove('open'); }
 
 // --- CURSOR SHOP SYSTEM ---
 const CURSORS = [
@@ -363,7 +527,6 @@ function renderShop() {
     const container = document.getElementById('shopContainer');
     container.innerHTML = "";
     
-    // Refresh owned state in case they opened a BP pack in the other tab
     ownedCursors = JSON.parse(localStorage.getItem('ownedCursors')) || ["def"];
 
     CURSORS.forEach(item => {
@@ -426,10 +589,7 @@ function equipCursor(id) {
     }
 }
 
-function openShop() { 
-    document.getElementById('shopOverlay').classList.add('open'); 
-    renderShop(); 
-}
+function openShop() { document.getElementById('shopOverlay').classList.add('open'); renderShop(); }
 function closeShop() { document.getElementById('shopOverlay').classList.remove('open'); }
 
 document.getElementById('customCursorInput').addEventListener('change', function(e) {
@@ -531,10 +691,11 @@ function closeGame() {
 
 document.getElementById('searchInput').oninput = (e) => renderGrid(e.target.value);
 
-// Initialize
+// Initialize System
 applyCursor();
 updateStatsUI();
 renderGrid();
+updatePetUI();
 </script>
 </body>
 </html>
