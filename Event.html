@@ -23,7 +23,24 @@
         .progress-bar-bg { width: 100%; height: 10px; background: rgba(0,0,0,0.5); border-radius: 5px; overflow: hidden; }
         .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--p0), var(--p1)); transition: width 1s linear; }
 
-        .wheel-container { position: relative; width: 300px; height: 300px; margin-bottom: 40px; }
+        /* SIDE-BY-SIDE LAYOUT */
+        .main-layout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 60px; /* Space between wheel and result box */
+            width: 100%;
+            max-width: 900px;
+            flex-wrap: wrap-reverse; /* Wraps cleanly on mobile */
+        }
+
+        .wheel-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .wheel-container { position: relative; width: 300px; height: 300px; margin-bottom: 30px; }
         .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #ffd700; z-index: 10; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); }
         
         .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--p1); box-shadow: 0 0 30px rgba(144, 224, 239, 0.4); background: conic-gradient(
@@ -38,9 +55,30 @@
         .btn-spin:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 5px 25px rgba(255, 215, 0, 0.5); }
         .btn-spin:disabled { background: #333; color: #888; cursor: not-allowed; box-shadow: none; }
 
-        .result-box { margin-top: 30px; background: var(--bg1); border: 2px solid var(--p0); padding: 20px; border-radius: var(--r); text-align: center; display: none; max-width: 400px; }
+        /* RESULT BOX ON THE LEFT */
+        .result-box { 
+            background: var(--bg1); 
+            border: 2px solid var(--p0); 
+            padding: 30px; 
+            border-radius: var(--r); 
+            text-align: center; 
+            width: 100%; 
+            max-width: 350px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            /* Hidden via opacity so the wheel doesn't jump when it appears */
+            opacity: 0; 
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .result-box.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .code-display { font-family: monospace; background: #000; color: #00ff00; padding: 10px; border-radius: 8px; font-size: 1.2rem; margin: 10px 0; user-select: all; word-break: break-all; }
-        .copy-btn { background: var(--p0); color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .copy-btn { background: var(--p0); color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        .copy-btn:hover { background: var(--p1); color: var(--bg0); }
     </style>
 </head>
 <body>
@@ -56,18 +94,23 @@
         </div>
     </div>
 
-    <div class="wheel-container">
-        <div class="pointer"></div>
-        <div class="wheel" id="wheel"></div>
-    </div>
+    <div class="main-layout">
+        
+        <div class="result-box" id="resultBox">
+            <h2 id="prizeText" style="color: #ffd700; margin-bottom:10px;">You won!</h2>
+            <p style="font-size: 0.9rem;">Copy this encrypted code and redeem it on the main site:</p>
+            <div class="code-display" id="codeDisplay">XXXX</div>
+            <button class="copy-btn" onclick="copyCode()">📋 Copy Code</button>
+        </div>
 
-    <button class="btn-spin" id="spinBtn" onclick="spinWheel()" disabled>Spin Locked</button>
+        <div class="wheel-wrapper">
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <div class="wheel" id="wheel"></div>
+            </div>
+            <button class="btn-spin" id="spinBtn" onclick="spinWheel()" disabled>Spin Locked</button>
+        </div>
 
-    <div class="result-box" id="resultBox">
-        <h2 id="prizeText" style="color: #ffd700; margin-bottom:10px;">You won!</h2>
-        <p style="font-size: 0.9rem;">Copy this encrypted code and redeem it on the main site:</p>
-        <div class="code-display" id="codeDisplay">XXXX</div>
-        <button class="copy-btn" onclick="copyCode()">📋 Copy Code</button>
     </div>
 
     <script>
@@ -81,12 +124,13 @@
             const playSeconds = parseInt(localStorage.getItem('schoolExamsPlayTimeSecs') || '0');
             const spinsUsed = parseInt(localStorage.getItem('schoolExamsSpinsUsed') || '0');
             
-            // 1 Spin every 1200 seconds (20 mins)
+            // 1 Spin every 120 seconds (2 mins)
             const totalEarnedSpins = Math.floor(playSeconds / 120);
             const availableSpins = totalEarnedSpins - spinsUsed;
             
-            const secondsTowardsNext = playSeconds % 1200;
-            const progressPercent = (secondsTowardsNext / 1200) * 100;
+            // Fixed: Changed 1200 to 120 for the progress bar math!
+            const secondsTowardsNext = playSeconds % 120;
+            const progressPercent = (secondsTowardsNext / 120) * 100;
 
             const btn = document.getElementById('spinBtn');
             const statusText = document.getElementById('spinStatus');
@@ -101,7 +145,7 @@
             } else {
                 btn.disabled = true;
                 btn.innerText = "Play to Unlock";
-                const minsLeft = Math.ceil((1200 - secondsTowardsNext) / 60);
+                const minsLeft = Math.ceil((120 - secondsTowardsNext) / 60); // Fixed 1200 to 120
                 statusText.innerText = `Next spin in ~${minsLeft} mins`;
                 bar.style.width = `${progressPercent}%`;
                 bar.style.background = "linear-gradient(90deg, var(--p0), var(--p1))";
@@ -119,7 +163,7 @@
             
             isSpinning = true;
             btn.disabled = true;
-            resultBox.style.display = 'none';
+            resultBox.classList.remove('show'); // Hide previous result cleanly
 
             // Deduct a spin
             let spinsUsed = parseInt(localStorage.getItem('schoolExamsSpinsUsed') || '0');
@@ -152,7 +196,7 @@
             setTimeout(() => {
                 document.getElementById('prizeText').innerText = `🎉 You won: ${prizeName} 🎉`;
                 document.getElementById('codeDisplay').innerText = encryptedCode;
-                resultBox.style.display = 'block';
+                resultBox.classList.add('show'); // Fade in the result box
                 isSpinning = false;
                 updateProgress(); // Re-evaluate if they have multiple spins stacked up
             }, 4000);
