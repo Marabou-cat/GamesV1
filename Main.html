@@ -6,6 +6,7 @@
     <title>SchoolExams - Digital Portal</title>
     <style>
         :root {
+            /* DEEP DARK BLUE THEME */
             --bg0: #000814; --bg1: #001d3d; --bg2: #003566;
             --p0: #0077b6; --p1: #90e0ef; --p2: #03045e;
             --w: #caf0f8; --m: #90e0ef; --d: #48cae4;
@@ -16,16 +17,26 @@
             --r: 16px;
         }
 
-        /* HIDE DEFAULT COMPUTER CURSOR EVERYWHERE */
-        *, html, body, button, a, input { 
-            margin: 0; padding: 0; box-sizing: border-box; 
-            cursor: none !important;
+        /* NUCLEAR OPTION: HIDE DEFAULT COMPUTER CURSOR EVERYWHERE */
+        *, *::before, *::after, html, body, button, a, input, div, span, p, h1, h2, h3, section, header, main { 
+            cursor: none !important; 
         }
 
-        /* DOM-BASED CUSTOM CURSOR */
+        /* Except inside the game iframe, let the game handle its own cursor */
+        iframe {
+            cursor: auto !important;
+        }
+
+        /* HARDWARE ACCELERATED DOM CURSOR */
         #dom-cursor {
-            position: fixed; top: 0; left: 0; width: 32px; pointer-events: none; z-index: 9999999;
-            transform: translate(-2px, -2px); display: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 32px; 
+            pointer-events: none; /* Lets clicks pass through */
+            z-index: 9999999;
+            display: none; 
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            will-change: transform; /* Forces GPU acceleration for zero lag */
         }
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg0); color: var(--w); overflow-x: hidden; }
@@ -170,22 +181,47 @@
 <input type="file" id="customCursorInput" accept="image/png, image/jpeg, image/gif" style="display: none;">
 
 <script>
-// --- DOM CURSOR TRACKING LOGIC ---
+// --- HARDWARE ACCELERATED DOM CURSOR TRACKING ---
 const domCursor = document.getElementById('dom-cursor');
 let isOverIframe = false;
-
-document.getElementById('gameFrame').addEventListener('mouseenter', () => { isOverIframe = true; domCursor.style.display = 'none'; });
-document.getElementById('gameFrame').addEventListener('mouseleave', () => { isOverIframe = false; });
+let mouseX = 0, mouseY = 0;
+let cursorVisible = false;
 
 document.addEventListener('mousemove', (e) => {
-    if (isOverIframe) { domCursor.style.display = 'none'; return; }
-    domCursor.style.display = 'block';
-    domCursor.style.left = e.clientX + 'px';
-    domCursor.style.top = e.clientY + 'px';
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (!cursorVisible && !isOverIframe) {
+        domCursor.style.display = 'block';
+        cursorVisible = true;
+    }
 });
 
+// Update position using requestAnimationFrame for zero-lag tracking
+function updateCursorPosition() {
+    if (cursorVisible && !isOverIframe) {
+        // Offset by -2px so the point of the image aligns perfectly with the actual click
+        domCursor.style.transform = `translate3d(${mouseX - 2}px, ${mouseY - 2}px, 0)`;
+    }
+    requestAnimationFrame(updateCursorPosition);
+}
+requestAnimationFrame(updateCursorPosition);
+
+// Hide cursor when entering the iframe game
+document.getElementById('gameFrame').addEventListener('mouseenter', () => { 
+    isOverIframe = true; 
+    domCursor.style.display = 'none'; 
+    cursorVisible = false;
+});
+document.getElementById('gameFrame').addEventListener('mouseleave', () => { 
+    isOverIframe = false; 
+});
+
+// Hide cursor if it leaves the browser window entirely
 document.addEventListener('mouseout', (e) => {
-    if (!e.relatedTarget && !isOverIframe) domCursor.style.display = 'none';
+    if (!e.relatedTarget && !isOverIframe) {
+        domCursor.style.display = 'none';
+        cursorVisible = false;
+    }
 });
 
 // BASE URL FOR REPOSITORY
@@ -304,7 +340,7 @@ const CURSORS = [
     { id: "def", name: "Default Mouse", src: "https://marabou-cat.github.io/GamesV1/DefMouse.png", price: 0 },
     { id: "m1", name: "Red Crosshair", src: "https://marabou-cat.github.io/GamesV1/DefMouse.png", price: 500 },
     { id: "m2", name: "Neon Glow Arrow", src: "https://marabou-cat.github.io/GamesV1/DefMouse.png", price: 500 },
-    { id: "m3", name: "Mouse cursor", src: "https://marabou-cat.github.io/GamesV1/Mouse.png", price: 500 },
+    { id: "m3", name: "Diamond Cursor", src: "https://marabou-cat.github.io/GamesV1/mouse.png", price: 500 },
     { id: "m4", name: "Sword Cursor", src: "https://marabou-cat.github.io/GamesV1/Katana.png", price: 500 },
     { id: "m5", name: "Pizza Slice", src: "pizza.png", price: 500 },
     { id: "custom", name: "Upload Custom", src: "https://cdn-icons-png.flaticon.com/512/109/109612.png", price: 1000, isCustom: true },
@@ -322,6 +358,7 @@ function applyCursor() {
         const c = CURSORS.find(c => c.id === equippedCursor);
         targetSrc = c ? c.src : CURSORS[0].src;
     }
+    // Apply source to the tracking DOM image
     domCursor.src = targetSrc;
 }
 
