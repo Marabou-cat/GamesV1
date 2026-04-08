@@ -60,12 +60,12 @@
 </head>
 <body>
 
-<img id="dom-cursor" src="https://marabou-cat.github.io/GamesV1/DefMouse.png" alt="">
+<img id="dom-cursor" src="DefMouse.png" alt="">
 <div class="bg-grid"></div>
 
 <header class="topbar">
     <a href="index.html" class="brand">
-        <img src="https://marabou-cat.github.io/GamesV1/logo.png" alt="Logo" onerror="this.style.display='none'">
+        <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
         SchoolExams
     </a>
     <div style="display:flex; gap: 15px; align-items:center;">
@@ -91,7 +91,7 @@
 <script>
 // --- CUSTOM CURSOR TRACKING ---
 const domCursor = document.getElementById('dom-cursor');
-let currentCursorSrc = localStorage.getItem('currentCursorSrc') || "https://marabou-cat.github.io/GamesV1/DefMouse.png";
+let currentCursorSrc = localStorage.getItem('currentCursorSrc') || "DefMouse.png";
 domCursor.src = currentCursorSrc;
 
 let mouseX = 0, mouseY = 0;

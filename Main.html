@@ -109,13 +109,13 @@
 </head>
 <body>
 
-<img id="dom-cursor" src="https://marabou-cat.github.io/GamesV1/DefMouse.png" alt="">
+<img id="dom-cursor" src="DefMouse.png" alt="">
 
 <div class="bg-grid"></div>
 
 <header class="topbar">
     <a href="#" class="brand" onclick="location.reload()">
-        <img src="https://marabou-cat.github.io/GamesV1/logo.png" alt="Logo" onerror="this.style.display='none'">
+        <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
         SchoolExams
     </a>
     <div class="nav-right">
@@ -124,7 +124,7 @@
         </div>
         
         <a href="Pass.html" class="btn-nav btn-bp">🎫 Battle Pass</a>
-        <a href="https://marabou-cat.github.io/GamesV1/Event.html" target="_blank" class="btn-nav btn-event">🎡 Spin Event</a>
+        <a href="Event.html" target="_blank" class="btn-nav btn-event">🎡 Spin Event</a>
         <button class="btn-nav btn-redeem" onclick="redeemCode()">🎁 Redeem</button>
         
         <button class="btn-nav" onclick="openPetShop()" style="background: linear-gradient(135deg, #3ba55c, #2ecc71); color: #fff; border: none;">🐾 Pets</button>
@@ -542,24 +542,24 @@ function closePetShop() { document.getElementById('petShopOverlay').classList.re
 
 // --- CURSOR SHOP SYSTEM ---
 const CURSORS = [
-    { id: "def", name: "Default Mouse", src: "https://marabou-cat.github.io/GamesV1/DefMouse.png", price: 0 },
-    { id: "m1", name: "Egg Twins", src: "https://marabou-cat.github.io/GamesV1/Twins.png", price: 500 },
-    { id: "m2", name: "Gold Ingot", src: "https://marabou-cat.github.io/GamesV1/Goldingot.png", price: 500 },
-    { id: "m3", name: "Cheesy Cursor", src: "https://marabou-cat.github.io/GamesV1/mouse.png", price: 750 },
-    { id: "m4", name: "Sword Cursor", src: "https://marabou-cat.github.io/GamesV1/Katana.png", price: 500 },
+    { id: "def", name: "Default Mouse", src: "DefMouse.png", price: 0 },
+    { id: "m1", name: "Egg Twins", src: "Twins.png", price: 500 },
+    { id: "m2", name: "Gold Ingot", src: "Goldingot.png", price: 500 },
+    { id: "m3", name: "Cheesy Cursor", src: "mouse.png", price: 750 },
+    { id: "m4", name: "Sword Cursor", src: "Katana.png", price: 500 },
     { id: "m5", name: "Pizza Slice", src: "pizza.png", price: 500 },
     { id: "custom", name: "Upload Custom", src: "https://cdn-icons-png.flaticon.com/512/109/109612.png", price: 1250, isCustom: true },
     { id: "dragon", name: "Mythic Dragon", src: "Dragon.gif", price: "Wheel Event Only", isEvent: true, color: "#ff0000" },
     
     // SILVER BATTLE PASS CURSORS
-    { id: "bp1", name: "Silver Apple", src: "https://marabou-cat.github.io/GamesV1/Apple.png", price: "S1 Pass Reward", isEvent: true, color: "#9b59b6" },
-    { id: "bp2", name: "Robot BOB", src: "https://marabou-cat.github.io/GamesV1/Robot.png", price: "S1 Pass Reward", isEvent: true, color: "#9b59b6" },
-    { id: "bp3", name: "Silver Statue", src: "https://marabou-cat.github.io/GamesV1/Statue.png", price: "S1 Pass Reward", isEvent: true, color: "#9b59b6" },
+    { id: "bp1", name: "Silver Apple", src: "Apple.png", price: "S1 Pass Reward", isEvent: true, color: "#9b59b6" },
+    { id: "bp2", name: "Robot BOB", src: "Robot.png", price: "S1 Pass Reward", isEvent: true, color: "#9b59b6" },
+    { id: "bp3", name: "Silver Statue", src: "Statue.png", price: "S1 Pass Reward", isEvent: true, color: "#9b59b6" },
 
     // GOLDEN BATTLE PASS CURSORS
-    { id: "bp4", name: "Midas Sword", src: "https://marabou-cat.github.io/GamesV1/Midas.png", price: "S1 Pass Reward", isEvent: true, color: "#ffd700" },
-    { id: "bp5", name: "Golden Flame", src: "https://marabou-cat.github.io/GamesV1/Flame.png", price: "S1 Pass Reward", isEvent: true, color: "#ffd700" },
-    { id: "bp6", name: "Royal Gleam", src: "https://marabou-cat.github.io/GamesV1/Gleam.png", price: "S1 Pass Reward", isEvent: true, color: "#ffd700" }
+    { id: "bp4", name: "Midas Sword", src: "Midas.png", price: "S1 Pass Reward", isEvent: true, color: "#ffd700" },
+    { id: "bp5", name: "Golden Flame", src: "Flame.png", price: "S1 Pass Reward", isEvent: true, color: "#ffd700" },
+    { id: "bp6", name: "Royal Gleam", src: "Gleam.png", price: "S1 Pass Reward", isEvent: true, color: "#ffd700" }
 ];
 
 let ownedCursors = JSON.parse(localStorage.getItem('ownedCursors')) || ["def"];
