@@ -407,7 +407,7 @@ setInterval(() => {
         petAges[activePet] = (petAges[activePet] || 0) + 1; // Age pet by 1 second
         
         // Give pet coins every 10 seconds
-        if (playSeconds % 10 === 0) {
+        if (playSeconds % 120 === 0) {
             const petInfo = PET_SHOP.find(p => p.id === activePet);
             if (petInfo) {
                 const level = Math.floor(petAges[activePet] / 600) + 1; 
@@ -431,7 +431,7 @@ function renderPetShop() {
     const container = document.getElementById('petShopContainer');
     container.innerHTML = `
         <div class="pet-warning-box">
-            <strong>⚠️ Neglect Warning:</strong> Pets get lonely! Every 12 hours you are offline, they forget their training and <strong>LOSE 1 Level</strong>. Don't let them get smooth-brained! 🧠📉
+            <strong>⚠️ Neglect Warning:</strong> Pets get lonely! Every 12 hours you are offline, they becames fat because of all burgers and <strong>LOSE 1 Level</strong>. Don't let them get too fat! 🧠📉
         </div>
     `;
     
