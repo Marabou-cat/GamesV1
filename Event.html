@@ -47,7 +47,7 @@
     <div class="bg-grid"></div>
 
     <h1>Event Wheel</h1>
-    <p>Earn 1 Spin for every 20 minutes of Playtime on the portal!</p>
+    <p>Earn 1 Spin for every 2 minutes of Playtime on the portal!</p>
 
     <div class="progress-container">
         <div class="progress-text" id="spinStatus">Loading Playtime...</div>
@@ -82,7 +82,7 @@
             const spinsUsed = parseInt(localStorage.getItem('schoolExamsSpinsUsed') || '0');
             
             // 1 Spin every 1200 seconds (20 mins)
-            const totalEarnedSpins = Math.floor(playSeconds / 1200);
+            const totalEarnedSpins = Math.floor(playSeconds / 120);
             const availableSpins = totalEarnedSpins - spinsUsed;
             
             const secondsTowardsNext = playSeconds % 1200;
@@ -130,10 +130,10 @@
             let extraRotation = 0;
             let prizeName = "";
 
-            if (rand <= 40) { prizeAmount = 50; extraRotation = 72; prizeName = "500 ExamCoins"; }
-            else if (rand <= 70) { prizeAmount = 150; extraRotation = 198; prizeName = "1,000 ExamCoins"; }
-            else if (rand <= 90) { prizeAmount = 400; extraRotation = 288; prizeName = "2,500 ExamCoins"; }
-            else if (rand <= 99) { prizeAmount = 10000; extraRotation = 340; prizeName = "5,000 ExamCoins"; }
+            if (rand <= 40) { prizeAmount = 25; extraRotation = 72; prizeName = "25 ExamCoins"; }
+            else if (rand <= 70) { prizeAmount = 50; extraRotation = 198; prizeName = "50 ExamCoins"; }
+            else if (rand <= 90) { prizeAmount = 75; extraRotation = 288; prizeName = "75 ExamCoins"; }
+            else if (rand <= 99) { prizeAmount = 100; extraRotation = 340; prizeName = "100 ExamCoins"; }
             else { 
                 // TOP PRIZE (1%) - Generates the 10000 code which the portal intercepts for the Dragon Cursor
                 prizeAmount = 10000; 
