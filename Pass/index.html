@@ -98,9 +98,9 @@
 
     <div class="progress-header">
         <div class="level-badge">Current Level: <span id="currLvl">0</span> / 50</div>
-        <div class="time-left" id="timeLeft">Next level in: --:--</div>
+        <div class="time-left" id="timeLeft">Connecting to Server...</div>
         
-        <button class="buy-premium-btn" id="btnBuyPremium" onclick="buyPremium()">Unlock Premium (1000 💎)</button>
+        <button class="buy-premium-btn" id="btnBuyPremium" onclick="buyPremium()" style="display: none;">Unlock Premium (1000 💎)</button>
         <div class="premium-active-badge" id="badgePremium">👑 Premium Active</div>
     </div>
 
@@ -135,18 +135,72 @@ document.addEventListener('mouseout', (e) => {
     if (!e.relatedTarget) { domCursor.style.display = 'none'; cursorVisible = false; }
 });
 
-// --- GLOBAL STATS ---
-let examCoins = parseInt(localStorage.getItem('schoolExamsCoins') || '0');
-let gems = parseInt(localStorage.getItem('schoolExamsGems') || '0');
+// --- STATE MANAGEMENT ---
+let gameState = null;
 let hasPremium = localStorage.getItem('schoolExamsPremiumBP') === 'true';
-
-document.getElementById('coinDisplay').innerText = examCoins.toLocaleString();
-document.getElementById('gemDisplay').innerText = gems.toLocaleString();
+let claimedNormal = JSON.parse(localStorage.getItem('schoolExamsBPClaimed')) || [];
+let claimedPremium = JSON.parse(localStorage.getItem('schoolExamsPremiumClaimed')) || [];
+let currentLevel = 0;
 
 if (hasPremium) {
-    document.getElementById('btnBuyPremium').style.display = 'none';
     document.getElementById('badgePremium').style.display = 'inline-block';
 }
+
+// --- BACKEND CONNECTION ---
+async function loadGameFromServer() {
+    const formData = new FormData(); formData.append('action', 'load');
+    try {
+        const response = await fetch('../backend.php', { method: 'POST', body: formData });
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+            gameState = {
+                coins: parseInt(result.data.coins) || 0,
+                gems: parseInt(result.data.gems) || 0,
+                playtime: parseInt(result.data.playtime) || 0,
+                owned_cursors: JSON.parse(result.data.owned_cursors || '["def"]'),
+                equipped_cursor: result.data.equipped_cursor || 'def',
+                owned_pets: JSON.parse(result.data.owned_pets || '[]'),
+                active_pet: result.data.active_pet || '',
+                pet_ages: JSON.parse(result.data.pet_ages || '{}'),
+            };
+
+            document.getElementById('coinDisplay').innerText = gameState.coins.toLocaleString();
+            document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
+            
+            if (!hasPremium) {
+                document.getElementById('btnBuyPremium').style.display = 'inline-block';
+            }
+            
+            updateProgress();
+            renderBP();
+        } else {
+            document.getElementById('timeLeft').innerText = "❌ Please log in on the main portal first!";
+            document.getElementById('timeLeft').style.color = "#ff4444";
+        }
+    } catch (e) {
+        document.getElementById('timeLeft').innerText = "❌ Connection Error.";
+        document.getElementById('timeLeft').style.color = "#ff4444";
+    }
+}
+
+async function saveGameToServer() {
+    if (!gameState) return;
+    const formData = new FormData();
+    formData.append('action', 'save');
+    formData.append('coins', gameState.coins);
+    formData.append('gems', gameState.gems);
+    formData.append('playtime', gameState.playtime);
+    formData.append('owned_cursors', JSON.stringify(gameState.owned_cursors));
+    formData.append('equipped_cursor', gameState.equipped_cursor);
+    formData.append('owned_pets', JSON.stringify(gameState.owned_pets));
+    formData.append('active_pet', gameState.active_pet);
+    formData.append('pet_ages', JSON.stringify(gameState.pet_ages));
+
+    try { fetch('../backend.php', { method: 'POST', body: formData }); } catch(e) {}
+}
+
+loadGameFromServer();
 
 function showToast(msg) {
     const toast = document.getElementById('bpToast');
@@ -157,16 +211,20 @@ function showToast(msg) {
 
 // --- BUY PREMIUM ---
 function buyPremium() {
-    if (gems >= 1000) {
-        gems -= 1000;
-        localStorage.setItem('schoolExamsGems', gems);
+    if (!gameState) return;
+    
+    if (gameState.gems >= 1000) {
+        gameState.gems -= 1000;
         localStorage.setItem('schoolExamsPremiumBP', 'true');
         hasPremium = true;
-        document.getElementById('gemDisplay').innerText = gems.toLocaleString();
+        
+        document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
         document.getElementById('btnBuyPremium').style.display = 'none';
         document.getElementById('badgePremium').style.display = 'inline-block';
+        
+        saveGameToServer();
         showToast("👑 Premium Pass Unlocked!");
-        renderBP(); // Re-render to remove locks
+        renderBP();
     } else {
         alert("❌ You need 1,000 Gems to unlock the Premium Pass!");
     }
@@ -175,14 +233,12 @@ function buyPremium() {
 // --- DATA GENERATION (1-50) ---
 const BP_TIERS = [];
 for (let i = 1; i <= 50; i++) {
-    // Normal Logic (Total 350 Gems)
     let normText = "50 ExamCoins", normType = "coins", normAmt = 50;
     if (i === 10 || i === 25 || i === 35) { normText = "📦 Silver Cursor Pack"; normType = "silver_pack"; normAmt = 0; }
     else if (i === 50) { normText = "🌟 Golden Cursor Pack"; normType = "golden_pack"; normAmt = 0; }
     else if (i === 5 || i === 15 || i === 20 || i === 30 || i === 40) { normText = "💎 50 Gems"; normType = "gems"; normAmt = 50; }
     else if (i === 45) { normText = "💎 100 Gems"; normType = "gems"; normAmt = 100; }
 
-    // Premium Logic (Total 900 Gems)
     let premText = "200 ExamCoins", premType = "coins", premAmt = 200, premId = null;
     if (i === 10 || i === 20 || i === 30 || i === 40) { premText = "🌟 Golden Cursor Pack"; premType = "golden_pack"; premAmt = 0; }
     else if (i === 50) { premText = "👑 King Midas Pet"; premType = "pet"; premAmt = 0; premId = "midas"; }
@@ -196,10 +252,6 @@ for (let i = 1; i <= 50; i++) {
     });
 }
 
-let claimedNormal = JSON.parse(localStorage.getItem('schoolExamsBPClaimed')) || [];
-let claimedPremium = JSON.parse(localStorage.getItem('schoolExamsPremiumClaimed')) || [];
-let currentLevel = 0;
-
 function renderBP() {
     const track = document.getElementById('bpTrack');
     track.innerHTML = "";
@@ -208,7 +260,6 @@ function renderBP() {
         const isUnlocked = currentLevel >= tier.lvl;
         const tierClass = isUnlocked ? "unlocked-tier" : "locked-tier";
 
-        // NORMAL CARD
         const nClaimed = claimedNormal.includes(tier.lvl);
         let nBtn = nClaimed ? `<button class="btn-claim claimed">Claimed</button>` 
             : (isUnlocked ? `<button class="btn-claim" onclick="claimReward(${tier.lvl}, 'normal')">Claim</button>` 
@@ -216,7 +267,6 @@ function renderBP() {
             
         let normColor = tier.normal.type === 'gems' ? 'color: #00ffcc;' : '';
 
-        // PREMIUM CARD
         const pClaimed = claimedPremium.includes(tier.lvl);
         let pBtn = pClaimed ? `<button class="btn-claim claimed">Claimed</button>` 
             : (isUnlocked && hasPremium ? `<button class="btn-claim" onclick="claimReward(${tier.lvl}, 'premium')">Claim</button>` 
@@ -247,6 +297,7 @@ function renderBP() {
 }
 
 function claimReward(lvl, trackType) {
+    if (!gameState) return;
     if (trackType === 'normal' && claimedNormal.includes(lvl)) return;
     if (trackType === 'premium' && claimedPremium.includes(lvl)) return;
     if (trackType === 'premium' && !hasPremium) return;
@@ -255,42 +306,38 @@ function claimReward(lvl, trackType) {
     const reward = trackType === 'normal' ? tier.normal : tier.premium;
 
     if (reward.type === "coins") {
-        examCoins += reward.amount;
-        localStorage.setItem('schoolExamsCoins', examCoins);
-        document.getElementById('coinDisplay').innerText = examCoins.toLocaleString();
+        gameState.coins += reward.amount;
+        document.getElementById('coinDisplay').innerText = gameState.coins.toLocaleString();
         showToast(`+${reward.amount} Coins Claimed!`);
         
     } else if (reward.type === "gems") {
-        gems += reward.amount;
-        localStorage.setItem('schoolExamsGems', gems);
-        document.getElementById('gemDisplay').innerText = gems.toLocaleString();
+        gameState.gems += reward.amount;
+        document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
         showToast(`💎 +${reward.amount} Gems Claimed!`);
         
     } else if (reward.type === "silver_pack") {
         const bpCursors = [ { id: "bp1", name: "Silver Apple" }, { id: "bp2", name: "Robot BOB" }, { id: "bp3", name: "Silver Statue" } ];
         const wonCursor = bpCursors[Math.floor(Math.random() * 3)];
-        let owned = JSON.parse(localStorage.getItem('ownedCursors')) || ["def"];
-        if (!owned.includes(wonCursor.id)) { owned.push(wonCursor.id); localStorage.setItem('ownedCursors', JSON.stringify(owned)); alert(`📦 Opening Silver Pack...\n\n✨ You got the ${wonCursor.name}!\nIt's in your Cursor Shop.`); } 
-        else { alert(`📦 Opening Silver Pack...\n\n✨ You got the ${wonCursor.name}!\n(You already owned this item).`); }
+        if (!gameState.owned_cursors.includes(wonCursor.id)) { 
+            gameState.owned_cursors.push(wonCursor.id); 
+            alert(`📦 Opening Silver Pack...\n\n✨ You got the ${wonCursor.name}!\nIt's in your Cursor Shop.`); 
+        } else { alert(`📦 Opening Silver Pack...\n\n✨ You got the ${wonCursor.name}!\n(You already owned this item).`); }
         showToast(`Silver Pack Opened!`);
         
     } else if (reward.type === "golden_pack") {
         const bpGoldenCursors = [ { id: "bp4", name: "Midas Sword" }, { id: "bp5", name: "Golden Flame" }, { id: "bp6", name: "Royal Gleam" } ];
         const wonCursor = bpGoldenCursors[Math.floor(Math.random() * 3)];
-        let owned = JSON.parse(localStorage.getItem('ownedCursors')) || ["def"];
-        if (!owned.includes(wonCursor.id)) { owned.push(wonCursor.id); localStorage.setItem('ownedCursors', JSON.stringify(owned)); alert(`🌟 Opening Golden Pack...\n\n👑 You got the ${wonCursor.name}!\nIt's in your Cursor Shop.`); } 
-        else { alert(`🌟 Opening Golden Pack...\n\n👑 You got the ${wonCursor.name}!\n(You already owned this item).`); }
+        if (!gameState.owned_cursors.includes(wonCursor.id)) { 
+            gameState.owned_cursors.push(wonCursor.id); 
+            alert(`🌟 Opening Golden Pack...\n\n👑 You got the ${wonCursor.name}!\nIt's in your Cursor Shop.`); 
+        } else { alert(`🌟 Opening Golden Pack...\n\n👑 You got the ${wonCursor.name}!\n(You already owned this item).`); }
         showToast(`Golden Pack Opened!`);
         
     } else if (reward.type === "pet") {
-        let ownedPets = JSON.parse(localStorage.getItem('schoolExamsOwnedPets')) || [];
-        if (!ownedPets.includes(reward.id)) {
-            ownedPets.push(reward.id);
-            localStorage.setItem('schoolExamsOwnedPets', JSON.stringify(ownedPets));
+        if (!gameState.owned_pets.includes(reward.id)) {
+            gameState.owned_pets.push(reward.id);
             alert(`👑 INCREDIBLE! You unlocked the exclusive ${reward.text}!\nIt has been permanently added to your Pet Adoption Center.`);
-        } else {
-            alert(`👑 You claimed the ${reward.text}, but you already own it!`);
-        }
+        } else { alert(`👑 You claimed the ${reward.text}, but you already own it!`); }
         showToast(`Exclusive Pet Unlocked!`);
     }
 
@@ -302,43 +349,42 @@ function claimReward(lvl, trackType) {
         localStorage.setItem('schoolExamsPremiumClaimed', JSON.stringify(claimedPremium));
     }
     
+    saveGameToServer();
     renderBP();
 }
 
 function updateProgress() {
-    let playSeconds = parseInt(localStorage.getItem('schoolExamsPlayTimeSecs') || '0');
-    currentLevel = Math.min(50, Math.floor(playSeconds / 300));
+    if (!gameState) return;
+    
+    currentLevel = Math.min(50, Math.floor(gameState.playtime / 300));
     document.getElementById('currLvl').innerText = currentLevel;
 
     if (currentLevel >= 50) {
         document.getElementById('timeLeft').innerText = "MAX LEVEL REACHED!";
         document.getElementById('timeLeft').style.color = "#3ba55c";
     } else {
-        let secondsTowardsNext = playSeconds % 300;
+        let secondsTowardsNext = gameState.playtime % 300;
         let secondsLeft = 300 - secondsTowardsNext;
         let m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
         let s = (secondsLeft % 60).toString().padStart(2, '0');
         document.getElementById('timeLeft').innerText = `Next level in: ${m}:${s}`;
-    }
-
-    playSeconds++;
-    localStorage.setItem('schoolExamsPlayTimeSecs', playSeconds);
-    
-    // Check main site loop to ensure sync
-    if (playSeconds > 0 && playSeconds % 600 === 0) {
-        // We let the main site handle the 100 coin drop to avoid giving double!
+        document.getElementById('timeLeft').style.color = "#ffd700"; // Reset color in case it was an error before
     }
 }
 
-updateProgress();
-renderBP();
+// Update the clock locally so players don't have to refresh
 setInterval(() => {
-    updateProgress();
-    let latestLocked = document.querySelector('.bp-tier.locked-tier .bp-level-label');
-    if (latestLocked && latestLocked.innerText === `LEVEL ${currentLevel}`) {
-        renderBP();
+    if (gameState) {
+        gameState.playtime++;
+        updateProgress();
+        
+        let latestLocked = document.querySelector('.bp-tier.locked-tier .bp-level-label');
+        if (latestLocked && latestLocked.innerText === `LEVEL ${currentLevel}`) {
+            renderBP();
+        }
     }
 }, 1000);
+
 </script>
 </body>
 </html>
