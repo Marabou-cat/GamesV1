@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>SchoolExams - Daily Reward Wheel</title>
+    <title>SchoolExams - The Reward Wheel</title>
     <style>
         :root {
             --bg0: #000814; --bg1: #001d3d; --p0: #0077b6;
@@ -40,6 +40,8 @@
         .status-display { background: rgba(0,0,0,0.5); border: 1px solid var(--p1); padding: 15px; border-radius: 8px; font-size: 1.1rem; margin: 15px 0; font-weight: bold; }
         .close-btn { background: #d00000; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; text-decoration: none; display: inline-block; }
         .close-btn:hover { background: #ff0000; box-shadow: 0 0 15px #ff0000; }
+        
+        .redeem-code-box { color: #3ba55c; font-family: monospace; font-size: 1.3rem; letter-spacing: 2px; padding: 10px; background: rgba(0,0,0,0.8); border-radius: 5px; border: 1px dashed #3ba55c; user-select: all; cursor: text; margin: 10px 0; word-break: break-all; }
     </style>
 </head>
 <body>
@@ -56,7 +58,7 @@
     <div class="main-layout">
         <div class="result-box" id="resultBox">
             <h2 id="prizeText" style="color: #ffd700; margin-bottom:10px;">You won!</h2>
-            <div class="status-display" id="codeDisplay">Processing reward...</div>
+            <div id="codeDisplay">Generating code...</div>
             <a href="javascript:window.close();" class="close-btn">Return to Portal</a>
         </div>
 
@@ -80,29 +82,14 @@
                 const result = await response.json();
                 
                 if (result.success && result.data) {
-                    gameState = {
-                        coins: parseInt(result.data.coins) || 0, gems: parseInt(result.data.gems) || 0, playtime: parseInt(result.data.playtime) || 0,
-                        owned_cursors: JSON.parse(result.data.owned_cursors || '["def"]'), equipped_cursor: result.data.equipped_cursor || 'def',
-                        owned_pets: JSON.parse(result.data.owned_pets || '[]'), active_pet: result.data.active_pet || '', pet_ages: JSON.parse(result.data.pet_ages || '{}'),
-                    };
+                    gameState = { playtime: parseInt(result.data.playtime) || 0 };
                     updateProgress();
-                    // NOTICE: The 10-second autoSaveInterval is completely removed!
                 } else {
                     document.getElementById('spinStatus').innerText = "❌ Please log in on the main portal first!"; document.getElementById('spinStatus').style.color = "#ff4444";
                 }
             } catch (e) { 
                 document.getElementById('spinStatus').innerText = "❌ Connection Error. Please log in."; document.getElementById('spinStatus').style.color = "#ff4444";
             }
-        }
-
-        async function saveGameToServer() {
-            if (!gameState) return;
-            const formData = new FormData();
-            formData.append('action', 'save'); formData.append('coins', gameState.coins); formData.append('gems', gameState.gems);
-            formData.append('playtime', gameState.playtime); formData.append('owned_cursors', JSON.stringify(gameState.owned_cursors));
-            formData.append('equipped_cursor', gameState.equipped_cursor); formData.append('owned_pets', JSON.stringify(gameState.owned_pets));
-            formData.append('active_pet', gameState.active_pet); formData.append('pet_ages', JSON.stringify(gameState.pet_ages));
-            try { fetch('../backend.php', { method: 'POST', body: formData }); } catch(e) {}
         }
 
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadGameFromServer(); });
@@ -137,7 +124,7 @@
 
         setInterval(() => { 
             if (!gameState) return; 
-            if (document.hidden) return; // FIX: Don't tick playtime if tab is hidden
+            if (document.hidden) return; 
             gameState.playtime++; 
             updateProgress(); 
         }, 1000);
@@ -159,31 +146,20 @@
 
             currentRotation += (360 * 5) + extraRotation; wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-            setTimeout(async () => {
+            setTimeout(() => {
                 document.getElementById('prizeText').innerText = `🎉 You won: ${prizeName} 🎉`;
                 
-                // FIX: Right before we give you the prize, pull the absolute latest state from the database 
-                // just in case your pet dug up some coins while the wheel was spinning!
-                try {
-                    const formData = new FormData(); formData.append('action', 'load');
-                    const response = await fetch('../backend.php', { method: 'POST', body: formData });
-                    const result = await response.json();
-                    if (result.success && result.data) {
-                        gameState.coins = parseInt(result.data.coins) || 0;
-                        gameState.owned_cursors = JSON.parse(result.data.owned_cursors || '["def"]');
-                    }
-                } catch (e) {}
+                // GENERATE REDEEM CODE INSTEAD OF BACKEND DIRECT DEPOSIT
+                const randomHash = Math.random().toString(36).substring(2, 10).toUpperCase();
+                const rawCode = `EXAM-${prizeAmount}-${randomHash}`;
+                const encodedCode = btoa(rawCode);
 
-                if (prizeAmount === 10000) {
-                    if (!gameState.owned_cursors.includes("dragon")) {
-                        gameState.owned_cursors.push("dragon"); document.getElementById('codeDisplay').innerHTML = "<span style='color:#3ba55c;'>✅ Cursor synced to database!</span>";
-                    } else { document.getElementById('codeDisplay').innerHTML = "<span style='color:#aaa;'>You already own this cursor.</span>"; }
-                } else {
-                    gameState.coins += prizeAmount; document.getElementById('codeDisplay').innerHTML = `<span style='color:#3ba55c;'>✅ ${prizeAmount} Coins synced to balance!</span>`;
-                }
+                document.getElementById('codeDisplay').innerHTML = `
+                    <div style='color:#aaa; font-size: 0.9rem; margin-top: 10px;'>Your Redeem Code:</div>
+                    <div class='redeem-code-box'>${encodedCode}</div>
+                    <div style='color:#fff; font-size: 0.8rem; margin-bottom: 20px;'>(Copy this and paste it in the Main Portal!)</div>
+                `;
 
-                saveGameToServer(); // ACTION SAVE: Spin Win
-                
                 resultBox.classList.add('show'); isSpinning = false; updateProgress();
             }, 4000);
         }
