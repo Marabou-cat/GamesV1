@@ -2,9 +2,33 @@
 session_start();
 header('Content-Type: application/json');
 
-// INSERT YOUR DATABASE PASSWORD IN THE QUOTES BELOW
-$pdo = new PDO("mysql:host=localhost;dbname=schoolexams;charset=utf8mb4", 'root', '');
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+// --- READ CONFIG FILE ---
+$config_file = '../config.ini';
+
+// 1. Check if the file exists before trying to read it
+if (!file_exists($config_file)) {
+    die(json_encode(["success" => false, "message" => "Server Error: Configuration file missing."]));
+}
+
+// 2. Read the file line by line (ignoring empty lines and trimming hidden newlines)
+$lines = file($config_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+// 3. Ensure we actually got both lines
+if (count($lines) < 2) {
+    die(json_encode(["success" => false, "message" => "Server Error: Invalid configuration file format."]));
+}
+
+$db_user = trim($lines[0]);
+$db_pass = trim($lines[1]);
+
+// --- ESTABLISH DATABASE CONNECTION ---
+try {
+    $pdo = new PDO("mysql:host=localhost;dbname=schoolexams;charset=utf8mb4", $db_user, $db_pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    // We do NOT echo $e->getMessage() here so we don't accidentally leak DB info on a crash
+    die(json_encode(["success" => false, "message" => "Database connection failed."]));
+}
 
 if (!isset($_SESSION['user_id'])) die(json_encode(["success" => false, "message" => "Not logged in."]));
 
@@ -173,7 +197,7 @@ if ($action === 'toggle_accept') {
         echo json_encode(["success" => true]);
     } catch (Exception $e) {
         $pdo->rollBack();
-        echo json_encode(["success" => false, "error" => $e->getMessage()]);
+        echo json_encode(["success" => false, "error" => "Transaction failed."]);
     }
     exit;
 }
