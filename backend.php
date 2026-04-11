@@ -117,5 +117,16 @@ if ($action === 'save') {
     exit;
 }
 
+// --- GET LEADERBOARD ---
+if ($action === 'get_leaderboard') {
+    // Select the top 100 users ordered by gems descending.
+    // CAST ensures that even if 'gems' is stored as a string, it sorts as a number.
+    $stmt = $pdo->query("SELECT username, gems FROM users ORDER BY CAST(gems AS UNSIGNED) DESC LIMIT 100");
+    $leaderboardData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo json_encode(["success" => true, "data" => $leaderboardData]);
+    exit;
+}
+
 echo json_encode(["success" => false, "message" => "Invalid action."]);
 ?>
