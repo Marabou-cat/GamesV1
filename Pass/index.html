@@ -44,7 +44,6 @@
         .buy-premium-btn:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(0, 255, 204, 0.7); }
         .premium-active-badge { background: #ffd700; color: #000; padding: 12px 25px; border-radius: 30px; font-weight: 900; font-size: 1.1rem; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); display: none; }
 
-        /* HORIZONTAL SCROLLING LAYOUT */
         .bp-scroll-container { display: flex; overflow-x: auto; gap: 15px; padding: 10px 10px 30px 10px; scroll-behavior: smooth; align-items: flex-start; flex: 1; }
         .bp-scroll-container::-webkit-scrollbar { height: 14px; }
         .bp-scroll-container::-webkit-scrollbar-track { background: var(--bg0); border-radius: 10px; border: 1px solid var(--p0); }
@@ -68,7 +67,6 @@
         .btn-claim.locked { background: #333; color: #777; pointer-events: none; }
         .btn-claim.claimed { background: transparent; border: 2px solid #3ba55c; color: #3ba55c; pointer-events: none; }
 
-        /* Premium Lock Overlay */
         .premium-locked-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; color: #ffd700; font-size: 1rem; z-index: 5; backdrop-filter: blur(2px); border: 1px solid #ffd700; }
 
         .toast { position: fixed; bottom: 30px; right: 30px; background: #9b59b6; color: #fff; padding: 16px 24px; border-radius: 12px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transform: translateY(100px); opacity: 0; transition: 0.4s; z-index: 3000; }
@@ -104,18 +102,17 @@
         <div class="premium-active-badge" id="badgePremium">👑 Premium Active</div>
     </div>
 
-    <div class="bp-scroll-container" id="bpTrack">
-        </div>
+    <div class="bp-scroll-container" id="bpTrack"></div>
 </div>
 
 <div class="toast" id="bpToast">🎁 Reward Claimed!</div>
 
 <script>
-// --- CUSTOM CURSOR TRACKING WITH SUBFOLDER FIX ---
+// --- CUSTOM CURSOR TRACKING ---
 const domCursor = document.getElementById('dom-cursor');
 let currentCursorSrc = localStorage.getItem('currentCursorSrc') || "DefMouse.png";
 
-// If the cursor is a local file (doesn't start with http or data:), point it back to the main folder!
+// Fix pathing if the cursor image is in the parent directory
 if (currentCursorSrc && !currentCursorSrc.startsWith('http') && !currentCursorSrc.startsWith('data:')) {
     currentCursorSrc = '../' + currentCursorSrc;
 }
@@ -137,21 +134,38 @@ document.addEventListener('mouseout', (e) => {
 
 // --- STATE MANAGEMENT ---
 let gameState = null;
-let hasPremium = localStorage.getItem('schoolExamsPremiumBP') === 'true';
-let claimedNormal = JSON.parse(localStorage.getItem('schoolExamsBPClaimed')) || [];
-let claimedPremium = JSON.parse(localStorage.getItem('schoolExamsPremiumClaimed')) || [];
+let hasPremium = false;
+let claimedNormal = [];
+let claimedPremium = [];
 let currentLevel = 0;
 
-if (hasPremium) {
-    document.getElementById('badgePremium').style.display = 'inline-block';
-}
-
-// --- BACKEND CONNECTION ---
+// --- BACKEND CONNECTION & LOGIC ---
 async function loadGameFromServer() {
-    const formData = new FormData(); formData.append('action', 'load');
+    const formData = new FormData(); 
+    formData.append('action', 'load');
+    
     try {
-        const response = await fetch('../backend.php', { method: 'POST', body: formData });
+        const response = await fetch('../battlepass_backend.php', { method: 'POST', body: formData });
         const result = await response.json();
+        
+        // Auto-login fallback
+        if (!result.success && result.message === "NOT_LOGGED_IN") {
+            const savedUser = localStorage.getItem('schoolExamsSavedUser');
+            const savedPass = localStorage.getItem('schoolExamsSavedPass');
+            if (savedUser && savedPass) {
+                document.getElementById('timeLeft').innerText = "Re-authenticating...";
+                const loginForm = new FormData();
+                loginForm.append('action', 'login');
+                loginForm.append('username', savedUser);
+                loginForm.append('password', savedPass);
+                await fetch('../backend.php', { method: 'POST', body: loginForm });
+                return loadGameFromServer(); // Retry loading after login attempt
+            } else {
+                document.getElementById('timeLeft').innerText = "❌ Please log in on the main portal first!";
+                document.getElementById('timeLeft').style.color = "#ff4444";
+                return;
+            }
+        }
         
         if (result.success && result.data) {
             gameState = {
@@ -159,24 +173,26 @@ async function loadGameFromServer() {
                 gems: parseInt(result.data.gems) || 0,
                 playtime: parseInt(result.data.playtime) || 0,
                 owned_cursors: JSON.parse(result.data.owned_cursors || '["def"]'),
-                equipped_cursor: result.data.equipped_cursor || 'def',
-                owned_pets: JSON.parse(result.data.owned_pets || '[]'),
-                active_pet: result.data.active_pet || '',
-                pet_ages: JSON.parse(result.data.pet_ages || '{}'),
+                owned_pets: JSON.parse(result.data.owned_pets || '[]')
             };
+
+            // Parse Battle Pass Data strictly from the Server
+            hasPremium = (result.data.bp_premium === 'true' || result.data.bp_premium === true);
+            claimedNormal = JSON.parse(result.data.bp_claimed_normal || '[]');
+            claimedPremium = JSON.parse(result.data.bp_claimed_premium || '[]');
 
             document.getElementById('coinDisplay').innerText = gameState.coins.toLocaleString();
             document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
             
-            if (!hasPremium) {
+            if (hasPremium) {
+                document.getElementById('badgePremium').style.display = 'inline-block';
+                document.getElementById('btnBuyPremium').style.display = 'none';
+            } else {
                 document.getElementById('btnBuyPremium').style.display = 'inline-block';
             }
             
             updateProgress();
             renderBP();
-        } else {
-            document.getElementById('timeLeft').innerText = "❌ Please log in on the main portal first!";
-            document.getElementById('timeLeft').style.color = "#ff4444";
         }
     } catch (e) {
         document.getElementById('timeLeft').innerText = "❌ Connection Error.";
@@ -190,14 +206,15 @@ async function saveGameToServer() {
     formData.append('action', 'save');
     formData.append('coins', gameState.coins);
     formData.append('gems', gameState.gems);
-    formData.append('playtime', gameState.playtime);
     formData.append('owned_cursors', JSON.stringify(gameState.owned_cursors));
-    formData.append('equipped_cursor', gameState.equipped_cursor);
     formData.append('owned_pets', JSON.stringify(gameState.owned_pets));
-    formData.append('active_pet', gameState.active_pet);
-    formData.append('pet_ages', JSON.stringify(gameState.pet_ages));
 
-    try { fetch('../backend.php', { method: 'POST', body: formData }); } catch(e) {}
+    // Append BP Data
+    formData.append('bp_premium', hasPremium.toString());
+    formData.append('bp_claimed_normal', JSON.stringify(claimedNormal));
+    formData.append('bp_claimed_premium', JSON.stringify(claimedPremium));
+
+    try { fetch('../battlepass_backend.php', { method: 'POST', body: formData }); } catch(e) {}
 }
 
 loadGameFromServer();
@@ -212,10 +229,8 @@ function showToast(msg) {
 // --- BUY PREMIUM ---
 function buyPremium() {
     if (!gameState) return;
-    
     if (gameState.gems >= 1000) {
         gameState.gems -= 1000;
-        localStorage.setItem('schoolExamsPremiumBP', 'true');
         hasPremium = true;
         
         document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
@@ -278,13 +293,11 @@ function renderBP() {
         track.innerHTML += `
             <div class="bp-tier ${tierClass}">
                 <div class="bp-level-label">Level ${tier.lvl}</div>
-                
                 <div class="bp-card">
                     <div class="card-type">Free Reward</div>
                     <div class="reward-text" style="${normColor}">${tier.normal.text}</div>
                     ${nBtn}
                 </div>
-
                 <div class="bp-card premium-card" style="position: relative;">
                     ${pOverlay}
                     <div class="card-type">Premium Reward</div>
@@ -341,13 +354,8 @@ function claimReward(lvl, trackType) {
         showToast(`Exclusive Pet Unlocked!`);
     }
 
-    if (trackType === 'normal') {
-        claimedNormal.push(lvl);
-        localStorage.setItem('schoolExamsBPClaimed', JSON.stringify(claimedNormal));
-    } else {
-        claimedPremium.push(lvl);
-        localStorage.setItem('schoolExamsPremiumClaimed', JSON.stringify(claimedPremium));
-    }
+    if (trackType === 'normal') { claimedNormal.push(lvl); } 
+    else { claimedPremium.push(lvl); }
     
     saveGameToServer();
     renderBP();
@@ -368,13 +376,13 @@ function updateProgress() {
         let m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
         let s = (secondsLeft % 60).toString().padStart(2, '0');
         document.getElementById('timeLeft').innerText = `Next level in: ${m}:${s}`;
-        document.getElementById('timeLeft').style.color = "#ffd700"; // Reset color in case it was an error before
+        document.getElementById('timeLeft').style.color = "#ffd700";
     }
 }
 
-// Update the clock locally so players don't have to refresh
+// Read-only timer for the UI
 setInterval(() => {
-    if (gameState) {
+    if (gameState && currentLevel < 50) {
         gameState.playtime++;
         updateProgress();
         
