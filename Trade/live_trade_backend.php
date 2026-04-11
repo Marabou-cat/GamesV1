@@ -25,19 +25,20 @@ try {
     die(json_encode(["success" => false, "message" => "Database connection failed."]));
 }
 
-if (!isset($_SESSION['user_id'])) die(json_encode(["success" => false, "message" => "Not logged in."]));
+// Security Check: Must be logged in to access the trade API
+if (!isset($_SESSION['user_id'])) {
+    die(json_encode(["success" => false, "message" => "Not logged in."]));
+}
 
 $action = $_POST['action'] ?? '';
 $user_id = $_SESSION['user_id'];
 
 // --- 0. GET REAL INVENTORY ---
 if ($action === 'get_inventory') {
-    // UPDATED: Added 'gems' to the SELECT statement
     $stmt = $pdo->prepare("SELECT owned_cursors, owned_pets, gems FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Safety check if user isn't found
     if (!$user) {
         echo json_encode(["success" => true, "inventory" => [], "gems" => 0]);
         exit;
@@ -46,24 +47,34 @@ if ($action === 'get_inventory') {
     $cursors = json_decode($user['owned_cursors'], true);
     $pets = json_decode($user['owned_pets'], true);
     
-    // Bulletproof array enforcement (Stops the null crash)
+    // Bulletproof array enforcement 
     if (!is_array($cursors)) $cursors = [];
     if (!is_array($pets)) $pets = [];
     
     // Merge, remove duplicates, and reset keys
     $combined = array_values(array_unique(array_merge($cursors, $pets)));
     
-    // UPDATED: Sending gems back to frontend
     echo json_encode(["success" => true, "inventory" => $combined, "gems" => (int)$user['gems']]);
     exit;
 }
 
-// --- 1. HOST A ROOM ---
+// --- 1. HOST A ROOM (With Automatic Cleanup) ---
 if ($action === 'create_room') {
+    
+    // 🧹 THE JANITOR: Clean up dead rooms before creating a new one!
+    // This keeps your database small and fast.
+    $cleanup_stmt = $pdo->prepare("
+        DELETE FROM trade_sessions 
+        WHERE status = 'completed' 
+        OR created_at < NOW() - INTERVAL 24 HOUR
+    ");
+    $cleanup_stmt->execute();
+
+    // Generate room code and create room
     $code = substr(str_shuffle("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"), 0, 6);
-    // Assumes you have p1_gems and p2_gems columns in trade_sessions with default 0
     $stmt = $pdo->prepare("INSERT INTO trade_sessions (room_code, p1_id) VALUES (?, ?)");
     $stmt->execute([$code, $user_id]);
+    
     echo json_encode(["success" => true, "room_code" => $code]);
     exit;
 }
@@ -71,6 +82,8 @@ if ($action === 'create_room') {
 // --- 2. JOIN A ROOM ---
 if ($action === 'join_room') {
     $code = strtoupper(trim($_POST['room_code']));
+    
+    // Only allow joining if room is waiting and the user isn't already player 1
     $stmt = $pdo->prepare("UPDATE trade_sessions SET p2_id = ?, status = 'trading' WHERE room_code = ? AND status = 'waiting' AND p1_id != ?");
     $stmt->execute([$user_id, $code, $user_id]);
     
@@ -93,6 +106,7 @@ if ($action === 'sync') {
 
     $is_p1 = ($room['p1_id'] == $user_id);
     
+    // Decode item offers
     $my_offer = json_decode($is_p1 ? $room['p1_offer'] : $room['p2_offer'], true);
     $their_offer = json_decode($is_p1 ? $room['p2_offer'] : $room['p1_offer'], true);
     
@@ -117,24 +131,24 @@ if ($action === 'sync') {
 if ($action === 'update_offer') {
     $code = $_POST['room_code'];
     $offer = $_POST['offer']; 
-    $gems = (int)($_POST['gems'] ?? 0); // UPDATED: Get gems from JS
+    $gems = (int)($_POST['gems'] ?? 0); 
     
     $stmt = $pdo->prepare("SELECT p1_id FROM trade_sessions WHERE room_code = ?");
     $stmt->execute([$code]);
     $room = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Determine which columns to update based on who is making the request
     $offer_col = ($room['p1_id'] == $user_id) ? 'p1_offer' : 'p2_offer';
     $gems_col = ($room['p1_id'] == $user_id) ? 'p1_gems' : 'p2_gems';
     
-    // Reset accept status when offer changes
+    // Whenever an offer changes, un-ready both players for safety
     $stmt = $pdo->prepare("UPDATE trade_sessions SET $offer_col = ?, $gems_col = ?, p1_accept = 0, p2_accept = 0 WHERE room_code = ?");
     $stmt->execute([$offer, $gems, $code]);
+    
     echo json_encode(["success" => true]);
     exit;
 }
 
-// --- 5. TOGGLE ACCEPT & EXECUTE ACTUAL ITEM SWAP ---
+// --- 5. TOGGLE ACCEPT & EXECUTE ACTUAL SWAP ---
 if ($action === 'toggle_accept') {
     $code = $_POST['room_code'];
     
@@ -162,22 +176,21 @@ if ($action === 'toggle_accept') {
             $p1_offer = json_decode($room['p1_offer'], true);
             $p2_offer = json_decode($room['p2_offer'], true);
             
-            // Get gem amounts
             $p1_gems_offered = (int)$room['p1_gems'];
             $p2_gems_offered = (int)$room['p2_gems'];
             
             if(!is_array($p1_offer)) $p1_offer = [];
             if(!is_array($p2_offer)) $p2_offer = [];
 
+            // Master list of tradeable IDs
             $item_types = [
-                'midas' => 'pet', 'phoenix' => 'pet',
+                'midas' => 'pet', 'phoenix' => 'pet', 'gb' => 'pet',
                 'dragon' => 'cursor', 'prism' => 'cursor',
                 'bp1' => 'cursor', 'bp2' => 'cursor', 'bp3' => 'cursor', 
                 'bp4' => 'cursor', 'bp5' => 'cursor', 'bp6' => 'cursor',
                 'gb' => 'pet'
             ];
 
-            // Helper function to process items AND calculate new gem balances
             function processTrade($pdo, $uid, $giving_items, $receiving_items, $giving_gems, $receiving_gems, $item_types) {
                 $stmt = $pdo->prepare("SELECT owned_cursors, owned_pets, gems FROM users WHERE id = ? FOR UPDATE");
                 $stmt->execute([$uid]);
@@ -187,11 +200,10 @@ if ($action === 'toggle_accept') {
                 $pets = json_decode($u['owned_pets'], true);
                 $current_gems = (int)$u['gems'];
                 
-                // Bulletproof inner DB updates
                 if (!is_array($cursors)) $cursors = [];
                 if (!is_array($pets)) $pets = [];
 
-                // Swap Items
+                // Process Items
                 foreach ($giving_items as $item) {
                     $type = $item_types[$item] ?? null;
                     if ($type === 'cursor') $cursors = array_diff($cursors, [$item]);
@@ -204,23 +216,22 @@ if ($action === 'toggle_accept') {
                     if ($type === 'pet' && !in_array($item, $pets)) $pets[] = $item;
                 }
                 
-                // Calculate new gem balance
-                // Subtract what they are giving, add what they are receiving
+                // Process Gems (Subtract given, add received)
                 $new_gems = $current_gems - $giving_gems + $receiving_gems;
                 
-                // Safety check: ensure gems don't go negative
                 if ($new_gems < 0) {
-                    throw new Exception("Insufficient gems for transaction.");
+                    throw new Exception("Insufficient gems to complete transaction.");
                 }
 
                 $stmt = $pdo->prepare("UPDATE users SET owned_cursors = ?, owned_pets = ?, gems = ? WHERE id = ?");
                 $stmt->execute([json_encode(array_values($cursors)), json_encode(array_values($pets)), $new_gems, $uid]);
             }
 
-            // Execute processing for both players
+            // Run the trade logic for both players
             processTrade($pdo, $p1_id, $p1_offer, $p2_offer, $p1_gems_offered, $p2_gems_offered, $item_types);
             processTrade($pdo, $p2_id, $p2_offer, $p1_offer, $p2_gems_offered, $p1_gems_offered, $item_types);
 
+            // Close the room
             $stmt = $pdo->prepare("UPDATE trade_sessions SET status = 'completed' WHERE room_code = ?");
             $stmt->execute([$code]);
         }
@@ -233,4 +244,7 @@ if ($action === 'toggle_accept') {
     }
     exit;
 }
+
+// Fallback if no valid action is sent
+echo json_encode(["success" => false, "message" => "Invalid action."]);
 ?>
