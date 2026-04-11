@@ -144,18 +144,18 @@ async function saveGameToServer() {
 // --- TASK LOGIC ---
 const THIRTY_MINS = 30 * 60 * 1000;
 const TASK_DEFS = [
-    { id: 1, type: 'feed_pet', name: 'Feed your Pet 5 times', goal: 5, points: 1 },
-    { id: 2, type: 'open_module', name: 'Launch 10 Modules', goal: 10, points: 1 },
-    { id: 3, type: 'play_minutes', name: 'Play for 30 Minutes', goal: 30, points: 1 },
-    { id: 4, type: 'feed_pet', name: 'Master Caretaker (Feed 20x)', goal: 20, points: 2 },
-    { id: 5, type: 'open_module', name: 'Explorer (Launch 25 Modules)', goal: 25, points: 2 },
-    { id: 6, type: 'play_minutes', name: 'Veteran (Play for 60 Mins)', goal: 60, points: 3 },
-    { id: 7, type: 'feed_pet', name: 'Pet Whisperer (Feed 50x)', goal: 50, points: 3 },
-    { id: 8, type: 'open_module', name: 'Module Maniac (Launch 50 Modules)', goal: 50, points: 3 },
-    { id: 9, type: 'play_minutes', name: 'Addict (Play for 120 Mins)', goal: 120, points: 5 },
-    { id: 10, type: 'feed_pet', name: 'Pet Royalty (Feed 100x)', goal: 100, points: 5 },
-    { id: 11, type: 'open_module', name: 'Grandmaster (Launch 100 Modules)', goal: 100, points: 5 },
-    { id: 12, type: 'play_minutes', name: 'Dedicated (Play for 240 Mins)', goal: 240, points: 10 }
+    { id: 1, type: 'feed_pet', name: 'Feed your Pet 2 times', goal: 2, points: 1 },
+    { id: 2, type: 'open_module', name: 'Enter 5 Modules', goal: 5, points: 1 },
+    { id: 3, type: 'play_minutes', name: 'Play for 5 Minutes', goal: 5, points: 1 },
+    { id: 4, type: 'feed_pet', name: 'Master Caretaker (Feed 5x)', goal: 5, points: 2 },
+    { id: 5, type: 'open_module', name: 'Explorer (Launch 10 Modules)', goal: 10, points: 2 },
+    { id: 6, type: 'play_minutes', name: 'Veteran (Play for 15 Mins)', goal: 15, points: 2 },
+    { id: 7, type: 'feed_pet', name: 'Pet Whisperer (Feed 8x)', goal: 8, points: 3 },
+    { id: 8, type: 'open_module', name: 'Module Maniac (Launch 15 Modules)', goal: 15, points: 3 },
+    { id: 9, type: 'feed_pet', name: 'Caretaking god (Feed 15x)', goal: 15, points: 5 },
+    { id: 10, type: 'feed_pet', name: 'Pet Royalty (Feed 15x)', goal: 15, points: 5 },
+    { id: 11, type: 'open_module', name: 'Grandmaster (Launch 30 Modules)', goal: 30, points: 5 },
+    { id: 12, type: 'open_module', name: 'Dedicated (Play for 67 Mins)', goal: 67, points: 10 }
 ];
 
 function checkTaskRotation() {
