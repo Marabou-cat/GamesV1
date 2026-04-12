@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>SchoolExams - The Vault</title>
+    <link rel="icon" type="image/png" href="../logo2.png">
     <style>
         :root {
             --bg0: #000814; --bg1: #001d3d; --bg2: #003566;
@@ -45,35 +46,47 @@
         .currency-bar .gems { color: #00ffcc; }
 
         .container {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; max-width: 1000px;
+            display: flex; flex-direction: column; gap: 40px; width: 100%; max-width: 1000px;
         }
 
         .panel {
             background: var(--glass); border: 2px solid var(--p0); border-radius: 24px;
             padding: 30px; text-align: center; box-shadow: var(--shadow);
+            width: 100%; box-sizing: border-box;
         }
-        .panel h2 { margin-top: 0; color: var(--p1); border-bottom: 2px solid var(--p2); padding-bottom: 15px; }
+        .panel h2 { margin-top: 0; color: var(--p1); border-bottom: 2px solid var(--p2); padding-bottom: 15px; margin-bottom: 25px; }
+
+        .chest-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            justify-content: center;
+        }
 
         .chest-card {
             background: var(--bg1); border: 2px solid var(--line); border-radius: 16px;
-            padding: 20px; margin-bottom: 20px; transition: 0.3s;
+            padding: 20px; transition: 0.3s; display: flex; flex-direction: column; align-items: center;
         }
         .chest-card:hover { border-color: var(--p1); transform: translateY(-5px); box-shadow: var(--glow); }
         
-        .chest-icon { font-size: 60px; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
-        .premium-icon { filter: drop-shadow(0 0 15px #00ffcc); }
+        .chest-icon { 
+            width: 80px; height: 80px; margin-bottom: 15px; object-fit: contain;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+        }
 
         .btn {
             background: var(--p0); color: #fff; border: none; padding: 12px 25px;
-            border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;
-            transition: 0.3s; width: 100%; margin-top: 10px; text-transform: uppercase;
+            border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer;
+            transition: 0.3s; width: 100%; margin-top: auto; text-transform: uppercase;
         }
         .btn:hover { background: var(--p1); color: var(--bg0); }
-        .btn-buy-gem { background: #00ffcc; color: #000; }
-        .btn-buy-gem:hover { background: #00ccaa; color: #fff; box-shadow: 0 0 15px #00ffcc; }
+        
+        .btn-gems { background: #00ffcc; color: #000; }
+        .btn-gems:hover { background: #00ccaa; color: #fff; box-shadow: 0 0 15px #00ffcc; }
+        
         .btn-open { background: #3ba55c; }
         .btn-open:hover { background: #43b581; box-shadow: 0 0 15px #3ba55c; }
-        .btn:disabled { background: gray; color: #ccc; cursor: not-allowed; box-shadow: none; transform: none; }
+        .btn:disabled { background: gray !important; color: #ccc !important; cursor: not-allowed; box-shadow: none !important; transform: none; border-color: gray !important;}
 
         /* UNBOXING MODAL */
         .modal {
@@ -82,7 +95,7 @@
         }
         .modal.active { display: flex; }
         
-        .unboxing-chest { font-size: 100px; animation: shake 0.5s infinite; margin-bottom: 20px; }
+        .unboxing-chest { width: 150px; height: 150px; object-fit: contain; animation: shake 0.5s infinite; margin-bottom: 20px; }
         .reward-reveal { display: none; text-align: center; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .reward-reveal h1 { color: var(--gold); font-size: 40px; margin: 0; text-shadow: 0 0 20px var(--gold); }
         .reward-reveal p { color: var(--p1); font-size: 20px; }
@@ -92,7 +105,7 @@
         @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(10deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-10deg); } 100% { transform: rotate(0deg); } }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .chest-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -107,39 +120,19 @@
 <div class="container">
     <div class="panel">
         <h2>🛒 Chest Store</h2>
-        
-        <div class="chest-card">
-            <div class="chest-icon">📦</div>
-            <h3>Basic Chest</h3>
-            <p style="font-size: 12px; color: gray;">Contains Basic Cursors & Pets</p>
-            <button class="btn" onclick="buyChest('basic')">Buy for 1,000 🪙</button>
-        </div>
-
-        <div class="chest-card">
-            <div class="chest-icon premium-icon">🎁</div>
-            <h3 style="color: #00ffcc;">Premium Chest</h3>
-            <p style="font-size: 12px; color: gray;">High chance for Rare/Mythic Items!</p>
-            <button class="btn btn-buy-gem" onclick="buyChest('premium')">Buy for 100 💎</button>
+        <div class="chest-grid" id="storeGrid">
+            <div style="color: gray;">Loading catalog...</div>
         </div>
     </div>
 
     <div class="panel">
         <h2>🔐 Your Vault</h2>
-        
-        <div class="chest-card">
-            <h3>Owned Basic Chests: <span id="inv-basic" style="color: var(--p1); font-size: 24px;">0</span></h3>
-            <button class="btn btn-open" id="btn-open-basic" onclick="openChest('basic')" disabled>Unlock</button>
-        </div>
-
-        <div class="chest-card">
-            <h3>Owned Premium Chests: <span id="inv-premium" style="color: #00ffcc; font-size: 24px;">0</span></h3>
-            <button class="btn btn-open" id="btn-open-premium" onclick="openChest('premium')" disabled>Unlock</button>
-        </div>
+        <div class="chest-grid" id="vaultGrid"></div>
     </div>
 </div>
 
 <div class="modal" id="unboxingModal">
-    <div class="unboxing-chest" id="animChest">📦</div>
+    <img src="" alt="Opening Chest..." class="unboxing-chest" id="animChest">
     <div class="reward-reveal" id="rewardReveal">
         <div style="font-size: 80px; margin-bottom: 10px;">✨</div>
         <p>You Unlocked:</p>
@@ -150,7 +143,7 @@
 </div>
 
 <script>
-    let state = { coins: 0, gems: 0, chests: { basic: 0, premium: 0 } };
+    let state = { coins: 0, gems: 0, chests: {}, catalog: {} };
 
     async function api(action, data = {}) {
         const fd = new FormData();
@@ -160,22 +153,48 @@
         return await res.json();
     }
 
-    function updateUI() {
+    // --- DRAW THE ENTIRE UI AUTOMATICALLY ---
+    function renderUI() {
         document.getElementById('coinUI').innerText = state.coins.toLocaleString();
         document.getElementById('gemUI').innerText = state.gems.toLocaleString();
         
-        document.getElementById('inv-basic').innerText = state.chests.basic || 0;
-        document.getElementById('inv-premium').innerText = state.chests.premium || 0;
+        const storeGrid = document.getElementById('storeGrid');
+        const vaultGrid = document.getElementById('vaultGrid');
+        
+        storeGrid.innerHTML = '';
+        vaultGrid.innerHTML = '';
 
-        document.getElementById('btn-open-basic').disabled = (state.chests.basic || 0) <= 0;
-        document.getElementById('btn-open-premium').disabled = (state.chests.premium || 0) <= 0;
+        for (const [id, info] of Object.entries(state.catalog)) {
+            let btnClass = info.currency === 'gems' ? 'btn-gems' : '';
+            let currencyIcon = info.currency === 'gems' ? '💎' : '🪙';
+            let chestCount = state.chests[id] || 0;
+
+            // Draw Store Card
+            storeGrid.innerHTML += `
+                <div class="chest-card">
+                    <img src="${info.img}" alt="${info.name}" class="chest-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/811/811559.png'" style="filter: drop-shadow(0 0 15px ${info.color});">
+                    <h3 style="color: ${info.color};">${info.name}</h3>
+                    <p style="font-size: 12px; color: gray; margin-bottom: 15px;">${info.desc}</p>
+                    <button class="btn ${btnClass}" onclick="buyChest('${id}')">Buy for ${info.price.toLocaleString()} ${currencyIcon}</button>
+                </div>
+            `;
+
+            // Draw Vault Card
+            vaultGrid.innerHTML += `
+                <div class="chest-card">
+                    <img src="${info.img}" alt="${info.name}" class="chest-icon" style="width: 60px; height: 60px; filter: drop-shadow(0 0 10px ${info.color});" onerror="this.src='https://cdn-icons-png.flaticon.com/512/811/811559.png'">
+                    <h3>Owned: <span style="color: ${info.color}; font-size: 24px;">${chestCount}</span></h3>
+                    <button class="btn btn-open" onclick="openChest('${id}')" ${chestCount <= 0 ? 'disabled' : ''}>Unlock</button>
+                </div>
+            `;
+        }
     }
 
     async function loadData() {
         const res = await api('load');
         if(res.success) {
-            state.coins = res.coins; state.gems = res.gems; state.chests = res.chests;
-            updateUI();
+            state.coins = res.coins; state.gems = res.gems; state.chests = res.chests; state.catalog = res.catalog;
+            renderUI();
         } else {
             alert(res.message);
         }
@@ -187,35 +206,33 @@
             if(res.currency === 'coins') state.coins = res.new_balance;
             if(res.currency === 'gems') state.gems = res.new_balance;
             state.chests = res.chests;
-            updateUI();
+            renderUI();
         } else {
             alert("❌ " + res.message);
         }
     }
 
     async function openChest(type) {
-        // Show animation
         const modal = document.getElementById('unboxingModal');
-        const chestIcon = document.getElementById('animChest');
+        const chestImg = document.getElementById('animChest');
         const reveal = document.getElementById('rewardReveal');
         
-        chestIcon.innerText = type === 'premium' ? '🎁' : '📦';
-        chestIcon.style.display = 'block';
+        chestImg.src = state.catalog[type].img;
+        chestImg.style.display = 'block';
         reveal.style.display = 'none';
         modal.classList.add('active');
 
-        // Call backend to get reward
         const res = await api('open', { chest_type: type });
         
         setTimeout(() => {
             if(res.success) {
-                state.chests = res.chests; updateUI();
-                
-                chestIcon.style.display = 'none';
+                state.chests = res.chests; renderUI();
+                chestImg.style.display = 'none';
                 document.getElementById('rewardName').innerText = res.reward.name;
                 
                 if(res.reward.is_duplicate) {
                     document.getElementById('duplicateTag').innerText = "(You already owned this item. It was discarded.)";
+                    document.getElementById('duplicateTag').style.color = "#ff4444";
                 } else {
                     document.getElementById('duplicateTag').innerText = "Added to your inventory!";
                     document.getElementById('duplicateTag').style.color = "#3ba55c";
@@ -226,12 +243,10 @@
                 modal.classList.remove('active');
                 alert("❌ Error opening chest: " + res.message);
             }
-        }, 1500); // 1.5 second fake suspense animation
+        }, 1500);
     }
 
-    function closeModal() {
-        document.getElementById('unboxingModal').classList.remove('active');
-    }
+    function closeModal() { document.getElementById('unboxingModal').classList.remove('active'); }
 
     loadData();
 </script>
