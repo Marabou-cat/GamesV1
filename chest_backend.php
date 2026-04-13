@@ -29,7 +29,7 @@ $user_id = $_SESSION['user_id'];
 $CHESTS = [
     "basic" => [
         "name" => "Basic Chest",
-        "desc" => "Contains Basic Cursors & Pets from shop",
+        "desc" => "Contains Basic Cursors & Pets from shop, maybe a cursor costing 1m?",
         "price" => 1000, 
         "currency" => "coins",
         "img" => "../png/basic_chest.png",
@@ -37,8 +37,8 @@ $CHESTS = [
     ],
     "premium" => [
         "name" => "Premium Chest",
-        "desc" => "High chance for Premium Items!",
-        "price" => 500, 
+        "desc" => "Is There really just gold ingots? Yeah, the 90%",
+        "price" => 200, 
         "currency" => "gems",
         "img" => "../png/premium_chest.png",
         "color" => "#00ffcc"
@@ -46,7 +46,7 @@ $CHESTS = [
     "seasonal" => [
         "name" => "Seasonal Chest",
         "desc" => "High chance for season limited Items!",
-        "price" => 600, 
+        "price" => 300, 
         "currency" => "gems",
         "img" => "../png/seasonal_chest.png",
         "color" => "#fff200"
@@ -145,22 +145,22 @@ if ($action === 'open') {
         $reward_name = '';
         
         if ($type === 'basic') {
-            if ($roll <= 70) {
+            if ($roll <= 99) {
                 $pool = ['m1' => 'Egg Twins', 'm2' => 'Gold Ingot', 'm3' => 'Cheesy Cursor', 'm4' => 'Sword Cursor', 'm5' => 'Pizza Slice'];
                 $reward_type = 'cursor';
             } else {
-                $pool = ['doge' => 'Pixel Doge', 'cat' => 'Cyber Kitty'];
-                $reward_type = 'pet';
+                $pool = ['m6' => 'Sign Of Greed'];
+                $reward_type = 'cursor';
             }
         } else if ($type === 'premium') {
-            if ($roll <= 50) {
-                $pool = ['frog' => 'Ninja Frog', 'panda' => 'Ghost Panda'];
-                $reward_type = 'pet';
-            } else if ($roll <= 90) {
-                $pool = ['m6' => 'Sign Of Greed', 'prism' => 'Prism Wing'];
+            if ($roll <= 90) {
+                $pool = ['m2' => 'Gold Ingot'];
                 $reward_type = 'cursor';
+            } else if ($roll <= 97) {
+                $pool = ['midas' => 'King Midas'];
+                $reward_type = 'pet';
             } else {
-                $pool = ['dragon' => 'Mythic Dragon', 'phoenix' => 'Mythic Phoenix'];
+                $pool = ['dragon' => 'Mythic Dragon'];
                 $reward_type = 'mythic';
             }
         } else if ($type === 'seasonal') {
