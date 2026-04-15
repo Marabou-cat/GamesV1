@@ -51,6 +51,14 @@ $CHESTS = [
         "img" => "../png/seasonal_chest.png",
         "color" => "#fff200"
     ],
+    "sakura" => [
+        "name" => "Sakura Chest",
+        "desc" => "Contains Event Limited Kawaii Items",
+        "price" => "Get From Kawaii Festival", // <--- Fixed syntax error and set to text
+        "currency" => "gems",
+        "img" => "../png/sakura_chest.png",
+        "color" => "#ffb7b2"
+    ]
 ];
 
 // Helper to get user data
@@ -89,9 +97,16 @@ if ($action === 'buy') {
 
     try {
         $pdo->beginTransaction();
+        
+        // --- SECURITY BLOCK ---
+        // If the price is text (like "Event Only") instead of a number, block it!
+        if (!is_numeric($CHESTS[$type]['price'])) {
+            throw new Exception("Nice try! This chest cannot be purchased with standard currency.");
+        }
+        
         $user = getUser($pdo, $user_id);
         
-        $price = $CHESTS[$type]['price'];
+        $price = (int)$CHESTS[$type]['price'];
         $currency = $CHESTS[$type]['currency'];
         $current_balance = (int)$user[$currency];
 
@@ -176,6 +191,11 @@ if ($action === 'open') {
             }
         }
 
+        // Catch-all just in case a chest has no pool defined here
+        if (!isset($pool)) {
+            throw new Exception("This chest is empty!");
+        }
+
         $keys = array_keys($pool);
         $reward_id = $keys[array_rand($keys)];
         $reward_name = $pool[$reward_id];
@@ -207,7 +227,7 @@ if ($action === 'open') {
             ]
         ]);
     } catch (Exception $e) {
-        $pdo->rollBack();
+        $pdo->rollBack(); 
         echo json_encode(["success" => false, "message" => $e->getMessage()]);
     }
     exit;
