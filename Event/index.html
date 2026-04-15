@@ -59,6 +59,7 @@
         .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 900px; margin: 0 auto; }
         .task-card { background: rgba(0, 0, 0, 0.4); border: 2px solid var(--p2); border-radius: var(--r); padding: 20px; text-align: left; transition: 0.3s; position: relative; overflow: hidden; }
         .task-card.done { border-color: #3ba55c; background: rgba(59, 165, 92, 0.1); }
+        .task-card.claimed { border-color: #555; opacity: 0.6; }
         .task-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .task-pts { background: var(--p1); color: #000; padding: 2px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 900; }
         .progress-bg { background: var(--bg0); height: 12px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 1px solid var(--p2); }
@@ -77,7 +78,7 @@
 
     <div class="header">
         <h1>🌸 Kawaii Festival</h1>
-        <p>Play Different Games To Get Sakura Coins, </p>
+        <p>Play Different Games To Get Sakura Coins!</p>
     </div>
 
     <div class="currency-bar">
@@ -120,11 +121,9 @@ let gameState = null;
 const GAME_POOL = ['3 Dash', 'Snow Rider 3D', 'Space Wave', 'Retro Bowl', 'FNAF 1', 'BitLife', 'Geometry Dash', 'Monkey Mart', 'Ovo', '1v1 LOL'];
 
 // --- KAWAII SHOP CATALOG ---
-// Easily add new items here! Make sure IDs match the ones in your main index.html
 const KAWAII_SHOP = [
     { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500 },
     { type: 'pet', id: 'phoenix', name: 'Mythic Phoenix', img: '../png/phoenix.png', desc: 'A Flaming Legend', cost: 3000 },
-    // The Sakura Chest gets a special flag so it triggers the chest opening animation instead of a standard purchase
     { type: 'chest', id: 'sakura', name: 'Sakura Chest', img: '../png/sakura_chest.png', desc: 'Contains Ultra-Rare Kawaii Drops!', cost: 500, isChest: true }
 ];
 
@@ -142,6 +141,7 @@ async function loadGameFromServer() {
                 playtime: parseInt(result.data.playtime) || 0,
                 sakura_coins: parseInt(result.data.sakura_coins) || 0,
                 event_tasks: JSON.parse(result.data.event_tasks || '[]'),
+                owned_chests: JSON.parse(result.data.owned_chests || '{}'), // LOAD CHESTS
                 owned_cursors: JSON.parse(result.data.owned_cursors || '["def"]'),
                 equipped_cursor: result.data.equipped_cursor || 'def',
                 owned_pets: JSON.parse(result.data.owned_pets || '[]'),
@@ -150,7 +150,7 @@ async function loadGameFromServer() {
             };
             updateCurrencies();
             fillTasks(); 
-            renderKawaiiShop(); // Draw the shop once loaded
+            renderKawaiiShop(); 
         }
     } catch(e) { console.error("Event failed to load state."); }
 }
@@ -165,6 +165,7 @@ async function saveGameToServer() {
         formData.append('playtime', gameState.playtime);
         formData.append('sakura_coins', gameState.sakura_coins);
         formData.append('event_tasks', JSON.stringify(gameState.event_tasks));
+        formData.append('owned_chests', JSON.stringify(gameState.owned_chests || {})); // SAVE CHESTS
         formData.append('owned_cursors', JSON.stringify(gameState.owned_cursors));
         formData.append('equipped_cursor', gameState.equipped_cursor);
         formData.append('owned_pets', JSON.stringify(gameState.owned_pets));
@@ -212,7 +213,7 @@ function renderKawaiiShop() {
         
         let btnHTML = '';
         if (item.isChest) {
-            btnHTML = `<button class="btn-buy btn-buy-chest" onclick="openSakuraChest()">Unlock for ${item.cost.toLocaleString()} 🌸</button>`;
+            btnHTML = `<button class="btn-buy btn-buy-chest" onclick="buySakuraChest()">Buy for ${item.cost.toLocaleString()} 🌸</button>`;
         } else if (isOwned) {
             btnHTML = `<button class="btn-buy" disabled style="background: #3ba55c; cursor: default;">Owned ✓</button>`;
         } else {
@@ -240,49 +241,32 @@ async function buyItem(type, id, cost, name) {
     if (type === 'pet') gameState.owned_pets.push(id);
 
     updateCurrencies();
-    renderKawaiiShop(); // Refresh the shop to show "Owned ✓"
+    renderKawaiiShop(); 
     await saveGameToServer();
     
-    document.getElementById('rewardIcon').innerText = type === 'pet' ? '🍡' : '🎀';
+    document.getElementById('rewardIcon').innerText = type === 'pet' ? '🐾' : '🎀';
     document.getElementById('rewardDesc').innerHTML = `You successfully bought the <br><span style="color: var(--p1); font-size: 24px;">${name}</span>!`;
     document.getElementById('rewardPopup').style.display = 'flex';
 }
 
-async function openSakuraChest() {
-    if (gameState.sakura_coins < 500) return alert("Not enough Sakura Coins to unlock the chest!");
+// --- ADD CHEST TO INVENTORY INSTEAD OF OPENING ---
+async function buySakuraChest() {
+    if (gameState.sakura_coins < 500) return alert("Not enough Sakura Coins to buy the chest!");
 
     gameState.sakura_coins -= 500;
+    
+    // Add 1 to the 'sakura' chest count in inventory
+    if (!gameState.owned_chests) gameState.owned_chests = {};
+    gameState.owned_chests['sakura'] = (gameState.owned_chests['sakura'] || 0) + 1;
+
     updateCurrencies();
+    await saveGameToServer();
 
-    let roll = Math.random() * 100;
-    let rewardType, rewardId, rewardName, icon;
-
-    if (roll < 5) {
-        rewardType = 'pet'; rewardId = 'kitsune'; rewardName = 'Kitsune Spirit'; icon = '🦊';
-    } else if (roll < 30) {
-        rewardType = 'cursor'; rewardId = 'sakura_star'; rewardName = 'Sakura Star'; icon = '⭐';
-    } else {
-        rewardType = 'pet'; rewardId = 'matcha_bear'; rewardName = 'Matcha Bear'; icon = '🐻';
-    }
-
-    let isDuplicate = false;
-    if (rewardType === 'cursor' && gameState.owned_cursors.includes(rewardId)) isDuplicate = true;
-    if (rewardType === 'pet' && gameState.owned_pets.includes(rewardId)) isDuplicate = true;
-
-    if (!isDuplicate) {
-        if (rewardType === 'cursor') gameState.owned_cursors.push(rewardId);
-        if (rewardType === 'pet') gameState.owned_pets.push(rewardId);
-        await saveGameToServer();
-    } else {
-        await saveGameToServer(); 
-    }
-
-    document.getElementById('rewardIcon').innerText = icon;
-    if (isDuplicate) {
-        document.getElementById('rewardDesc').innerHTML = `The chest opened... you got a <span style="color: var(--p1);">${rewardName}</span>.<br><br><span style="color: #aaa; font-size: 14px;">(You already owned this. It was discarded.)</span>`;
-    } else {
-        document.getElementById('rewardDesc').innerHTML = `The chest opened! You unlocked the <br><span style="color: var(--p1); font-size: 24px;">${rewardName}</span>!`;
-    }
+    document.getElementById('rewardIcon').innerText = '📦';
+    document.getElementById('rewardDesc').innerHTML = `
+        You successfully bought the <br><span style="color: var(--p1); font-size: 24px;">Sakura Chest</span>!<br><br>
+        <span style="color: #aaa; font-size: 14px;">(It has been sent to your Vault to open!)</span>
+    `;
     document.getElementById('rewardPopup').style.display = 'flex';
 }
 
