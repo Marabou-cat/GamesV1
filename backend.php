@@ -85,8 +85,8 @@ if ($action === 'load') {
         exit;
     }
 
-    // UPDATED: Added sakura_coins and event_tasks
-    $stmt = $pdo->prepare("SELECT coins, gems, playtime, owned_cursors, equipped_cursor, owned_pets, active_pet, pet_ages, last_online, sakura_coins, event_tasks FROM users WHERE id = ?");
+    // UPDATED: Added owned_chests alongside the event variables
+    $stmt = $pdo->prepare("SELECT coins, gems, playtime, owned_cursors, equipped_cursor, owned_pets, active_pet, pet_ages, last_online, sakura_coins, event_tasks, owned_chests FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -109,14 +109,30 @@ if ($action === 'save') {
     $owned_pets = $_POST['owned_pets'];
     $active_pet = $_POST['active_pet'];
     $pet_ages = $_POST['pet_ages'];
-    // UPDATED: Fetch the new event variables
+    $last_online = time() * 1000;
+    
+    // NEW & EVENT VARIABLES
     $sakura_coins = (int)($_POST['sakura_coins'] ?? 0);
     $event_tasks = $_POST['event_tasks'] ?? '[]';
-    $last_online = time() * 1000;
+    $owned_chests = $_POST['owned_chests'] ?? '{}'; // Added this line!
 
-    // UPDATED: Added sakura_coins and event_tasks to the SQL statement
-    $stmt = $pdo->prepare("UPDATE users SET coins=?, gems=?, playtime=?, owned_cursors=?, equipped_cursor=?, owned_pets=?, active_pet=?, pet_ages=?, last_online=?, sakura_coins=?, event_tasks=? WHERE id=?");
-    $stmt->execute([$coins, $gems, $playtime, $owned_cursors, $equipped_cursor, $owned_pets, $active_pet, $pet_ages, $last_online, $sakura_coins, $event_tasks, $_SESSION['user_id']]);
+    // UPDATED: Added owned_chests to the SQL statement and execute array
+    $stmt = $pdo->prepare("UPDATE users SET coins=?, gems=?, playtime=?, owned_cursors=?, equipped_cursor=?, owned_pets=?, active_pet=?, pet_ages=?, last_online=?, sakura_coins=?, event_tasks=?, owned_chests=? WHERE id=?");
+    $stmt->execute([
+        $coins, 
+        $gems, 
+        $playtime, 
+        $owned_cursors, 
+        $equipped_cursor, 
+        $owned_pets, 
+        $active_pet, 
+        $pet_ages, 
+        $last_online, 
+        $sakura_coins, 
+        $event_tasks, 
+        $owned_chests, // Added this parameter!
+        $_SESSION['user_id']
+    ]);
 
     echo json_encode(["success" => true]);
     exit;
@@ -124,8 +140,6 @@ if ($action === 'save') {
 
 // --- GET LEADERBOARD ---
 if ($action === 'get_leaderboard') {
-    // Select the top 100 users ordered by gems descending.
-    // CAST ensures that even if 'gems' is stored as a string, it sorts as a number.
     $stmt = $pdo->query("SELECT username, gems FROM users ORDER BY CAST(gems AS UNSIGNED) DESC LIMIT 100");
     $leaderboardData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
