@@ -85,7 +85,8 @@ if ($action === 'load') {
         exit;
     }
 
-    $stmt = $pdo->prepare("SELECT coins, gems, playtime, owned_cursors, equipped_cursor, owned_pets, active_pet, pet_ages, last_online FROM users WHERE id = ?");
+    // UPDATED: Added sakura_coins and event_tasks
+    $stmt = $pdo->prepare("SELECT coins, gems, playtime, owned_cursors, equipped_cursor, owned_pets, active_pet, pet_ages, last_online, sakura_coins, event_tasks FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -108,10 +109,14 @@ if ($action === 'save') {
     $owned_pets = $_POST['owned_pets'];
     $active_pet = $_POST['active_pet'];
     $pet_ages = $_POST['pet_ages'];
+    // UPDATED: Fetch the new event variables
+    $sakura_coins = (int)($_POST['sakura_coins'] ?? 0);
+    $event_tasks = $_POST['event_tasks'] ?? '[]';
     $last_online = time() * 1000;
 
-    $stmt = $pdo->prepare("UPDATE users SET coins=?, gems=?, playtime=?, owned_cursors=?, equipped_cursor=?, owned_pets=?, active_pet=?, pet_ages=?, last_online=? WHERE id=?");
-    $stmt->execute([$coins, $gems, $playtime, $owned_cursors, $equipped_cursor, $owned_pets, $active_pet, $pet_ages, $last_online, $_SESSION['user_id']]);
+    // UPDATED: Added sakura_coins and event_tasks to the SQL statement
+    $stmt = $pdo->prepare("UPDATE users SET coins=?, gems=?, playtime=?, owned_cursors=?, equipped_cursor=?, owned_pets=?, active_pet=?, pet_ages=?, last_online=?, sakura_coins=?, event_tasks=? WHERE id=?");
+    $stmt->execute([$coins, $gems, $playtime, $owned_cursors, $equipped_cursor, $owned_pets, $active_pet, $pet_ages, $last_online, $sakura_coins, $event_tasks, $_SESSION['user_id']]);
 
     echo json_encode(["success" => true]);
     exit;
