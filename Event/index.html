@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Event - SchoolExams</title>
+    <title>Kawaii Event - SchoolExams</title>
     <style>
         :root {
-            --bg0: #000814; --bg1: #001d3d; --bg2: #003566;
-            --p0: #0077b6; --p1: #90e0ef; --p2: #03045e;
-            --line: rgba(144, 224, 239, 0.2);
-            --glow: 0 0 20px rgba(144, 224, 239, 0.4);
+            --bg0: #2a081d; --bg1: #4a1532; --bg2: #701f49;
+            --p0: #ff748c; --p1: #ffb7b2; --p2: #ff4d6d;
+            --line: rgba(255, 183, 178, 0.15);
+            --glow: 0 0 20px rgba(255, 116, 140, 0.5);
             --r: 16px;
         }
 
@@ -20,78 +20,93 @@
             background-size: 40px 40px;
         }
 
-        .header { margin-bottom: 30px; }
+        .header { margin-bottom: 20px; }
         .header h1 { color: var(--p1); font-size: 3rem; margin: 0 0 10px 0; text-shadow: var(--glow); text-transform: uppercase; letter-spacing: 2px; }
-        .header p { color: #caf0f8; font-size: 1.1rem; margin: 0; }
+        .header p { color: #ffd6e0; font-size: 1.1rem; margin: 0; }
         
-        .timer-box { display: inline-block; background: rgba(0,0,0,0.6); border: 1px solid var(--p1); padding: 8px 20px; border-radius: 20px; color: #ffd700; font-weight: bold; margin-bottom: 30px; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+        .currency-bar { display: inline-flex; gap: 30px; background: rgba(0,0,0,0.6); border: 2px solid var(--p0); padding: 12px 30px; border-radius: 30px; margin-bottom: 20px; font-weight: bold; font-size: 18px; box-shadow: var(--glow); }
+        .currency-bar .sakura { color: var(--p1); text-shadow: 0 0 10px var(--p1); }
+        .currency-bar .gems { color: #00ffcc; }
 
-        #diamond-container { 
+        .exchange-btn { background: transparent; border: 2px dashed #00ffcc; color: #00ffcc; padding: 8px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; display: block; margin: 0 auto 30px auto; }
+        .exchange-btn:hover { background: rgba(0, 255, 204, 0.1); box-shadow: 0 0 15px rgba(0, 255, 204, 0.4); }
+
+        #tree-container { 
             margin: 0 auto 40px auto; width: 220px; height: 220px; cursor: pointer; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             position: relative; display: flex; align-items: center; justify-content: center;
-            background: radial-gradient(circle, rgba(144, 224, 239, 0.2) 0%, transparent 70%);
-            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 116, 140, 0.2) 0%, transparent 70%); border-radius: 50%;
         }
-        #diamond-container:hover { transform: scale(1.05); }
-        #diamond-container:active { transform: scale(0.95); }
+        #tree-container:hover { transform: scale(1.05); }
+        #tree-container:active { transform: scale(0.95); }
         
-        .cracked { animation: shake 0.4s infinite; filter: hue-rotate(90deg) brightness(1.5); }
-        @keyframes shake { 0% {left:0} 25% {left:8px} 50% {left:-8px} 75% {left:8px} 100% {left:0} }
+        .shaking { animation: shake 0.4s infinite; filter: brightness(1.2); }
+        @keyframes shake { 0% {transform: rotate(0deg)} 25% {transform: rotate(5deg)} 50% {transform: rotate(-5deg)} 75% {transform: rotate(5deg)} 100% {transform: rotate(0deg)} }
         
-        #pointsDisplay { position: absolute; bottom: -30px; background: var(--p0); padding: 5px 15px; border-radius: 12px; font-weight: 900; box-shadow: var(--glow); border: 2px solid var(--p1); }
+        #pointsDisplay { position: absolute; bottom: -20px; background: var(--p2); padding: 5px 15px; border-radius: 12px; font-weight: 900; box-shadow: var(--glow); border: 2px solid var(--p1); }
 
+        /* SHOP SECTION */
+        .shop-section { background: rgba(74, 21, 50, 0.6); border: 2px solid var(--p0); border-radius: 20px; padding: 30px; max-width: 900px; margin: 0 auto 40px auto; backdrop-filter: blur(10px); }
+        .shop-section h2 { color: var(--p1); margin-top: 0; border-bottom: 2px dashed var(--p0); padding-bottom: 10px; }
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .shop-card { background: var(--bg0); border: 2px solid var(--line); border-radius: 12px; padding: 20px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center;}
+        .shop-card:hover { border-color: var(--p1); box-shadow: var(--glow); transform: translateY(-5px); }
+        .shop-card img { height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+        .btn-buy { background: var(--p0); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: auto; cursor: pointer; transition: 0.2s; }
+        .btn-buy:hover { background: var(--p1); color: var(--bg0); }
+        .btn-buy-chest { background: linear-gradient(135deg, #ff748c, #ffb7b2); color: #000; box-shadow: 0 0 15px rgba(255, 183, 178, 0.5); }
+
+        /* TASKS */
         .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 900px; margin: 0 auto; }
-        
-        .task-card { 
-            background: rgba(0, 29, 61, 0.85); border: 2px solid var(--p2); border-radius: var(--r); 
-            padding: 20px; text-align: left; backdrop-filter: blur(10px); transition: 0.3s;
-            position: relative; overflow: hidden;
-        }
-        .task-card:hover { border-color: var(--p1); box-shadow: var(--glow); transform: translateY(-5px); }
+        .task-card { background: rgba(0, 0, 0, 0.4); border: 2px solid var(--p2); border-radius: var(--r); padding: 20px; text-align: left; transition: 0.3s; position: relative; overflow: hidden; }
         .task-card.done { border-color: #3ba55c; background: rgba(59, 165, 92, 0.1); }
-        .task-card.claimed { border-color: #555; background: rgba(0,0,0,0.5); opacity: 0.7; }
-        
         .task-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .task-pts { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 900; }
-        
+        .task-pts { background: var(--p1); color: #000; padding: 2px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 900; }
         .progress-bg { background: var(--bg0); height: 12px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 1px solid var(--p2); }
         .progress-fill { background: var(--p1); height: 100%; width: 0%; transition: width 0.5s ease; box-shadow: 0 0 10px var(--p1); }
         .done .progress-fill { background: #3ba55c; box-shadow: 0 0 10px #3ba55c; }
 
-        .reward-popup { display: none; position: fixed; inset: 0; background: rgba(0,8,20,0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
+        .reward-popup { display: none; position: fixed; inset: 0; background: rgba(42, 8, 29, 0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
         .reward-box { background: var(--bg1); border: 2px solid var(--p1); padding: 40px; border-radius: var(--r); text-align: center; box-shadow: var(--glow); max-width: 400px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        .btn-claim { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 15px 30px; border: none; border-radius: 12px; font-weight: 900; font-size: 1.1rem; margin-top: 25px; cursor: pointer; transition: 0.2s; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); width: 100%; }
-        .btn-claim:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); }
-        
-        #toast { position: fixed; bottom: 20px; right: 20px; background: #3ba55c; color: white; padding: 15px 25px; border-radius: 10px; font-weight: bold; transform: translateY(100px); opacity: 0; transition: 0.3s; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        #toast { position: fixed; bottom: 20px; right: 20px; background: var(--p0); color: white; padding: 15px 25px; border-radius: 10px; font-weight: bold; transform: translateY(100px); opacity: 0; transition: 0.3s; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         #toast.show { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>💎 Diamond Crack Event</h1>
-        <p>Complete portal tasks to earn Crack Points. Strike the diamond for rare rewards!</p>
+        <h1>🌸 Kawaii Festival</h1>
+        <p>Play Different Games To Get Sakura Coins, </p>
     </div>
 
-    <div class="timer-box" id="timerDisplay">Refreshing Tasks in: 30:00</div>
-
-    <div id="diamond-container" onclick="attemptCrack()">
-        <img id="diamondImg" src="Diamond.png" alt="Diamond" style="width: 150px; position: relative;">
-        <div id="pointsDisplay">Ready to Crack: 0</div>
+    <div class="currency-bar">
+        <div class="sakura">🌸 <span id="sakuraDisplay">0</span> Sakura Coins</div>
+        <div class="gems">💎 <span id="gemDisplay">0</span> Gems</div>
     </div>
 
-    <div class="task-grid" id="taskList">
+    <button class="exchange-btn" onclick="exchangeGems()">Convert 100 💎 ➞ 500 🌸</button>
+
+    <div id="tree-container" onclick="shakeTree()">
+        <div id="treeImg" style="font-size: 120px; filter: drop-shadow(0 0 15px rgba(255, 183, 178, 0.8));">🌸</div>
+        <div id="pointsDisplay">Ready to Shake: 0</div>
+    </div>
+
+    <div class="shop-section">
+        <h2>🛍️ Limited Kawaii Shop</h2>
+        <div class="shop-grid" id="kawaiiShopGrid">
+            <div style="color: gray;">Loading Shop...</div>
         </div>
+    </div>
+
+    <div class="task-grid" id="taskList"></div>
 
     <div class="reward-popup" id="rewardPopup">
         <div class="reward-box">
-            <h2 id="rewardTitle" style="color: var(--p1); margin-top:0; font-size: 28px;">CONGRATULATIONS!</h2>
-            <div id="rewardIcon" style="font-size: 90px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); margin: 20px 0;">💎</div>
-            <p id="rewardDesc" style="font-size: 18px; font-weight: bold; line-height: 1.5;"></p>
-            <button class="btn-claim" onclick="document.getElementById('rewardPopup').style.display='none'">AWESOME!</button>
+            <h2 id="rewardTitle" style="color: var(--p1); margin-top:0; font-size: 28px;">KAWAII REWARD!</h2>
+            <div id="rewardIcon" style="font-size: 90px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); margin: 20px 0;">🌸</div>
+            <p id="rewardDesc" style="font-size: 18px; font-weight: bold; line-height: 1.5; color: #fff;"></p>
+            <button class="btn-buy" style="margin-top: 25px;" onclick="document.getElementById('rewardPopup').style.display='none'">YAY!</button>
         </div>
     </div>
 
@@ -100,6 +115,18 @@
 <script>
 // --- GAME STATE & BACKEND SYNC ---
 let gameState = null;
+
+// Pool of games to randomly generate tasks for
+const GAME_POOL = ['3 Dash', 'Snow Rider 3D', 'Space Wave', 'Retro Bowl', 'FNAF 1', 'BitLife', 'Geometry Dash', 'Monkey Mart', 'Ovo', '1v1 LOL'];
+
+// --- KAWAII SHOP CATALOG ---
+// Easily add new items here! Make sure IDs match the ones in your main index.html
+const KAWAII_SHOP = [
+    { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500 },
+    { type: 'pet', id: 'phoenix', name: 'Mythic Phoenix', img: '../png/phoenix.png', desc: 'A Flaming Legend', cost: 3000 },
+    // The Sakura Chest gets a special flag so it triggers the chest opening animation instead of a standard purchase
+    { type: 'chest', id: 'sakura', name: 'Sakura Chest', img: '../png/sakura_chest.png', desc: 'Contains Ultra-Rare Kawaii Drops!', cost: 500, isChest: true }
+];
 
 async function loadGameFromServer() {
     try {
@@ -113,12 +140,17 @@ async function loadGameFromServer() {
                 coins: parseInt(result.data.coins) || 0,
                 gems: parseInt(result.data.gems) || 0,
                 playtime: parseInt(result.data.playtime) || 0,
+                sakura_coins: parseInt(result.data.sakura_coins) || 0,
+                event_tasks: JSON.parse(result.data.event_tasks || '[]'),
                 owned_cursors: JSON.parse(result.data.owned_cursors || '["def"]'),
                 equipped_cursor: result.data.equipped_cursor || 'def',
                 owned_pets: JSON.parse(result.data.owned_pets || '[]'),
                 active_pet: result.data.active_pet || '',
                 pet_ages: JSON.parse(result.data.pet_ages || '{}')
             };
+            updateCurrencies();
+            fillTasks(); 
+            renderKawaiiShop(); // Draw the shop once loaded
         }
     } catch(e) { console.error("Event failed to load state."); }
 }
@@ -131,6 +163,8 @@ async function saveGameToServer() {
         formData.append('coins', gameState.coins);
         formData.append('gems', gameState.gems);
         formData.append('playtime', gameState.playtime);
+        formData.append('sakura_coins', gameState.sakura_coins);
+        formData.append('event_tasks', JSON.stringify(gameState.event_tasks));
         formData.append('owned_cursors', JSON.stringify(gameState.owned_cursors));
         formData.append('equipped_cursor', gameState.equipped_cursor);
         formData.append('owned_pets', JSON.stringify(gameState.owned_pets));
@@ -141,61 +175,157 @@ async function saveGameToServer() {
     } catch(e) { console.error("Event failed to save state."); }
 }
 
-// --- TASK LOGIC ---
-const THIRTY_MINS = 30 * 60 * 1000;
+function updateCurrencies() {
+    if(gameState) {
+        document.getElementById('sakuraDisplay').innerText = gameState.sakura_coins.toLocaleString();
+        document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
+    }
+}
 
-// REPLACED playtime with crack_diamond, adjusted max feeds/opens to 30.
-const TASK_DEFS = [
-    { id: 1, type: 'open_module', name: 'Quick Peek (Open 5 Modules)', goal: 5, points: 1 },
-    { id: 2, type: 'feed_pet', name: 'Snack Time (Feed Pet 5x)', goal: 5, points: 1 },
-    { id: 3, type: 'crack_diamond', name: 'Miner (Strike Diamond 1x)', goal: 1, points: 1 },
-    { id: 4, type: 'open_module', name: 'Browser (Open 10 Modules)', goal: 10, points: 1 },
-    { id: 5, type: 'feed_pet', name: 'Hungry Beast (Feed Pet 10x)', goal: 10, points: 1 },
-    { id: 6, type: 'crack_diamond', name: 'Prospector (Strike Diamond 3x)', goal: 3, points: 2 },
-    { id: 7, type: 'open_module', name: 'Explorer (Open 15 Modules)', goal: 15, points: 1 },
-    { id: 8, type: 'feed_pet', name: 'Chomp Chomp (Feed Pet 20x)', goal: 20, points: 2 },
-    { id: 9, type: 'open_module', name: 'Module Hopper (Open 20 Modules)', goal: 20, points: 1 },
-    { id: 10, type: 'feed_pet', name: 'Feast Mode (Feed Pet 30x)', goal: 30, points: 2 },
-    { id: 11, type: 'open_module', name: 'Speedrunner (Open 30 Modules)', goal: 30, points: 2 },
-    { id: 12, type: 'crack_diamond', name: 'Jeweler (Strike Diamond 5x)', goal: 5, points: 2 }
-];
+function exchangeGems() {
+    if (!gameState) return;
+    if (gameState.gems >= 100) {
+        gameState.gems -= 100;
+        gameState.sakura_coins += 500;
+        updateCurrencies();
+        saveGameToServer();
+        showToast("🌸 Converted 100 Gems to 500 Sakura Coins!");
+    } else {
+        alert("Not enough Gems!");
+    }
+}
 
-function checkTaskRotation() {
-    let lastRefresh = parseInt(localStorage.getItem('event_last_refresh') || '0');
-    let now = Date.now();
-    
-    let currentTasks = JSON.parse(localStorage.getItem('event_tasks') || '[]');
-    if (now - lastRefresh > THIRTY_MINS || currentTasks.length !== 4) {
-        let shuffled = TASK_DEFS.sort(() => 0.5 - Math.random());
-        let selected = shuffled.slice(0, 4).map(t => ({...t, current: 0, completed: false, claimed: false}));
+// --- DYNAMIC SHOP LOGIC ---
+function renderKawaiiShop() {
+    if (!gameState) return;
+    const grid = document.getElementById('kawaiiShopGrid');
+    grid.innerHTML = '';
+
+    KAWAII_SHOP.forEach(item => {
+        let isOwned = false;
+        if (item.type === 'cursor' && gameState.owned_cursors.includes(item.id)) isOwned = true;
+        if (item.type === 'pet' && gameState.owned_pets.includes(item.id)) isOwned = true;
+
+        let cardStyle = item.isChest ? 'border-color: var(--p1);' : '';
+        let imgStyle = item.isChest ? 'filter: drop-shadow(0 0 10px var(--p1));' : '';
+        let titleStyle = item.isChest ? 'color: var(--p1);' : '';
         
-        localStorage.setItem('event_tasks', JSON.stringify(selected));
-        localStorage.setItem('event_last_refresh', now);
-        lastRefresh = now;
-        showToast("🔄 New Tasks Available!");
+        let btnHTML = '';
+        if (item.isChest) {
+            btnHTML = `<button class="btn-buy btn-buy-chest" onclick="openSakuraChest()">Unlock for ${item.cost.toLocaleString()} 🌸</button>`;
+        } else if (isOwned) {
+            btnHTML = `<button class="btn-buy" disabled style="background: #3ba55c; cursor: default;">Owned ✓</button>`;
+        } else {
+            btnHTML = `<button class="btn-buy" onclick="buyItem('${item.type}', '${item.id}', ${item.cost}, '${item.name}')">Buy for ${item.cost.toLocaleString()} 🌸</button>`;
+        }
+
+        grid.innerHTML += `
+            <div class="shop-card" style="${cardStyle}">
+                <img src="${item.img}" alt="${item.name}" style="${imgStyle}">
+                <h3 style="${titleStyle}">${item.name}</h3>
+                <p style="font-size: 12px; color: #aaa;">${item.desc}</p>
+                ${btnHTML}
+            </div>
+        `;
+    });
+}
+
+async function buyItem(type, id, cost, name) {
+    if (gameState.sakura_coins < cost) return alert("Not enough Sakura Coins!");
+    if (type === 'cursor' && gameState.owned_cursors.includes(id)) return alert("You already own this cursor!");
+    if (type === 'pet' && gameState.owned_pets.includes(id)) return alert("You already own this pet!");
+
+    gameState.sakura_coins -= cost;
+    if (type === 'cursor') gameState.owned_cursors.push(id);
+    if (type === 'pet') gameState.owned_pets.push(id);
+
+    updateCurrencies();
+    renderKawaiiShop(); // Refresh the shop to show "Owned ✓"
+    await saveGameToServer();
+    
+    document.getElementById('rewardIcon').innerText = type === 'pet' ? '🍡' : '🎀';
+    document.getElementById('rewardDesc').innerHTML = `You successfully bought the <br><span style="color: var(--p1); font-size: 24px;">${name}</span>!`;
+    document.getElementById('rewardPopup').style.display = 'flex';
+}
+
+async function openSakuraChest() {
+    if (gameState.sakura_coins < 500) return alert("Not enough Sakura Coins to unlock the chest!");
+
+    gameState.sakura_coins -= 500;
+    updateCurrencies();
+
+    let roll = Math.random() * 100;
+    let rewardType, rewardId, rewardName, icon;
+
+    if (roll < 5) {
+        rewardType = 'pet'; rewardId = 'kitsune'; rewardName = 'Kitsune Spirit'; icon = '🦊';
+    } else if (roll < 30) {
+        rewardType = 'cursor'; rewardId = 'sakura_star'; rewardName = 'Sakura Star'; icon = '⭐';
+    } else {
+        rewardType = 'pet'; rewardId = 'matcha_bear'; rewardName = 'Matcha Bear'; icon = '🐻';
+    }
+
+    let isDuplicate = false;
+    if (rewardType === 'cursor' && gameState.owned_cursors.includes(rewardId)) isDuplicate = true;
+    if (rewardType === 'pet' && gameState.owned_pets.includes(rewardId)) isDuplicate = true;
+
+    if (!isDuplicate) {
+        if (rewardType === 'cursor') gameState.owned_cursors.push(rewardId);
+        if (rewardType === 'pet') gameState.owned_pets.push(rewardId);
+        await saveGameToServer();
+    } else {
+        await saveGameToServer(); 
+    }
+
+    document.getElementById('rewardIcon').innerText = icon;
+    if (isDuplicate) {
+        document.getElementById('rewardDesc').innerHTML = `The chest opened... you got a <span style="color: var(--p1);">${rewardName}</span>.<br><br><span style="color: #aaa; font-size: 14px;">(You already owned this. It was discarded.)</span>`;
+    } else {
+        document.getElementById('rewardDesc').innerHTML = `The chest opened! You unlocked the <br><span style="color: var(--p1); font-size: 24px;">${rewardName}</span>!`;
+    }
+    document.getElementById('rewardPopup').style.display = 'flex';
+}
+
+// --- DYNAMIC TASKS LOGIC ---
+function fillTasks() {
+    if (!gameState) return;
+    
+    let changed = false;
+    while (gameState.event_tasks.length < 4) {
+        let randomGame = GAME_POOL[Math.floor(Math.random() * GAME_POOL.length)];
+        let newTask = {
+            id: Date.now() + Math.random(),
+            type: 'play_specific',
+            game: randomGame,
+            name: `Play ${randomGame} (5 mins)`,
+            current: 0,
+            goal: 300, 
+            points: 2,
+            completed: false
+        };
+        gameState.event_tasks.push(newTask);
+        changed = true;
     }
     
-    let timeRemaining = THIRTY_MINS - (now - lastRefresh);
-    let minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-    let seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-    document.getElementById('timerDisplay').innerText = `Refreshing Tasks in: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    if (changed) saveGameToServer();
+    renderTasks();
 }
 
 function renderTasks() {
-    const tasks = JSON.parse(localStorage.getItem('event_tasks') || '[]');
+    if (!gameState) return;
     const container = document.getElementById('taskList');
-    let points = 0;
+    let pointsToShake = 0;
     
     container.innerHTML = "";
-    tasks.forEach(t => {
-        if (t.completed && !t.claimed) points += t.points;
+    gameState.event_tasks.forEach(t => {
+        if (t.completed) pointsToShake += t.points;
         
         let percent = Math.min(100, (t.current / t.goal) * 100);
-        let statusClass = t.claimed ? 'claimed' : (t.completed ? 'done' : '');
-        let statusText = t.claimed ? 'CLAIMED ✓' : `${t.current} / ${t.goal}`;
+        let currentMins = Math.floor(t.current / 60);
+        let statusText = t.completed ? 'READY TO CLAIM! ✓' : `${currentMins}m / 5m`;
 
         const card = document.createElement('div');
-        card.className = `task-card ${statusClass}`;
+        card.className = `task-card ${t.completed ? 'done' : ''}`;
         card.innerHTML = `
             <div class="task-title">
                 <span>${t.name}</span>
@@ -209,125 +339,47 @@ function renderTasks() {
         container.appendChild(card);
     });
     
-    document.getElementById('pointsDisplay').innerText = `Ready to Crack: ${points}`;
+    document.getElementById('pointsDisplay').innerText = `Ready to Shake: ${pointsToShake}`;
 }
 
-// Helper function to update event tasks generated locally inside this specific page
-function updateEventTaskLocal(taskType, amount = 1) {
-    let tasks = JSON.parse(localStorage.getItem('event_tasks') || '[]');
-    let changed = false;
+let isShaking = false;
+async function shakeTree() {
+    if(isShaking || !gameState) return;
     
-    tasks.forEach(task => {
-        if (task.type === taskType && !task.completed) {
-            task.current += amount;
-            if (task.current >= task.goal) {
-                task.current = task.goal;
-                task.completed = true;
-                showToast(`Task Complete: ${task.name}!`);
-            }
-            changed = true;
-        }
-    });
-    
-    if (changed) {
-        localStorage.setItem('event_tasks', JSON.stringify(tasks));
-        renderTasks(); // Instantly update UI when task finishes
-    }
-}
+    let claimableTasks = gameState.event_tasks.filter(t => t.completed);
+    if (claimableTasks.length === 0) return showToast("Complete tasks to get points!");
 
-let isCracking = false;
-async function attemptCrack() {
-    if(isCracking) return;
-    
-    let tasks = JSON.parse(localStorage.getItem('event_tasks') || '[]');
-    
-    // Filter all tasks that are done but not claimed
-    let claimableTasks = tasks.filter(t => t.completed && !t.claimed);
-    
-    if (claimableTasks.length === 0) {
-        showToast("Complete tasks to get points!");
-        return;
-    }
-
-    // NEW: Count this strike toward 'crack_diamond' tasks before redeeming
-    updateEventTaskLocal('crack_diamond', 1);
-
-    isCracking = true;
-    const img = document.getElementById('diamondImg');
-    img.classList.add('cracked');
+    isShaking = true;
+    const img = document.getElementById('treeImg');
+    img.classList.add('shaking');
     
     setTimeout(async () => {
-        img.classList.remove('cracked');
+        img.classList.remove('shaking');
         
-        // Get freshest state before applying multiple rewards
-        await loadGameFromServer(); 
-        
-        let totalGemsWon = 0;
-        let unlockedItems = [];
+        let totalCoinsWon = 0;
         let totalPointsRedeemed = 0;
 
-        // Loop through every claimable task
         claimableTasks.forEach(task => {
-            // Find the task in the original array to mark it claimed
-            const taskToMark = tasks.find(t => t.id === task.id);
-            if (taskToMark) taskToMark.claimed = true;
-            
-            // RNG Logic PER POINT
             for (let i = 0; i < task.points; i++) {
                 totalPointsRedeemed++;
-                let rand = Math.random() * 100;
-                
-                if (rand < 5) {
-                    if (gameState && !gameState.owned_pets.includes('phoenix')) {
-                        gameState.owned_pets.push('phoenix');
-                        unlockedItems.push("🔥 Mythic Phoenix Pet");
-                    } else {
-                        totalGemsWon += 100; // Duplicate compensation
-                    }
-                } else if (rand < 10) {
-                    if (gameState && !gameState.owned_cursors.includes('prism')) {
-                        gameState.owned_cursors.push('prism');
-                        unlockedItems.push("🌈 Prism Wing Cursor");
-                    } else {
-                        totalGemsWon += 100; // Duplicate compensation
-                    }
-                } else {
-                    totalGemsWon += 30;
-                }
+                totalCoinsWon += 100;
             }
         });
 
-        // Apply to gameState
-        if (gameState && totalGemsWon > 0) {
-            gameState.gems += totalGemsWon;
-        }
-
-        // Save updated task statuses to LocalStorage
-        localStorage.setItem('event_tasks', JSON.stringify(tasks));
+        gameState.sakura_coins += totalCoinsWon;
+        gameState.event_tasks = gameState.event_tasks.filter(t => !t.completed);
         
-        // Save updated inventory/gems to Server
-        if (gameState) await saveGameToServer();
+        fillTasks(); 
+        updateCurrencies();
 
-        // Build Custom Reward Display HTML
-        let rewardHTML = `<span style="color: #ffd700;">Redeemed ${totalPointsRedeemed} Points!</span><br><br>`;
-        if (totalGemsWon > 0) {
-            rewardHTML += `💎 +${totalGemsWon} Gems<br>`;
-        }
-        
-        if (unlockedItems.length > 0) {
-            // Use Set to prevent showing duplicates if RNG unlocked it twice in the same batch
-            let uniqueItems = [...new Set(unlockedItems)];
-            uniqueItems.forEach(item => {
-                rewardHTML += `<span style="color: #00ffcc;">${item} Unlocked!</span><br>`;
-            });
-        }
-
-        // Show UI
+        document.getElementById('rewardIcon').innerText = '🌸';
+        document.getElementById('rewardDesc').innerHTML = `
+            <span style="color: #ffd700;">Redeemed ${totalPointsRedeemed} Points!</span><br><br>
+            <span style="color: var(--p1); font-size: 22px;">+${totalCoinsWon} Sakura Coins</span>
+        `;
         document.getElementById('rewardPopup').style.display = 'flex';
-        document.getElementById('rewardDesc').innerHTML = rewardHTML;
         
-        renderTasks();
-        isCracking = false;
+        isShaking = false;
     }, 600);
 }
 
@@ -338,19 +390,11 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// --- BOOTSTRAP & 5-SECOND SYNC LOOP ---
-async function init() {
-    await loadGameFromServer();
-    checkTaskRotation();
-    renderTasks();
-    
-    setInterval(() => {
-        checkTaskRotation();
-        renderTasks();
-    }, 5000);
-}
+setInterval(() => {
+    loadGameFromServer();
+}, 5000);
 
-init();
+loadGameFromServer();
 </script>
 </body>
 </html>
