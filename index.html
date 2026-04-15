@@ -192,6 +192,11 @@
 
     <a href="leaderboard/" target="_blank" class="btn-nav btn-event" style="width: 100%; text-align: center; display: block; box-sizing: border-box;" onclick="toggleMoreMenu();">🏆 Hall Of Fame</a>
     
+    <a href="Mailbox/" target="_blank" class="btn-nav" style="width: 100%; text-align: center; display: block; box-sizing: border-box; position: relative; background: #8e44ad; border-color: #9b59b6;" onclick="toggleMoreMenu(); markMailboxSeen();">
+        📮 Mailbox
+        <span id="mailBadge" style="display: none; position: absolute; top: -5px; right: -5px; width: 14px; height: 14px; background: #ff0044; border: 2px solid var(--bg1); border-radius: 50%; box-shadow: 0 0 10px #ff0044; animation: pulseEvent 2s infinite;"></span>
+    </a>
+    
     <button class="btn-nav btn-redeem" style="width: 100%; text-align: center;" onclick="redeemCode(); toggleMoreMenu();">🎁 Redeem Code</button>
     <button class="btn-nav" style="width: 100%; text-align: center;" onclick="openGame('https://mb.webs.vc', 'Encrypted Web Browser'); toggleMoreMenu();">🌐 Browser</button>
     <button class="btn-nav" style="width: 100%; text-align: center; background: #d00000; border-color: #ff0000; margin-top: 10px;" onclick="logout(); toggleMoreMenu();">🚪 Log Out</button>
@@ -364,6 +369,9 @@ async function loadGameFromServer() {
             applyCursor();
             calculatePetNeglect();
             updatePetUI();
+            
+            // Check for new mail once loaded!
+            checkMailbox();
         }
     } catch (e) { console.error("Failed to load data."); }
 }
@@ -383,6 +391,38 @@ async function saveGameToServer() {
 
     try { fetch('backend.php', { method: 'POST', body: formData }); } catch(e) {}
 }
+
+// --- MAILBOX NOTIFICATION LOGIC ---
+async function checkMailbox() {
+    if (document.getElementById('loginOverlay').style.display !== 'none') return;
+    try {
+        const fd = new FormData(); fd.append('action', 'load');
+        const res = await fetch('mailbox_backend.php', { method: 'POST', body: fd });
+        const result = await res.json();
+        if (result.success && result.mails.length > 0) {
+            const latestId = result.mails[0].id; // Gets the newest mail ID
+            const seenId = parseInt(localStorage.getItem('schoolExamsLastSeenMail') || '0');
+            if (latestId > seenId) {
+                document.getElementById('mailBadge').style.display = 'block';
+            }
+        }
+    } catch(e) { console.error("Mail check failed", e); }
+}
+
+async function markMailboxSeen() {
+    document.getElementById('mailBadge').style.display = 'none';
+    try {
+        const fd = new FormData(); fd.append('action', 'load');
+        const res = await fetch('mailbox_backend.php', { method: 'POST', body: fd });
+        const result = await res.json();
+        if (result.success && result.mails.length > 0) {
+            localStorage.setItem('schoolExamsLastSeenMail', result.mails[0].id);
+        }
+    } catch(e) {}
+}
+
+// Automatically check for new mail every 60 seconds while playing
+setInterval(checkMailbox, 60000);
 
 // INSTANT TAB SYNC
 document.addEventListener('visibilitychange', () => {
