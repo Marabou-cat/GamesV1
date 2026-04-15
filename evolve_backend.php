@@ -43,14 +43,14 @@ $EVOLUTIONS = [
         "img" => "../png/mc.png",
         "color" => "#ff00ff"
     ],
-    "frog" => [
-        "base_name" => "Ninja Frog",
-        "target_id" => "sage_toad",
-        "target_name" => "Sage Toad",
-        "req_level" => 15,
-        "cost" => 500,
+    "kitsune" => [
+        "base_name" => "Sakura Kitsune",
+        "target_id" => "bn",
+        "target_name" => "Blossom Ninetails",
+        "req_level" => 40,
+        "cost" => 600,
         "currency" => "gems",
-        "img" => "../png/sage_toad.png",
+        "img" => "../png/blossom_ninetails.png",
         "color" => "#00ffcc"
     ]
 ];
