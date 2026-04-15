@@ -37,10 +37,10 @@ $EVOLUTIONS = [
         "base_name" => "Cyber Kitty",
         "target_id" => "mecha_cat",
         "target_name" => "Mecha Cat",
-        "req_level" => 12,
-        "cost" => 35000,
-        "currency" => "coins",
-        "img" => "../png/mecha_cat.png",
+        "req_level" => 25,
+        "cost" => 350,
+        "currency" => "gems",
+        "img" => "../png/mc.png",
         "color" => "#ff00ff"
     ],
     "frog" => [
