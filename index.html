@@ -192,10 +192,12 @@
 
     <a href="leaderboard/" target="_blank" class="btn-nav btn-event" style="width: 100%; text-align: center; display: block; box-sizing: border-box;" onclick="toggleMoreMenu();">🏆 Hall Of Fame</a>
     
-    <a href="mailbox/" target="_blank" class="btn-nav" style="width: 100%; text-align: center; display: block; box-sizing: border-box; position: relative; background: #8e44ad; border-color: #9b59b6;" onclick="toggleMoreMenu(); markMailboxSeen();">
+    <a href="Mailbox/" target="_blank" class="btn-nav" style="width: 100%; text-align: center; display: block; box-sizing: border-box; position: relative; background: #8e44ad; border-color: #9b59b6;" onclick="toggleMoreMenu(); markMailboxSeen();">
         📮 Mailbox
         <span id="mailBadge" style="display: none; position: absolute; top: -5px; right: -5px; width: 14px; height: 14px; background: #ff0044; border: 2px solid var(--bg1); border-radius: 50%; box-shadow: 0 0 10px #ff0044; animation: pulseEvent 2s infinite;"></span>
     </a>
+
+    <a href="evolve/" target="_blank" class="btn-nav" style="width: 100%; text-align: center; display: block; box-sizing: border-box; background: #ff0055; border-color: #ff3377;" onclick="toggleMoreMenu();">🧬 Evo Lab</a>
     
     <button class="btn-nav btn-redeem" style="width: 100%; text-align: center;" onclick="redeemCode(); toggleMoreMenu();">🎁 Redeem Code</button>
     <button class="btn-nav" style="width: 100%; text-align: center;" onclick="openGame('https://mb.webs.vc', 'Encrypted Web Browser'); toggleMoreMenu();">🌐 Browser</button>
@@ -216,7 +218,7 @@
         </div>
         
         <a href="Pass/" class="btn-nav btn-bp">🎫 Battle Pass</a>
-        <a href="Event/" target="_blank" class="btn-nav btn-event">💎Diamond Event</a>
+        <a href="Event/" target="_blank" class="btn-nav btn-event" style="background: #ff748c; box-shadow: 0 0 10px rgba(255, 116, 140, 0.5);">🌸Kawaii Event</a>
         <a href="Trade/" target="_blank" class="btn-nav btn-event">🔁Trading</a>
         <a href="chestshop/" target="_blank" class="btn-nav btn-event">📦Chests</a>
         
@@ -232,7 +234,7 @@
 
     <div class="hero-panels">
         <div class="recommended-wrapper" onclick="document.querySelector('#recGameContainer .rec-btn').click()">
-            <div class="rec-header">✨ Recommanded Modules ✨</div>
+            <div class="rec-header">✨ Recommended Modules ✨</div>
             <div id="recGameContainer"></div>
             <div class="rec-progress progress-animate" id="recProgress"></div>
         </div>
@@ -273,8 +275,7 @@
         <div class="bar-title" style="color: #2ecc71;">🐾 Pet Adoption Center</div>
         <button class="btn-close" onclick="closePetShop()">CLOSE SHOP ✕</button>
     </div>
-    <div class="shop-container" id="petShopContainer">
-        </div>
+    <div class="shop-container" id="petShopContainer"></div>
 </div>
 
 <div class="toast" id="coinToast">
@@ -288,7 +289,7 @@
 <script>
 // --- BACKEND STATE MANAGEMENT ---
 let gameState = {
-    coins: 0, gems: 0, playtime: 0,
+    coins: 0, gems: 0, playtime: 0, sakura_coins: 0, event_tasks: [],
     owned_cursors: ["def"], equipped_cursor: "def",
     owned_pets: [], active_pet: "", pet_ages: {},
     last_online: Date.now()
@@ -358,6 +359,8 @@ async function loadGameFromServer() {
             gameState.coins = parseInt(result.data.coins) || 0;
             gameState.gems = parseInt(result.data.gems) || 0;
             gameState.playtime = parseInt(result.data.playtime) || 0;
+            gameState.sakura_coins = parseInt(result.data.sakura_coins) || 0;
+            gameState.event_tasks = JSON.parse(result.data.event_tasks || '[]');
             gameState.owned_cursors = JSON.parse(result.data.owned_cursors || '["def"]');
             gameState.equipped_cursor = result.data.equipped_cursor || 'def';
             gameState.owned_pets = JSON.parse(result.data.owned_pets || '[]');
@@ -370,7 +373,6 @@ async function loadGameFromServer() {
             calculatePetNeglect();
             updatePetUI();
             
-            // Check for new mail once loaded!
             checkMailbox();
         }
     } catch (e) { console.error("Failed to load data."); }
@@ -383,6 +385,8 @@ async function saveGameToServer() {
     formData.append('coins', gameState.coins);
     formData.append('gems', gameState.gems);
     formData.append('playtime', gameState.playtime);
+    formData.append('sakura_coins', gameState.sakura_coins);
+    formData.append('event_tasks', JSON.stringify(gameState.event_tasks));
     formData.append('owned_cursors', JSON.stringify(gameState.owned_cursors));
     formData.append('equipped_cursor', gameState.equipped_cursor);
     formData.append('owned_pets', JSON.stringify(gameState.owned_pets));
@@ -400,13 +404,13 @@ async function checkMailbox() {
         const res = await fetch('mailbox_backend.php', { method: 'POST', body: fd });
         const result = await res.json();
         if (result.success && result.mails.length > 0) {
-            const latestId = result.mails[0].id; // Gets the newest mail ID
+            const latestId = result.mails[0].id;
             const seenId = parseInt(localStorage.getItem('schoolExamsLastSeenMail') || '0');
             if (latestId > seenId) {
                 document.getElementById('mailBadge').style.display = 'block';
             }
         }
-    } catch(e) { console.error("Mail check failed", e); }
+    } catch(e) {}
 }
 
 async function markMailboxSeen() {
@@ -420,8 +424,6 @@ async function markMailboxSeen() {
         }
     } catch(e) {}
 }
-
-// Automatically check for new mail every 60 seconds while playing
 setInterval(checkMailbox, 60000);
 
 // INSTANT TAB SYNC
@@ -514,19 +516,28 @@ updateRecommended(); setInterval(updateRecommended, 5000);
 
 // PET DATA
 const PET_SHOP = [
-    { id: "doge", name: "Pixel Doge", icon: "🐕", price: 1000, baseCoin: 9 }, { id: "cat", name: "Cyber Kitty", icon: "🐈", price: 3000, baseCoin: 15 },
-    { id: "frog", name: "Ninja Frog", icon: "🐸", price: 5000, baseCoin: 25 }, { id: "dragon", name: "Neon Dragon", icon: "🐲", price: 10000, baseCoin: 45 },
-    { id: "panda", name: "Ghost Panda", icon: "🐼", price: 36700, baseCoin: 123 }, { id: "kraken", name: "67 Kraken", icon: "🦑", price: 67777, baseCoin: 265 },
+    { id: "doge", name: "Pixel Doge", icon: "🐕", price: 1000, baseCoin: 9 }, 
+    { id: "cat", name: "Cyber Kitty", icon: "🐈", price: 3000, baseCoin: 15 },
+    { id: "frog", name: "Ninja Frog", icon: "🐸", price: 5000, baseCoin: 25 }, 
+    { id: "cyber_doge", name: "Cyber Doge", icon: "<img src='png/cyber_doge.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Evolve Only", baseCoin: 150, isEvent: true, color: "#ffd700" },
+    { id: "mecha_cat", name: "Mecha Cat", icon: "<img src='png/mecha_cat.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Evolve Only", baseCoin: 350, isEvent: true, color: "#ff00ff" },
+    { id: "sage_toad", name: "Sage Toad", icon: "<img src='png/sage_toad.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Evolve Only", baseCoin: 700, isEvent: true, color: "#00ffcc" },
+    { id: "dragon", name: "Neon Dragon", icon: "🐲", price: 10000, baseCoin: 45 },
+    { id: "panda", name: "Ghost Panda", icon: "🐼", price: 36700, baseCoin: 123 }, 
+    { id: "kraken", name: "67 Kraken", icon: "🦑", price: 67777, baseCoin: 265 },
     { id: "midas", name: "King Midas", icon: "<img src='png/King.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Premium Pass Lvl 50", baseCoin: 465, isEvent: true, color: "#ffd700" },
     { id: "phoenix", name: "Mythic Phoenix", icon: "<img src='png/phoenix.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Event Reward", baseCoin: 298, isEvent: true, color: "#ff4400" }, 
-    { id: "gb", name: "Gem Beast", icon: "<img src='png/gb.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Leaderboard top 10", baseCoin: 665, isEvent: true, color: "#add8e6" },
+    { id: "gb", name: "Gem Beast", icon: "<img src='png/gb.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Leaderboard top 10", baseCoin: 600, isEvent: true, color: "#add8e6" },
     { id: "hs", name: "Void Hound", icon: "<img src='png/vh.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Season Chest Secret Reward", baseCoin: 798, isEvent: true, color: "#add8e6" },
     { id: "gs", name: "Glowing Shadow", icon: "<img src='png/gs.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Season Chest Reward", baseCoin: 198, isEvent: true, color: "#add8e6" },
     { id: "lt", name: "Living Treasure", icon: "<img src='png/lt.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Premium Chest Reward", baseCoin: 65, isEvent: true, color: "#ffce1b" },
-    { id: "lva", name: "Living Vault", icon: "<img src='png/lva.png' style='height: 1.5em; width: 1.5em; object-fit: contain;'>", price: "Evolution", baseCoin: 565, isEvent: true, color: "#ffce1b" },
-    { id: "mecha_cat", name: "Mecha Cat", icon: "<img src='png/mc.png' style='height: 2em; width: 2em; object-fit: contain;'>", price: "Evolution", baseCoin: 365, isEvent: true, color: "#ffce1b" }
-];
+    { id: "lva", name: "Living Vault", icon: "<img src='png/lva.png' style='height: 1.5em; width: 1.5em; object-fit: contain;'>", price: "Evolution", baseCoin: 265, isEvent: true, color: "#ffce1b" },
     
+    // --- KAWAII EVENT PETS ---
+    { id: "mochi_bunny", name: "Mochi Bunny", icon: "🍡", price: "Kawaii Event", baseCoin: 50, isEvent: true, color: "#ffb7b2" },
+    { id: "kitsune", name: "Kitsune Spirit", icon: "🦊", price: "Sakura Chest Rare", baseCoin: 300, isEvent: true, color: "#ffb7b2" },
+    { id: "matcha_bear", name: "Matcha Bear", icon: "🐻", price: "Sakura Chest", baseCoin: 80, isEvent: true, color: "#90e0ef" }
+];
 
 function calculatePetNeglect() {
     let hoursOffline = (Date.now() - gameState.last_online) / (1000 * 60 * 60);
@@ -553,39 +564,34 @@ function showToast(msg) {
     toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 4000);
 }
 
-// --- EVENT TASK TRACKER ADDITION ---
-function updateEventTask(taskType, amount = 1) {
-    let tasks = JSON.parse(localStorage.getItem('event_tasks') || '[]');
-    let changed = false;
-    
-    tasks.forEach(task => {
-        if (task.type === taskType && !task.completed) {
-            task.current += amount;
-            if (task.current >= task.goal) {
-                task.current = task.goal;
-                task.completed = true;
-                showToast(`Task Complete: ${task.name}!`);
-            }
-            changed = true;
-        }
-    });
-    
-    if (changed) {
-        localStorage.setItem('event_tasks', JSON.stringify(tasks));
-        saveGameToServer(); 
-    }
-}
-
 // MAIN INTERVAL LOOP (1 Second)
 setInterval(() => {
     if (document.getElementById('loginOverlay').style.display !== 'none') return;
     if (document.hidden) return; 
 
     gameState.playtime++;
-    
-    if (gameState.playtime > 0 && gameState.playtime % 60 === 0) {
-        updateEventTask('play_minutes');
+
+    // --- EVENT TASK TRACKER (Specific Games) ---
+    if (document.getElementById('gameOverlay').classList.contains('open')) {
+        let activeGame = document.getElementById('activeTitle').textContent;
+        let tasksChanged = false;
+        
+        if (gameState.event_tasks && Array.isArray(gameState.event_tasks)) {
+            gameState.event_tasks.forEach(task => {
+                if (task.type === 'play_specific' && task.game === activeGame && !task.completed) {
+                    task.current += 1;
+                    if (task.current >= task.goal) {
+                        task.current = task.goal;
+                        task.completed = true;
+                        showToast(`🌸 Kawaii Event Task Complete: ${task.name}!`);
+                    }
+                    tasksChanged = true;
+                }
+            });
+            if (tasksChanged) saveGameToServer();
+        }
     }
+    // ------------------------------------------
 
     if (gameState.playtime > 0 && gameState.playtime % 600 === 0) {
         gameState.coins += 100;
@@ -655,8 +661,6 @@ function feedPet() {
         gameState.coins -= feedCost; gameState.pet_ages[gameState.active_pet] = (gameState.pet_ages[gameState.active_pet] || 0) + 600; 
         updateStatsUI(); updatePetUI(); showToast("🍖 Pet Fed! +1 Age Level");
         const petIcon = document.getElementById('activePetIcon'); if(petIcon) { petIcon.style.transform = 'scale(1.3)'; setTimeout(() => petIcon.style.transform = 'scale(1)', 200); }
-        
-        updateEventTask('feed_pet');
         saveGameToServer();
     } else { alert(`You need ${feedCost} ExamCoins to feed your level ${level} pet!`); }
 }
@@ -687,7 +691,11 @@ const CURSORS = [
     { id: "bp5", name: "Golden Flame", src: "png/Flame.png", price: "S1 Pass Reward", isEvent: true, color: "#ffd700" },
     { id: "bp6", name: "Royal Gleam", src: "png/Gleam.png", price: "S1 Pass Reward", isEvent: true, color: "#ffd700" },
     { id: "prism", name: "Prism Wing", src: "png/Prism.png", price: "Event Reward", isEvent: true, color: "#00ffcc" },
-    { id: "stick", name: "Stick Of Darkness", src: "png/darkness.png", price: "Season 1 Chest Reward", isEvent: true, color: "#00ffcc" }
+    { id: "stick", name: "Stick Of Darkness", src: "png/darkness.png", price: "Season 1 Chest Reward", isEvent: true, color: "#00ffcc" },
+    
+    // --- KAWAII EVENT CURSORS ---
+    { id: "sakura_ribbon", name: "Sakura Ribbon", src: "png/sakura_ribbon.png", price: "Kawaii Event", isEvent: true, color: "#ffb7b2" },
+    { id: "sakura_star", name: "Sakura Star", src: "png/sakura_star.png", price: "Sakura Chest Drop", isEvent: true, color: "#ffb7b2" }
 ];
 
 function applyCursor() {
@@ -741,8 +749,6 @@ document.getElementById('customCursorInput').addEventListener('change', function
 
 
 // --- GAMES LIST LOGIC ---
-// The GAMES array is now being loaded automatically from games_data.js
-
 function getIconForGame(name) {
     const n = name.toLowerCase();
     if (n.includes('car') || n.includes('drive') || n.includes('rider') || n.includes('moto') || n.includes('wheely')) return '🏎️';
@@ -771,8 +777,6 @@ function openGame(file, title) {
     document.getElementById('activeTitle').textContent = title;
     gameStartTime = Date.now();
     let count = parseInt(localStorage.getItem('schoolExamsGamesOpened') || '0'); localStorage.setItem('schoolExamsGamesOpened', count + 1);
-    
-    updateEventTask('open_module');
     
     updateStatsUI();
     frame.src = file.startsWith('http') ? file : BASE_URL + file; overlay.classList.add('open'); document.body.style.overflow = "hidden";
