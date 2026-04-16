@@ -317,6 +317,12 @@
         <div class="bar-title" style="color: #e67e22;">🎒 Your Inventory</div>
         <button class="btn-close" onclick="closeInventory()">CLOSE ✕</button>
     </div>
+    
+    <div class="inv-actions" id="invActions" style="text-align: center; padding: 20px 20px 0 20px; background: var(--bg0);">
+        <button id="btnSellMode" class="btn" style="width: auto; background: #e74c3c; display: inline-block;" onclick="toggleSellMode()">💰 Sell Items</button>
+        <button id="btnCancelSell" class="btn" style="width: auto; background: #555; display: none;" onclick="cancelSellMode()">Cancel</button>
+    </div>
+
     <div class="inv-tabs">
         <button class="inv-tab-btn active" id="tabBtnPets" onclick="showInvTab('pets')">🐾 My Pets</button>
         <button class="inv-tab-btn" id="tabBtnCursors" onclick="showInvTab('cursors')">🖱️ My Cursors</button>
@@ -345,6 +351,10 @@ let gameState = {
 
 const MAX_PETS = 50;
 const MAX_CURSORS = 40;
+
+// --- SELL MODE VARIABLES ---
+let isSellMode = false;
+let selectedForSale = [];
 
 // --- AUTHENTICATION & API COMMUNICATION ---
 async function performAuth(action) {
@@ -596,6 +606,10 @@ function updateCursorPosition() {
 }
 requestAnimationFrame(updateCursorPosition);
 
+document.getElementById('gameFrame').addEventListener('mouseenter', () => { isOverIframe = true; domCursor.style.display = 'none'; cursorVisible = false; });
+document.getElementById('gameFrame').addEventListener('mouseleave', () => { isOverIframe = false; });
+document.addEventListener('mouseout', (e) => { if (!e.relatedTarget && !isOverIframe) { domCursor.style.display = 'none'; cursorVisible = false; } });
+
 const BASE_URL = "UGS-Files/";
 
 function toggleMoreMenu() { document.getElementById('moreSidebar').classList.toggle('open'); }
@@ -712,6 +726,7 @@ setInterval(() => {
 
     gameState.playtime++;
 
+    // --- EVENT TASK TRACKER (Specific Games) ---
     if (document.getElementById('gameOverlay').classList.contains('open')) {
         let activeGame = document.getElementById('activeTitle').textContent;
         let tasksChanged = false;
@@ -731,6 +746,7 @@ setInterval(() => {
             if (tasksChanged) saveGameToServer();
         }
     }
+    // ------------------------------------------
 
     if (gameState.playtime > 0 && gameState.playtime % 600 === 0) {
         gameState.coins += 100;
@@ -759,7 +775,7 @@ setInterval(() => {
 // --- BUY ONLY PET SHOP UI ---
 function renderPetShop() {
     const container = document.getElementById('petShopContainer');
-    container.innerHTML = `<div class="pet-warning-box"><strong>⚠️ Shop Rules:</strong> The shop is for buying only! Equip your pets in your 🎒 Inventory.</div>`;
+    container.innerHTML = `<div class="pet-warning-box"><strong>⚠️ Shop Rules:</strong> The shop is for buying only! You can own multiple of the same pet to level them up individually. Equip them in your 🎒 Inventory.</div>`;
     
     PET_SHOP.forEach(pet => {
         const card = document.createElement('div'); card.className = `shop-item`;
@@ -907,6 +923,8 @@ function openInventory() {
 }
 function closeInventory() {
     document.getElementById('inventoryOverlay').classList.remove('open');
+    isSellMode = false;
+    selectedForSale = [];
 }
 
 function showInvTab(tabName) {
@@ -925,15 +943,115 @@ function showInvTab(tabName) {
     renderInventory();
 }
 
+// --- SELL MECHANIC LOGIC ---
+function toggleSellMode() {
+    if (isSellMode && selectedForSale.length > 0) {
+        confirmSale();
+    } else {
+        isSellMode = !isSellMode;
+        selectedForSale = [];
+        renderInventory();
+    }
+}
+
+function cancelSellMode() {
+    isSellMode = false;
+    selectedForSale = [];
+    renderInventory();
+}
+
+function toggleSelectSale(id, isCursor = false, maxAvailable = 1) {
+    if (isCursor) {
+        const currentSelected = selectedForSale.filter(x => x === id).length;
+        if (currentSelected >= maxAvailable) {
+            // Deselect all if tapped when full
+            selectedForSale = selectedForSale.filter(x => x !== id);
+        } else {
+            // Add one
+            selectedForSale.push(id);
+        }
+    } else {
+        if (selectedForSale.includes(id)) {
+            selectedForSale = selectedForSale.filter(x => x !== id);
+        } else {
+            selectedForSale.push(id);
+        }
+    }
+    renderInventory();
+}
+
+function confirmSale() {
+    let totalReward = 0;
+    let itemsSold = 0;
+
+    selectedForSale.forEach(id => {
+        if (id.includes('::')) { 
+            // It's a Pet
+            const baseId = id.split('::')[0];
+            const petInfo = PET_SHOP.find(p => p.id === baseId);
+            if (petInfo) {
+                totalReward += (petInfo.baseCoin * 4);
+                gameState.owned_pets = gameState.owned_pets.filter(p => p !== id);
+                delete gameState.pet_ages[id];
+                itemsSold++;
+            }
+        } else { 
+            // It's a Cursor
+            const curInfo = CURSORS.find(c => c.id === id);
+            if (curInfo) {
+                const reward = curInfo.baseCoin || 1;
+                totalReward += (reward * 4);
+                
+                const index = gameState.owned_cursors.indexOf(id);
+                if (index > -1) {
+                    gameState.owned_cursors.splice(index, 1);
+                    itemsSold++;
+                }
+            }
+        }
+    });
+
+    if (itemsSold > 0) {
+        gameState.coins += totalReward;
+        updateStatsUI();
+        saveGameToServer();
+        showToast(`Sold ${itemsSold} item(s) for ${totalReward} 🪙!`);
+    }
+
+    isSellMode = false;
+    selectedForSale = [];
+    renderInventory();
+}
+
+// --- RENDER INVENTORY ---
 function renderInventory() {
     const petContainer = document.getElementById('invPetsContainer');
     const curContainer = document.getElementById('invCursorsContainer');
     petContainer.innerHTML = ''; 
     curContainer.innerHTML = '';
     
-    // Update Tab Counters dynamically
+    // Update Tab Counters
     document.getElementById('tabBtnPets').innerText = `🐾 My Pets (${gameState.owned_pets.length}/${MAX_PETS})`;
     document.getElementById('tabBtnCursors').innerText = `🖱️ My Cursors (${gameState.owned_cursors.length}/${MAX_CURSORS})`;
+
+    // Handle Sell Mode UI Buttons
+    const btnSell = document.getElementById('btnSellMode');
+    const btnCancel = document.getElementById('btnCancelSell');
+    
+    if (isSellMode) {
+        btnCancel.style.display = 'inline-block';
+        if (selectedForSale.length > 0) {
+            btnSell.innerText = `💰 Sell Selected (${selectedForSale.length})`;
+            btnSell.style.background = '#3ba55c'; 
+        } else {
+            btnSell.innerText = `💰 Select Items to Sell...`;
+            btnSell.style.background = '#e74c3c';
+        }
+    } else {
+        btnCancel.style.display = 'none';
+        btnSell.innerText = `💰 Sell Items`;
+        btnSell.style.background = '#e74c3c';
+    }
 
     let curCounts = {};
     gameState.owned_cursors.forEach(id => curCounts[id] = (curCounts[id] || 0) + 1);
@@ -950,12 +1068,25 @@ function renderInventory() {
                 const level = Math.floor((gameState.pet_ages[petUid] || 0) / 600) + 1;
                 const reward = pet.baseCoin + (level * 2);
                 
-                let btnHTML = isEquipped 
-                    ? `<button class="shop-btn equipped">Equipped ✓</button>` 
-                    : `<button class="shop-btn equip" onclick="equipPet('${petUid}')" style="background:#3ba55c">Equip</button>`;
+                let btnHTML = '';
+                let cardStyle = pet.color ? `border-color:${pet.color};` : '';
+                
+                if (isSellMode) {
+                    if (isEquipped) {
+                        btnHTML = `<button class="shop-btn" disabled style="background: #555;">Equipped (Locked)</button>`;
+                    } else {
+                        const isSelected = selectedForSale.includes(petUid);
+                        if (isSelected) cardStyle = `border-color: #e74c3c; box-shadow: 0 0 15px rgba(231, 76, 60, 0.6);`;
+                        btnHTML = `<button class="shop-btn ${isSelected ? 'equipped' : 'buy'}" onclick="toggleSelectSale('${petUid}')">${isSelected ? 'Selected ✅' : 'Select to Sell'}</button>`;
+                    }
+                } else {
+                    btnHTML = isEquipped 
+                        ? `<button class="shop-btn equipped">Equipped ✓</button>` 
+                        : `<button class="shop-btn equip" onclick="equipPet('${petUid}')" style="background:#3ba55c">Equip</button>`;
+                }
                     
                 petContainer.innerHTML += `
-                    <div class="shop-item ${isEquipped ? 'equipped' : ''}" style="position:relative; ${pet.color ? 'border-color:'+pet.color : ''}">
+                    <div class="shop-item ${isEquipped ? 'equipped' : ''}" style="position:relative; ${cardStyle}">
                         <div style="font-size: 50px; margin-bottom: 10px;">${pet.icon}</div>
                         <h3>${pet.name}</h3>
                         <p style="font-size: 12px; color: #ffd700;">Earns: +${reward} 🪙/2m</p>
@@ -973,12 +1104,32 @@ function renderInventory() {
             const count = curCounts[item.id];
             const isEquipped = gameState.equipped_cursor === item.id;
             
-            let btnHTML = isEquipped 
-                ? `<button class="shop-btn equipped">Equipped ✓</button>` 
-                : `<button class="shop-btn equip" onclick="equipCursor('${item.id}')" style="background:#3ba55c">Equip</button>`;
+            let btnHTML = '';
+            let cardStyle = item.color ? `border-color:${item.color};` : '';
+
+            if (isSellMode) {
+                const selectedCount = selectedForSale.filter(x => x === item.id).length;
+                const availableToSell = count - (isEquipped ? 1 : 0); // Can't sell equipped
+
+                if (availableToSell <= 0) {
+                    btnHTML = `<button class="shop-btn" disabled style="background: #555;">Equipped (Locked)</button>`;
+                } else {
+                    if (selectedCount > 0) cardStyle = `border-color: #e74c3c; box-shadow: 0 0 15px rgba(231, 76, 60, 0.6);`;
+                    
+                    if (selectedCount >= availableToSell) {
+                        btnHTML = `<button class="shop-btn equipped" onclick="toggleSelectSale('${item.id}', true, ${availableToSell})">Selected All (${selectedCount}) ✅</button>`;
+                    } else {
+                        btnHTML = `<button class="shop-btn buy" onclick="toggleSelectSale('${item.id}', true, ${availableToSell})">Select (${selectedCount}/${availableToSell})</button>`;
+                    }
+                }
+            } else {
+                btnHTML = isEquipped 
+                    ? `<button class="shop-btn equipped">Equipped ✓</button>` 
+                    : `<button class="shop-btn equip" onclick="equipCursor('${item.id}')" style="background:#3ba55c">Equip</button>`;
+            }
                 
             curContainer.innerHTML += `
-                <div class="shop-item ${isEquipped ? 'equipped' : ''}" style="position:relative; ${item.color ? 'border-color:'+item.color : ''}">
+                <div class="shop-item ${isEquipped ? 'equipped' : ''}" style="position:relative; ${cardStyle}">
                     <div class="inventory-badge">x${count}</div>
                     <img src="${item.src}" class="shop-preview">
                     <h3>${item.name}</h3>
