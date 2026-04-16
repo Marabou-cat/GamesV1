@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SchoolExams - Digital Portal</title>
 
     <link rel="icon" type="image/png" href="logo2.png">
@@ -149,21 +149,30 @@
         .shop-container { padding: 30px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; width: 100%; }
         .shop-item { background: var(--bg1); border: 2px solid var(--line); border-radius: var(--r); padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: 0.2s; }
         .shop-item:hover { border-color: var(--p1); transform: scale(1.05); }
-        .shop-item.owned { border-color: #3ba55c; }
         .shop-item.equipped { border-color: #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
         .shop-item.event-item { border-color: #ff0000; }
         .shop-preview { width: 50px; height: 50px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+        
         .shop-btn { background: var(--p0); border: none; color: #fff; padding: 8px 15px; border-radius: 10px; font-weight: bold; width: 100%; transition: 0.2s; cursor: pointer; }
         .shop-btn.buy { background: #ffd700; color: #000; }
         .shop-btn.buy:hover { background: #ffea00; }
         .shop-btn.equip { background: var(--p0); }
         .shop-btn.equipped { background: #3ba55c; pointer-events: none; }
-        .shop-btn.event-btn { background: #ff0000; pointer-events: none; }
+        .shop-btn.event-btn { background: #555; color: #ccc; pointer-events: none; border: 2px dashed #777; }
+
+        /* QUANTITY BADGE FOR INVENTORY */
+        .inventory-badge { position: absolute; top: -10px; right: -10px; background: #ff0055; color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 0 10px #ff0055; border: 2px solid var(--bg1); z-index: 10; }
 
         .toast { position: fixed; bottom: 30px; right: 30px; background: var(--p0); color: #fff; padding: 16px 24px; border-radius: 12px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transform: translateY(100px); opacity: 0; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 3000; display: flex; align-items: center; gap: 10px; }
         .toast.show { transform: translateY(0); opacity: 1; }
         
         .pet-warning-box { grid-column: 1 / -1; background: rgba(255, 0, 0, 0.1); border: 1px solid #ff4444; border-radius: 12px; padding: 15px; text-align: center; color: #ffbbbb; font-size: 14px; margin-bottom: 10px; }
+        
+        /* INVENTORY TABS */
+        .inv-tabs { display: flex; justify-content: center; gap: 20px; padding: 20px; background: var(--bg0); border-bottom: 2px solid var(--line); }
+        .inv-tab-btn { background: var(--bg2); color: var(--w); border: 2px solid var(--p2); padding: 10px 30px; border-radius: 20px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .inv-tab-btn.active { background: var(--p0); border-color: var(--p1); box-shadow: var(--glow); }
+        .inv-tab-btn:hover:not(.active) { background: var(--p2); }
     </style>
 </head>
 <body>
@@ -219,11 +228,12 @@
         
         <a href="Pass/" class="btn-nav btn-bp">🎫 Battle Pass</a>
         <a href="Event/" target="_blank" class="btn-nav btn-event" style="background: #ff748c; box-shadow: 0 0 10px rgba(255, 116, 140, 0.5);">🌸Kawaii Event</a>
-        <a href="Trade/" target="_blank" class="btn-nav btn-event">🔁Trading</a>
         <a href="chestshop/" target="_blank" class="btn-nav btn-event">📦Chests</a>
         
-        <button class="btn-nav" onclick="openPetShop()" style="background: linear-gradient(135deg, #3ba55c, #2ecc71); color: #fff; border: none;">🐾 Pets</button>
-        <button class="btn-nav" onclick="openShop()" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none;">🛒 Shop</button>
+        <button class="btn-nav" onclick="openPetShop()" style="background: linear-gradient(135deg, #3ba55c, #2ecc71); color: #fff; border: none;">🐾 Pet Shop</button>
+        <button class="btn-nav" onclick="openShop()" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; border: none;">🛒 Cursor Shop</button>
+        
+        <button class="btn-nav" onclick="openInventory()" style="background: linear-gradient(135deg, #e67e22, #d35400); color: #fff; border: 1px solid #e67e22;">🎒 Inventory</button>
     </div>
 </header>
 
@@ -264,7 +274,7 @@
 
 <div class="overlay" id="shopOverlay">
     <div class="overlay-bar">
-        <div class="bar-title" style="color: #ffd700;">🛒 Cursor Shop</div>
+        <div class="bar-title" style="color: #ffd700;">🛒 Cursor Shop (Buy Only)</div>
         <button class="btn-close" onclick="closeShop()">CLOSE SHOP ✕</button>
     </div>
     <div class="shop-container" id="shopContainer"></div>
@@ -272,10 +282,24 @@
 
 <div class="overlay" id="petShopOverlay">
     <div class="overlay-bar">
-        <div class="bar-title" style="color: #2ecc71;">🐾 Pet Adoption Center</div>
+        <div class="bar-title" style="color: #2ecc71;">🐾 Pet Adoption Center (Buy Only)</div>
         <button class="btn-close" onclick="closePetShop()">CLOSE SHOP ✕</button>
     </div>
     <div class="shop-container" id="petShopContainer"></div>
+</div>
+
+<div class="overlay" id="inventoryOverlay">
+    <div class="overlay-bar">
+        <div class="bar-title" style="color: #e67e22;">🎒 Your Inventory</div>
+        <button class="btn-close" onclick="closeInventory()">CLOSE ✕</button>
+    </div>
+    <div class="inv-tabs">
+        <button class="inv-tab-btn active" id="tabBtnPets" onclick="showInvTab('pets')">🐾 My Pets</button>
+        <button class="inv-tab-btn" id="tabBtnCursors" onclick="showInvTab('cursors')">🖱️ My Cursors</button>
+    </div>
+    
+    <div class="shop-container" id="invPetsContainer"></div>
+    <div class="shop-container" id="invCursorsContainer" style="display: none;"></div>
 </div>
 
 <div class="toast" id="coinToast">
@@ -349,6 +373,39 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// --- MIGRATION: SEPARATE INDIVIDUAL PETS ---
+function sanitizePets() {
+    let migrated = false;
+    let new_owned = [];
+    let new_ages = {};
+    
+    gameState.owned_pets.forEach((pet, i) => {
+        if (!pet.includes('::')) {
+            migrated = true;
+            let uid = pet + '::' + Date.now() + '_' + i;
+            new_owned.push(uid);
+            new_ages[uid] = gameState.pet_ages[pet] || 0;
+            
+            if (gameState.active_pet === pet) {
+                gameState.active_pet = uid;
+            }
+        } else {
+            new_owned.push(pet);
+            new_ages[pet] = gameState.pet_ages[pet] || 0;
+        }
+    });
+    
+    if (migrated) {
+        gameState.owned_pets = new_owned;
+        gameState.pet_ages = new_ages;
+        // Clean up old keys
+        Object.keys(gameState.pet_ages).forEach(k => {
+            if(!k.includes('::')) delete gameState.pet_ages[k];
+        });
+        saveGameToServer();
+    }
+}
+
 async function loadGameFromServer() {
     const formData = new FormData(); formData.append('action', 'load');
     try {
@@ -368,6 +425,9 @@ async function loadGameFromServer() {
             gameState.pet_ages = JSON.parse(result.data.pet_ages || '{}');
             gameState.last_online = parseInt(result.data.last_online) || Date.now();
             
+            // Convert any newly won pets from backend into unique separated IDs!
+            sanitizePets(); 
+
             updateStatsUI();
             applyCursor();
             calculatePetNeglect();
@@ -474,10 +534,9 @@ function redeemCode() {
 
         if (prefix === "EXAM") {
             if (amount === 10000) {
-                if (gameState.owned_cursors.includes("dragon")) { alert("✅ You already own the Event Dragon Cursor!"); return; }
                 gameState.owned_cursors.push("dragon"); usedCodes.push(input);
                 localStorage.setItem('schoolExamsUsedCodes', JSON.stringify(usedCodes));
-                renderShop(); equipCursor("dragon"); 
+                equipCursor("dragon"); 
                 alert("🐉 INCREDIBLE! You redeemed the 1% Prize and unlocked the Dragon Cursor!");
                 showToast("Dragon Cursor Unlocked!");
             } else {
@@ -601,7 +660,8 @@ setInterval(() => {
         gameState.pet_ages[gameState.active_pet] = (gameState.pet_ages[gameState.active_pet] || 0) + 1; 
         
         if (gameState.playtime % 120 === 0) {
-            const petInfo = PET_SHOP.find(p => p.id === gameState.active_pet);
+            const baseId = gameState.active_pet.split('::')[0];
+            const petInfo = PET_SHOP.find(p => p.id === baseId);
             if (petInfo) {
                 const level = Math.floor(gameState.pet_ages[gameState.active_pet] / 600) + 1; 
                 gameState.coins += (petInfo.baseCoin + (level * 2));
@@ -613,40 +673,47 @@ setInterval(() => {
     }
 }, 1000);
 
-// --- PET SHOP UI FUNCTIONS ---
+// --- BUY ONLY PET SHOP UI ---
 function renderPetShop() {
     const container = document.getElementById('petShopContainer');
-    container.innerHTML = `<div class="pet-warning-box"><strong>⚠️ Neglect Warning:</strong> Every 12 hours you are offline, pets <strong>LOSE 1 Level</strong>.</div>`;
+    container.innerHTML = `<div class="pet-warning-box"><strong>⚠️ Shop Rules:</strong> The shop is for buying only! You can own multiple of the same pet to level them up individually. Equip them in your 🎒 Inventory.</div>`;
     
     PET_SHOP.forEach(pet => {
-        const isOwned = gameState.owned_pets.includes(pet.id); const isEquipped = gameState.active_pet === pet.id;
-        const level = Math.floor((gameState.pet_ages[pet.id] || 0) / 600) + 1; const reward = pet.baseCoin + (level * 2);
-
-        const card = document.createElement('div'); card.className = `shop-item ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`;
-        if (pet.color && pet.isEvent && !isOwned) card.style.borderColor = pet.color;
+        const card = document.createElement('div'); card.className = `shop-item`;
+        if (pet.color && pet.isEvent) card.style.borderColor = pet.color;
         
-        let btnHTML = isEquipped ? `<button class="shop-btn equipped">Equipped ✓</button>` 
-            : isOwned ? `<button class="shop-btn equip" onclick="equipPet('${pet.id}')" style="background:#3ba55c">Equip</button>` 
-            : (typeof pet.price === 'string') ? `<button class="shop-btn event-btn" style="${pet.color ? 'background:'+pet.color+'; color:#000; box-shadow:none;' : ''}">${pet.price}</button>` 
-            : `<button class="shop-btn buy" onclick="buyPet('${pet.id}', ${pet.price})">Adopt 🪙 ${pet.price}</button>`;
+        let btnHTML = (typeof pet.price === 'string') 
+            ? `<button class="shop-btn event-btn" style="${pet.color ? 'background:'+pet.color+'; color:#000; border: none; box-shadow:none;' : ''}">LOCKED (${pet.price})</button>` 
+            : `<button class="shop-btn buy" onclick="buyPet('${pet.id}', ${pet.price})">Adopt 🪙 ${pet.price.toLocaleString()}</button>`;
 
-        let nameColor = pet.isEvent && !isOwned ? (pet.color || '#ff0000') : '#fff';
-        card.innerHTML = `<div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); display: flex; align-items: center; justify-content: center;">${pet.icon}</div><h3 style="font-size: 16px; margin-bottom: 5px; color: ${nameColor};">${pet.name}</h3><p style="font-size: 12px; color: #ffd700; margin-bottom: 5px;">Earns: +${reward} 🪙/2m</p>${isOwned ? `<p style="font-size: 11px; color: var(--p1); margin-bottom: 10px;">Level ${level}</p>` : '<p style="margin-bottom:10px;"></p>'}${btnHTML}`;
+        let nameColor = pet.isEvent ? (pet.color || '#ff0000') : '#fff';
+        card.innerHTML = `
+            <div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); display: flex; align-items: center; justify-content: center;">${pet.icon}</div>
+            <h3 style="font-size: 16px; margin-bottom: 5px; color: ${nameColor};">${pet.name}</h3>
+            <p style="font-size: 12px; color: #ffd700; margin-bottom: 10px;">Earns: +${pet.baseCoin} 🪙/2m at Lvl 1</p>
+            ${btnHTML}
+        `;
         container.appendChild(card);
     });
 }
 
-function buyPet(id, price) {
+function buyPet(baseId, price) {
     if (gameState.coins >= price) {
-        gameState.coins -= price; gameState.owned_pets.push(id); gameState.pet_ages[id] = 0; 
-        updateStatsUI(); showToast("Pet Adopted!"); equipPet(id);
+        gameState.coins -= price; 
+        // Generate a completely unique ID for this specific pet instance
+        let uid = baseId + '::' + Date.now();
+        gameState.owned_pets.push(uid); 
+        gameState.pet_ages[uid] = 0; 
+        updateStatsUI(); 
+        showToast("Pet Adopted! Check your Inventory."); 
         saveGameToServer();
     } else { alert("You need more ExamCoins to adopt this pet!"); }
 }
 
-function equipPet(id) {
-    gameState.active_pet = id;
-    renderPetShop(); updatePetUI();
+function equipPet(uid) {
+    gameState.active_pet = uid;
+    renderInventory(); 
+    updatePetUI();
     saveGameToServer();
 }
 
@@ -666,7 +733,9 @@ function updatePetUI() {
     const panel = document.getElementById('petPanel');
     if (!gameState.active_pet) { panel.style.display = "none"; return; }
     panel.style.display = "block";
-    const petInfo = PET_SHOP.find(p => p.id === gameState.active_pet);
+    const baseId = gameState.active_pet.split('::')[0];
+    const petInfo = PET_SHOP.find(p => p.id === baseId);
+    if (!petInfo) return;
     const level = Math.floor((gameState.pet_ages[gameState.active_pet] || 0) / 600) + 1; const feedCost = 50 + ((level - 1) * 25); 
     document.getElementById('petPanelContent').innerHTML = `<div class="rec-game"><div class="rec-icon" id="activePetIcon" style="transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center;">${petInfo.icon}</div><div class="rec-title" style="font-size: 20px;">${petInfo.name} <span style="font-size: 14px; color: var(--p1);">Lvl ${level}</span></div><p style="font-size: 13px; color: #ffd700; margin-bottom: 12px; font-weight: bold;">Earns: +${petInfo.baseCoin + (level * 2)} 🪙 / 2m</p><button class="rec-btn" style="background: #3ba55c;" onclick="feedPet(); event.stopPropagation();">🍖 Feed (${feedCost} 🪙)</button></div>`;
 }
@@ -676,9 +745,12 @@ function closePetShop() { document.getElementById('petShopOverlay').classList.re
 
 // --- CURSOR SHOP SYSTEM ---
 const CURSORS = [
-    { id: "def", name: "Default Mouse", src: "png/DefMouse.png", price: 0 }, { id: "m1", name: "Egg Twins", src: "png/Twins.png", price: 500 },
-    { id: "m2", name: "Gold Ingot", src: "png/Goldingot.png", price: 500 }, { id: "m3", name: "Cheesy Cursor", src: "png/mouse.png", price: 750 },
-    { id: "m4", name: "Sword Cursor", src: "png/Katana.png", price: 500 }, { id: "m5", name: "Pizza Slice", src: "png/pizza.png", price: 500 },
+    { id: "def", name: "Default Mouse", src: "png/DefMouse.png", price: "Starter Item" }, 
+    { id: "m1", name: "Egg Twins", src: "png/Twins.png", price: 500 },
+    { id: "m2", name: "Gold Ingot", src: "png/Goldingot.png", price: 500 }, 
+    { id: "m3", name: "Cheesy Cursor", src: "png/mouse.png", price: 750 },
+    { id: "m4", name: "Sword Cursor", src: "png/Katana.png", price: 500 }, 
+    { id: "m5", name: "Pizza Slice", src: "png/pizza.png", price: 500 },
     { id: "m6", name: "Sign Of Greed", src: "png/greed.png", price: 1000000 },
     { id: "dragon", name: "Mythic Dragon", src: "png/Dragon.gif", price: "Obtained Secretly From A Chest", isEvent: true, color: "#ff0000" },
     { id: "bp1", name: "Silver Apple", src: "png/Apple.png", price: "S1 Pass Reward", isEvent: true, color: "#9b59b6" },
@@ -700,21 +772,23 @@ function applyCursor() {
     domCursor.src = targetSrc; localStorage.setItem('currentCursorSrc', targetSrc);
 }
 
+// --- BUY ONLY CURSOR SHOP ---
 function renderShop() {
     const container = document.getElementById('shopContainer'); container.innerHTML = "";
     CURSORS.forEach(item => {
-        const isOwned = gameState.owned_cursors.includes(item.id); const isEquipped = gameState.equipped_cursor === item.id;
-        const card = document.createElement('div'); card.className = `shop-item ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`;
-        if (item.color && item.isEvent && !isOwned) card.style.borderColor = item.color;
+        const card = document.createElement('div'); card.className = `shop-item`;
+        if (item.color && item.isEvent) card.style.borderColor = item.color;
         
-        let btnHTML = isEquipped ? `<button class="shop-btn equipped">Equipped ✓</button>` 
-            : isOwned ? `<button class="shop-btn equip" onclick="equipCursor('${item.id}')">Equip</button>` 
-            : (typeof item.price === 'string') ? `<button class="shop-btn event-btn" style="${item.color ? 'background:'+item.color+'; color:#000; box-shadow:none;' : ''}">${item.price}</button>` 
-            : `<button class="shop-btn buy" onclick="buyCursor('${item.id}', ${item.price})">Buy 🪙 ${item.price}</button>`;
+        let btnHTML = (typeof item.price === 'string') 
+            ? `<button class="shop-btn event-btn" style="${item.color ? 'background:'+item.color+'; color:#000; border: none; box-shadow:none;' : ''}">LOCKED (${item.price})</button>` 
+            : `<button class="shop-btn buy" onclick="buyCursor('${item.id}', ${item.price})">Buy 🪙 ${item.price.toLocaleString()}</button>`;
 
-        let extraHTML = (isEquipped && item.isCustom) ? `<button class="shop-btn" style="background:#ff8c00; margin-top:5px;" onclick="document.getElementById('customCursorInput').click()">Upload Image</button>` : "";
         let nameColor = item.isEvent ? (item.color || '#ff0000') : '#fff';
-        card.innerHTML = `<img src="${item.src}" class="shop-preview"><h3 style="font-size: 14px; margin-bottom: 10px; color: ${nameColor};">${item.name}</h3>${btnHTML}${extraHTML}`;
+        card.innerHTML = `
+            <img src="${item.src}" class="shop-preview">
+            <h3 style="font-size: 14px; margin-bottom: 10px; color: ${nameColor};">${item.name}</h3>
+            ${btnHTML}
+        `;
         container.appendChild(card);
     });
 }
@@ -722,19 +796,108 @@ function renderShop() {
 function buyCursor(id, price) {
     if (gameState.coins >= price) {
         gameState.coins -= price; gameState.owned_cursors.push(id); 
-        updateStatsUI(); showToast("Cursor Purchased!"); equipCursor(id);
+        updateStatsUI(); showToast("Cursor Purchased! Check Inventory."); 
         saveGameToServer();
     } else { alert("You need more ExamCoins!"); }
 }
 
 function equipCursor(id) {
-    gameState.equipped_cursor = id; applyCursor(); renderShop();
+    gameState.equipped_cursor = id; 
+    applyCursor(); 
+    renderInventory();
     if(id === "custom" && !localStorage.getItem('customCursorDataUrl')) document.getElementById('customCursorInput').click();
     saveGameToServer();
 }
 
 function openShop() { document.getElementById('shopOverlay').classList.add('open'); renderShop(); }
 function closeShop() { document.getElementById('shopOverlay').classList.remove('open'); }
+
+
+// --- NEW INVENTORY SYSTEM ---
+function openInventory() {
+    document.getElementById('inventoryOverlay').classList.add('open');
+    showInvTab('pets'); // Default to pets tab
+}
+function closeInventory() {
+    document.getElementById('inventoryOverlay').classList.remove('open');
+}
+
+function showInvTab(tabName) {
+    document.getElementById('tabBtnPets').classList.remove('active');
+    document.getElementById('tabBtnCursors').classList.remove('active');
+    document.getElementById('invPetsContainer').style.display = 'none';
+    document.getElementById('invCursorsContainer').style.display = 'none';
+    
+    if(tabName === 'pets') {
+        document.getElementById('tabBtnPets').classList.add('active');
+        document.getElementById('invPetsContainer').style.display = 'grid';
+    } else {
+        document.getElementById('tabBtnCursors').classList.add('active');
+        document.getElementById('invCursorsContainer').style.display = 'grid';
+    }
+    renderInventory();
+}
+
+function renderInventory() {
+    const petContainer = document.getElementById('invPetsContainer');
+    const curContainer = document.getElementById('invCursorsContainer');
+    petContainer.innerHTML = ''; 
+    curContainer.innerHTML = '';
+    
+    let curCounts = {};
+    gameState.owned_cursors.forEach(id => curCounts[id] = (curCounts[id] || 0) + 1);
+
+    // Draw Pets Inventory (Separated individually)
+    if (gameState.owned_pets.length === 0) {
+        petContainer.innerHTML = `<div style="color: gray; grid-column: 1/-1;">You don't own any pets yet!</div>`;
+    } else {
+        gameState.owned_pets.forEach(petUid => {
+            const baseId = petUid.split('::')[0];
+            const pet = PET_SHOP.find(p => p.id === baseId);
+            if (pet) {
+                const isEquipped = gameState.active_pet === petUid;
+                const level = Math.floor((gameState.pet_ages[petUid] || 0) / 600) + 1;
+                const reward = pet.baseCoin + (level * 2);
+                
+                let btnHTML = isEquipped 
+                    ? `<button class="shop-btn equipped">Equipped ✓</button>` 
+                    : `<button class="shop-btn equip" onclick="equipPet('${petUid}')" style="background:#3ba55c">Equip</button>`;
+                    
+                petContainer.innerHTML += `
+                    <div class="shop-item ${isEquipped ? 'equipped' : ''}" style="position:relative; ${pet.color ? 'border-color:'+pet.color : ''}">
+                        <div style="font-size: 50px; margin-bottom: 10px;">${pet.icon}</div>
+                        <h3>${pet.name}</h3>
+                        <p style="font-size: 12px; color: #ffd700;">Earns: +${reward} 🪙/2m</p>
+                        <p style="font-size: 11px; color: var(--p1); margin-bottom: 10px;">Level ${level}</p>
+                        ${btnHTML}
+                    </div>
+                `;
+            }
+        });
+    }
+
+    // Draw Cursors Inventory (Stacked quantities)
+    CURSORS.forEach(item => {
+        if (curCounts[item.id]) {
+            const count = curCounts[item.id];
+            const isEquipped = gameState.equipped_cursor === item.id;
+            
+            let btnHTML = isEquipped 
+                ? `<button class="shop-btn equipped">Equipped ✓</button>` 
+                : `<button class="shop-btn equip" onclick="equipCursor('${item.id}')" style="background:#3ba55c">Equip</button>`;
+                
+            curContainer.innerHTML += `
+                <div class="shop-item ${isEquipped ? 'equipped' : ''}" style="position:relative; ${item.color ? 'border-color:'+item.color : ''}">
+                    <div class="inventory-badge">x${count}</div>
+                    <img src="${item.src}" class="shop-preview">
+                    <h3>${item.name}</h3>
+                    ${btnHTML}
+                </div>
+            `;
+        }
+    });
+}
+// --------------------------------
 
 document.getElementById('customCursorInput').addEventListener('change', function(e) {
     const file = e.target.files[0]; if (!file) return;
