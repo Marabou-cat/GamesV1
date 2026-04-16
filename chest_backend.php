@@ -24,8 +24,11 @@ if (!isset($_SESSION['user_id'])) die(json_encode(["success" => false, "message"
 $action = $_POST['action'] ?? '';
 $user_id = $_SESSION['user_id'];
 
+// Inventory Limits
+$MAX_PETS = 50;
+$MAX_CURSORS = 40;
+
 // --- DYNAMIC CHEST CATALOG ---
-// The HTML page reads this array to automatically draw the store!
 $CHESTS = [
     "basic" => [
         "name" => "Basic Chest",
@@ -54,7 +57,7 @@ $CHESTS = [
     "sakura" => [
         "name" => "Sakura Chest",
         "desc" => "Contains Event Limited Kawaii Items",
-        "price" => "Sakura Coins at the Kawaii Festival Event", // <--- Fixed syntax error and set to text
+        "price" => "Sakura Coins at the Kawaii Festival Event",
         "currency" => "gems",
         "img" => "../png/sakura_chest.png",
         "color" => "#ffb7b2"
@@ -63,7 +66,7 @@ $CHESTS = [
 
 // Helper to get user data
 function getUser($pdo, $uid) {
-    $stmt = $pdo->prepare("SELECT coins, gems, owned_chests, owned_cursors, owned_pets FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT coins, gems, owned_chests, owned_cursors, owned_pets, pet_ages FROM users WHERE id = ?");
     $stmt->execute([$uid]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
@@ -99,7 +102,6 @@ if ($action === 'buy') {
         $pdo->beginTransaction();
         
         // --- SECURITY BLOCK ---
-        // If the price is text (like "Event Only") instead of a number, block it!
         if (!is_numeric($CHESTS[$type]['price'])) {
             throw new Exception("Nice try! This chest cannot be purchased with standard currency.");
         }
@@ -140,7 +142,8 @@ if ($action === 'open') {
     try {
         $pdo->beginTransaction();
         
-        $stmt = $pdo->prepare("SELECT owned_chests, owned_cursors, owned_pets FROM users WHERE id = ? FOR UPDATE");
+        // Fetch pet_ages so we can initialize new pets!
+        $stmt = $pdo->prepare("SELECT owned_chests, owned_cursors, owned_pets, pet_ages FROM users WHERE id = ? FOR UPDATE");
         $stmt->execute([$user_id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -202,7 +205,6 @@ if ($action === 'open') {
             }
         }
 
-        // Catch-all just in case a chest has no pool defined here
         if (!isset($pool)) {
             throw new Exception("This chest is empty!");
         }
@@ -217,16 +219,34 @@ if ($action === 'open') {
 
         $inv_column = ($reward_type === 'cursor') ? 'owned_cursors' : 'owned_pets';
         $inventory = json_decode($user[$inv_column], true) ?: [];
+        $pet_ages = json_decode($user['pet_ages'], true) ?: [];
         
-        $is_duplicate = in_array($reward_id, $inventory);
-        if (!$is_duplicate) {
-            $inventory[] = $reward_id;
+        $is_discarded = false;
+
+        // --- APPLY INVENTORY LIMITS AND UNIQUE PET IDs ---
+        if ($reward_type === 'cursor') {
+            if (count($inventory) >= $MAX_CURSORS) {
+                $is_discarded = true; // Inventory full, discard it!
+            } else {
+                $inventory[] = $reward_id; // Add duplicate cursor
+            }
+        } else if ($reward_type === 'pet') {
+            if (count($inventory) >= $MAX_PETS) {
+                $is_discarded = true; // Inventory full, discard it!
+            } else {
+                // Generate a unique ID for the new separated pet
+                $uid = $reward_id . '::' . round(microtime(true) * 1000) . '_' . mt_rand(100, 999);
+                $inventory[] = $uid;
+                $pet_ages[$uid] = 0; // Initialize age to 0
+            }
         }
 
-        $stmt = $pdo->prepare("UPDATE users SET owned_chests = ?, $inv_column = ? WHERE id = ?");
-        $stmt->execute([json_encode($chests), json_encode(array_values($inventory)), $user_id]);
+        // Save everything back to the database
+        $stmt = $pdo->prepare("UPDATE users SET owned_chests = ?, $inv_column = ?, pet_ages = ? WHERE id = ?");
+        $stmt->execute([json_encode($chests), json_encode(array_values($inventory)), json_encode($pet_ages), $user_id]);
         
         $pdo->commit();
+        
         echo json_encode([
             "success" => true, 
             "chests" => $chests, 
@@ -234,7 +254,7 @@ if ($action === 'open') {
                 "id" => $reward_id,
                 "name" => $reward_name,
                 "type" => $reward_type,
-                "is_duplicate" => $is_duplicate
+                "is_duplicate" => $is_discarded // Reused to tell the frontend it was discarded
             ]
         ]);
     } catch (Exception $e) {
