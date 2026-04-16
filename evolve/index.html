@@ -2,196 +2,253 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>SchoolExams - Evolution Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolution Lab - SchoolExams</title>
     <style>
         :root {
-            --bg0: #000814; --bg1: #001d3d; --bg2: #003566;
-            --p0: #0077b6; --p1: #90e0ef; --p2: #03045e;
-            --w: #caf0f8; 
-            --glass: rgba(0, 29, 61, 0.85);
-            --shadow: 0 12px 40px rgba(0,0,0,0.7);
-            --glow: 0 0 20px rgba(144, 224, 239, 0.4);
-            --gold: #ffd700;
-            --evo: #ff0055;
+            --bg0: #0a0a0a; --bg1: #111; --bg2: #1a1a1a;
+            --p0: #ff0055; --p1: #ff3377; --p2: #990033;
+            --line: rgba(255, 0, 85, 0.2);
+            --glow: 0 0 20px rgba(255, 0, 85, 0.4);
+            --r: 16px;
         }
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg0); color: var(--w);
-            margin: 0; padding: 40px 20px; display: flex; flex-direction: column; align-items: center;
-            background-image: radial-gradient(circle at 50% 50%, rgba(255, 0, 85, 0.1) 0%, var(--bg0) 70%);
-            min-height: 100vh;
+        body { 
+            background: var(--bg0); color: #fff; font-family: 'Segoe UI', system-ui, sans-serif; 
+            text-align: center; padding: 40px 20px; overflow-x: hidden; margin: 0; min-height: 100vh;
+            background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
-        .btn-back { align-self: flex-start; background: var(--glass); border: 1px solid var(--evo); color: var(--w); padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: 900; text-transform: uppercase; margin-bottom: 20px; transition: 0.3s; }
-        .btn-back:hover { background: var(--evo); color: #fff; box-shadow: 0 0 15px var(--evo); transform: translateX(-5px); }
+        .btn-back { align-self: flex-start; background: rgba(0, 0, 0, 0.85); border: 1px solid var(--p0); color: var(--p1); padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: 900; text-transform: uppercase; display: inline-block; margin-bottom: 20px; transition: 0.3s; }
+        .btn-back:hover { background: var(--p0); color: #fff; box-shadow: var(--glow); transform: translateX(-5px); }
 
-        .header-title { color: var(--evo); font-size: 40px; text-shadow: 0 0 20px rgba(255,0,85,0.5); margin-bottom: 5px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px;}
-        .header-sub { color: gray; margin-bottom: 40px; font-size: 16px; }
-
-        .currency-bar { background: var(--glass); border: 2px solid var(--p0); padding: 15px 30px; border-radius: 20px; display: flex; gap: 30px; font-size: 18px; font-weight: bold; box-shadow: var(--shadow); margin-bottom: 40px; }
-        .currency-bar span { color: var(--gold); } .currency-bar .gems { color: #00ffcc; }
-
-        .evo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; width: 100%; max-width: 1000px; }
-
-        .evo-card {
-            background: var(--bg1); border: 2px solid var(--line); border-radius: 16px; padding: 25px; 
-            transition: 0.3s; display: flex; flex-direction: column; align-items: center; text-align: center;
-            position: relative; overflow: hidden;
-        }
-        .evo-card:hover { border-color: var(--evo); transform: translateY(-5px); box-shadow: 0 0 25px rgba(255,0,85,0.3); }
+        .header h1 { color: var(--p1); font-size: 3.5rem; margin: 0 0 10px 0; text-shadow: var(--glow); text-transform: uppercase; letter-spacing: 2px; }
+        .header p { color: #ccc; font-size: 1.1rem; margin: 0 0 30px 0; }
         
-        .evo-path { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; width: 100%; justify-content: center; }
-        .evo-icon { width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); background: rgba(0,0,0,0.4); border-radius: 12px; padding: 10px; border: 1px solid var(--line); }
-        .arrow { font-size: 30px; color: var(--evo); animation: pulseArrow 1s infinite alternate; }
+        .currency-bar { display: inline-flex; gap: 30px; background: rgba(0,0,0,0.8); border: 2px solid var(--p0); padding: 15px 30px; border-radius: 30px; margin-bottom: 40px; font-weight: bold; font-size: 18px; box-shadow: var(--glow); }
+        .currency-bar .coins { color: #ffd700; }
+        .currency-bar .gems { color: #00ffcc; }
 
-        .progress-container { width: 100%; background: rgba(0,0,0,0.5); border-radius: 10px; height: 20px; margin-bottom: 10px; border: 1px solid var(--line); position: relative; overflow: hidden;}
-        .progress-bar { height: 100%; background: linear-gradient(90deg, #ff0055, #ffaa00); width: 0%; transition: width 0.5s; }
-        .progress-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+        .lab-container { background: rgba(17, 17, 17, 0.85); border: 2px solid var(--p0); border-radius: var(--r); padding: 30px; max-width: 1000px; margin: 0 auto; backdrop-filter: blur(10px); box-shadow: var(--glow); }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
+        .evo-card { background: var(--bg2); border: 2px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; transition: 0.3s; position: relative; }
+        .evo-card:hover { border-color: var(--p1); box-shadow: var(--glow); transform: translateY(-5px); }
+        
+        .evo-icons { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .pet-icon { font-size: 40px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); border-radius: 12px; border: 1px solid #444; }
+        .evo-arrow { color: var(--p1); font-weight: bold; font-size: 24px; animation: pulseArrow 1s infinite alternate; }
+        
+        @keyframes pulseArrow { from { transform: scale(1); opacity: 0.5; } to { transform: scale(1.2); opacity: 1; } }
 
-        .btn { background: var(--evo); color: #fff; border: none; padding: 15px 25px; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s; width: 100%; text-transform: uppercase; margin-top: 15px; }
-        .btn:hover { background: #ff3377; box-shadow: 0 0 20px var(--evo); }
-        .btn:disabled { background: #333 !important; color: #777 !important; cursor: not-allowed; box-shadow: none !important; }
+        .btn-evo { background: var(--p0); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 15px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .btn-evo:hover { background: var(--p1); box-shadow: 0 0 15px var(--p1); color: #000; }
+        .btn-evo:disabled { background: transparent; color: #777; cursor: not-allowed; box-shadow: none; border: 2px dashed #555; }
 
-        @keyframes pulseArrow { from { transform: translateX(-5px); opacity: 0.5; } to { transform: translateX(5px); opacity: 1; } }
+        /* EVO ANIMATION MODAL */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        .modal-box { background: var(--bg1); border: 2px solid var(--p1); padding: 50px; border-radius: var(--r); text-align: center; box-shadow: var(--glow); max-width: 450px; animation: popIn 0.5s ease-out; }
+        
+        .dna-icon { font-size: 80px; margin: 20px 0; animation: spinDNA 3s linear infinite; filter: drop-shadow(0 0 20px var(--p1)); }
+        @keyframes spinDNA { 100% { transform: rotate(360deg); } }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* Animation Full Screen Overlay */
-        .evo-anim-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .evo-anim-overlay.active { display: flex; }
-        .dna-spin { font-size: 80px; animation: spin 2s linear infinite; margin-bottom: 20px; filter: drop-shadow(0 0 20px var(--evo)); }
-        .success-text { color: var(--evo); font-size: 40px; font-weight: 900; display: none; text-shadow: 0 0 30px var(--evo); text-align: center; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
+        #toast { position: fixed; bottom: 20px; right: 20px; background: #3ba55c; color: white; padding: 15px 25px; border-radius: 10px; font-weight: bold; transform: translateY(100px); opacity: 0; transition: 0.3s; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        #toast.show { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
 
-<a href="../" class="btn-back">← Return to Portal</a>
+    <div style="text-align: left; max-width: 1000px; margin: 0 auto;">
+        <a href="../" class="btn-back">← Return to Portal</a>
+    </div>
 
-<div class="header-title">Evolution Lab</div>
-<div class="header-sub">Unlock true power by merging max-level pets with pure energy.</div>
+    <div class="header">
+        <h1>🧬 Evolution Lab</h1>
+        <p>Mutate your pets into powerful new forms. Evolutions retain their previous level!</p>
+    </div>
 
-<div class="currency-bar">
-    <div>🪙 <span id="coinUI">0</span> Coins</div>
-    <div>💎 <span id="gemUI" class="gems">0</span> Gems</div>
-</div>
+    <div class="currency-bar">
+        <div class="coins">🪙 <span id="coinDisplay">0</span> Coins</div>
+        <div class="gems">💎 <span id="gemDisplay">0</span> Gems</div>
+    </div>
 
-<div class="evo-grid" id="evoGrid">
-    <div style="color: gray;">Loading laboratory data...</div>
-</div>
+    <div class="lab-container">
+        <h2 style="color: var(--p1); border-bottom: 2px dashed var(--p0); padding-bottom: 10px; margin-top: 0; text-align: left;">Eligible Pets in Inventory</h2>
+        <div class="grid" id="evoGrid">
+            <div style="color: gray; width: 100%; text-align: center; grid-column: 1/-1;">Loading DNA Sequences...</div>
+        </div>
+    </div>
 
-<div class="evo-anim-overlay" id="animOverlay">
-    <div class="dna-spin" id="dnaIcon">🧬</div>
-    <div class="success-text" id="successText">EVOLUTION COMPLETE!<br><span id="newPetName" style="color: #fff; font-size: 30px;"></span></div>
-    <button class="btn" id="closeAnimBtn" style="display: none; max-width: 200px; margin-top: 30px;" onclick="closeAnim()">CONTINUE</button>
-</div>
+    <div class="modal" id="evoModal">
+        <div class="modal-box">
+            <h2 style="color: var(--p1); margin-top:0; font-size: 28px;">MUTATION COMPLETE</h2>
+            <div id="evoIcon" class="dna-icon">🧬</div>
+            <p id="evoDesc" style="font-size: 18px; font-weight: bold; line-height: 1.5; color: #fff;"></p>
+            <button class="btn-evo" style="margin-top: 25px; border: none; background: var(--p1); color: #000;" onclick="document.getElementById('evoModal').style.display='none'">AWESOME!</button>
+        </div>
+    </div>
+
+    <div id="toast">Evolution Successful!</div>
 
 <script>
-    let state = { coins: 0, gems: 0, owned_pets: [], levels: {}, catalog: {} };
+// --- STATIC VISUAL MAPPINGS ---
+// We keep this purely for displaying the visual icons/names properly
+const PET_SHOP = [
+    { id: "doge", name: "Pixel Doge", icon: "🐕" }, 
+    { id: "cat", name: "Cyber Kitty", icon: "🐈" },
+    { id: "frog", name: "Ninja Frog", icon: "🐸" }, 
+    { id: "lt", name: "Living Treasure", icon: "🪙" },
+    { id: "kitsune", name: "Sakura Kitsune", icon: "🦊" }
+];
 
-    async function api(action, data = {}) {
-        const fd = new FormData();
-        fd.append('action', action);
-        for (let key in data) fd.append(key, data[key]);
-        const res = await fetch('../evolve_backend.php', { method: 'POST', body: fd });
-        return await res.json();
-    }
+let gameState = { coins: 0, gems: 0, owned_pets: [], levels: {} };
+let EVO_CATALOG = {};
 
-    function renderUI() {
-        document.getElementById('coinUI').innerText = state.coins.toLocaleString();
-        document.getElementById('gemUI').innerText = state.gems.toLocaleString();
-        const grid = document.getElementById('evoGrid');
-        grid.innerHTML = '';
-
-        for (const [base_id, info] of Object.entries(state.catalog)) {
-            let isOwned = state.owned_pets.includes(base_id);
-            let hasEvolvedAlready = state.owned_pets.includes(info.target_id);
-            let currentLevel = state.levels[base_id] || 0;
-            let progressPct = Math.min((currentLevel / info.req_level) * 100, 100);
+async function loadGameFromServer() {
+    try {
+        const formData = new FormData(); 
+        formData.append('action', 'load');
+        
+        // Make sure this points to the new PHP script you just saved!
+        const res = await fetch('evolve_backend.php', { method: 'POST', body: formData });
+        const result = await res.json();
+        
+        if (result.success) {
+            gameState.coins = parseInt(result.coins) || 0;
+            gameState.gems = parseInt(result.gems) || 0;
+            gameState.owned_pets = result.owned_pets || [];
+            gameState.levels = result.levels || {};
+            EVO_CATALOG = result.catalog || {};
             
-            let statusText = "";
-            let btnDisabled = true;
+            document.getElementById('coinDisplay').innerText = gameState.coins.toLocaleString();
+            document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
+            
+            renderEvoLab();
+        }
+    } catch(e) { console.error("Failed to load state.", e); }
+}
 
-            if (hasEvolvedAlready) {
-                statusText = `<span style="color: #3ba55c; font-weight: bold;">Evolution Unlocked ✓</span>`;
-                progressPct = 100;
-            } else if (!isOwned) {
-                statusText = `<span style="color: gray;">Base Pet Not Owned</span>`;
-            } else if (currentLevel < info.req_level) {
-                statusText = `<span style="color: #ffaa00;">Level too low!</span>`;
+function renderEvoLab() {
+    const grid = document.getElementById('evoGrid');
+    grid.innerHTML = '';
+    let foundEligible = false;
+
+    gameState.owned_pets.forEach(petUid => {
+        const baseId = petUid.split('::')[0];
+        
+        // Check if this specific pet has an evolution recipe in the PHP config
+        if (EVO_CATALOG[baseId]) {
+            foundEligible = true;
+            const recipe = EVO_CATALOG[baseId];
+            
+            // Get the static visual for the starting pet
+            const fromPet = PET_SHOP.find(p => p.id === baseId) || { name: recipe.base_name, icon: "🐾" };
+            
+            // Build the visual for the target pet using data directly from PHP
+            const targetColor = recipe.color || '#ff3377';
+            const toPetIcon = recipe.img 
+                ? `<img src="${recipe.img}" style="width: 2em; height: 2em; object-fit: contain;">`
+                : `🧬`;
+
+            const level = gameState.levels[petUid] || 1;
+            const isLevelMet = level >= recipe.req_level;
+            
+            let currencyVal = recipe.currency === 'gems' ? gameState.gems : gameState.coins;
+            let currencyIcon = recipe.currency === 'gems' ? '💎' : '🪙';
+            const canAfford = currencyVal >= recipe.cost;
+
+            // Generate Button Logic
+            let btnHTML = '';
+            if (!isLevelMet) {
+                btnHTML = `<button class="btn-evo" disabled>Needs Lvl ${recipe.req_level}</button>`;
+            } else if (!canAfford) {
+                btnHTML = `<button class="btn-evo" disabled>Not Enough ${recipe.currency}</button>`;
             } else {
-                statusText = `<span style="color: #00ffcc; font-weight: bold;">Ready to Evolve!</span>`;
-                btnDisabled = false;
+                btnHTML = `<button class="btn-evo" onclick="evolvePet('${petUid}', '${baseId}')">
+                    Evolve (${recipe.cost.toLocaleString()} ${currencyIcon})
+                </button>`;
             }
 
-            let currencyIcon = info.currency === 'gems' ? '💎' : '🪙';
-
             grid.innerHTML += `
-                <div class="evo-card" style="border-color: ${hasEvolvedAlready ? '#3ba55c' : 'var(--line)'}">
-                    <h3 style="margin-top: 0; color: ${info.color};">${info.target_name}</h3>
-                    
-                    <div class="evo-path">
-                        <div class="evo-icon" style="font-size: 40px; display: flex; align-items:center; justify-content:center;">🐾</div>
-                        <div class="arrow">➞</div>
-                        <img src="${info.img}" class="evo-icon" onerror="this.src='https://cdn-icons-png.flaticon.com/512/811/811559.png'" style="border-color: ${info.color}; box-shadow: 0 0 15px ${info.color};">
+                <div class="evo-card" style="border-color: ${targetColor}50;">
+                    <div class="evo-icons">
+                        <div class="pet-icon">${fromPet.icon}</div>
+                        <div class="evo-arrow" style="color: ${targetColor}">⮞</div>
+                        <div class="pet-icon" style="border-color: ${targetColor}; box-shadow: 0 0 15px ${targetColor}80;">${toPetIcon}</div>
                     </div>
-
-                    <div style="font-size: 13px; margin-bottom: 10px;">Requires: ${info.base_name} (Lvl ${info.req_level})</div>
-                    
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: ${progressPct}%; ${hasEvolvedAlready ? 'background: #3ba55c;' : ''}"></div>
-                        <div class="progress-text">Lvl ${currentLevel} / ${info.req_level}</div>
-                    </div>
-
-                    <div style="margin-bottom: 10px; font-size: 14px;">${statusText}</div>
-
-                    <button class="btn" ${btnDisabled ? 'disabled' : ''} onclick="evolvePet('${base_id}')">
-                        ${hasEvolvedAlready ? 'EVOLVED' : `EVOLVE FOR ${info.cost.toLocaleString()} ${currencyIcon}`}
-                    </button>
+                    <h3 style="margin: 0 0 5px 0; font-size: 16px;">${fromPet.name} <br>⮞ <span style="color: ${targetColor}">${recipe.target_name}</span></h3>
+                    <p style="font-size: 12px; color: #aaa; margin: 0 0 10px 0;">Current: Lv. ${level} • Required: Lv. ${recipe.req_level}</p>
+                    ${btnHTML}
                 </div>
             `;
         }
-    }
+    });
 
-    async function loadData() {
-        const res = await api('load');
-        if(res.success) {
-            state = { coins: res.coins, gems: res.gems, owned_pets: res.owned_pets, levels: res.levels, catalog: res.catalog };
-            renderUI();
-        } else alert(res.message);
+    if (!foundEligible) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; color: gray; padding: 40px; border: 2px dashed #444; border-radius: 16px;">No eligible base pets found in your inventory. Hatch and adopt pets to evolve them!</div>`;
     }
+}
 
-    async function evolvePet(base_id) {
-        const res = await api('evolve', { base_id: base_id });
-        if(res.success) {
-            // Show Animation
-            const overlay = document.getElementById('animOverlay');
-            const dna = document.getElementById('dnaIcon');
-            const success = document.getElementById('successText');
-            const closeBtn = document.getElementById('closeAnimBtn');
+async function evolvePet(uid, baseId) {
+    const recipe = EVO_CATALOG[baseId];
+    if (!recipe) return;
+
+    // Send the secure request to PHP backend
+    const fd = new FormData();
+    fd.append('action', 'evolve');
+    fd.append('uid', uid); // Send the exact Unique ID
+    
+    try {
+        const res = await fetch('evolve_backend.php', { method: 'POST', body: fd });
+        const result = await res.json();
+
+        if (result.success) {
+            // Update currency visually before the reload happens
+            if (recipe.currency === 'gems') gameState.gems = result.new_balance;
+            else gameState.coins = result.new_balance;
             
-            document.getElementById('newPetName').innerText = res.target_name;
-            overlay.classList.add('active');
-            dna.style.display = 'block';
-            success.style.display = 'none';
-            closeBtn.style.display = 'none';
+            document.getElementById('coinDisplay').innerText = gameState.coins.toLocaleString();
+            document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
 
-            // Fake suspense wait, then reveal
-            setTimeout(() => {
-                dna.style.display = 'none';
-                success.style.display = 'block';
-                closeBtn.style.display = 'block';
-                loadData(); // Reload stats while animation plays
-            }, 2500);
+            // Refresh the lab inventory
+            await loadGameFromServer();
+            
+            // Show the glorious animation
+            const targetColor = recipe.color || '#ff3377';
+            const toPetIcon = recipe.img 
+                ? `<img src="${recipe.img}" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 20px ${targetColor});">`
+                : `🧬`;
 
+            document.getElementById('evoIcon').innerHTML = toPetIcon;
+            document.getElementById('evoIcon').style.animation = 'none'; // Stop spinning
+            
+            document.getElementById('evoDesc').innerHTML = `
+                Your pet has successfully mutated into the <br>
+                <span style="color: ${targetColor}; font-size: 28px;">${result.target_name}</span>!<br><br>
+                <span style="color: #aaa; font-size: 14px;">(It retained its previous level and age)</span>
+            `;
+            
+            document.getElementById('evoModal').style.display = 'flex';
         } else {
-            alert("❌ " + res.message);
+            alert("❌ " + result.message);
         }
+    } catch(e) {
+        alert("❌ Server Error while evolving.");
     }
+}
 
-    function closeAnim() { document.getElementById('animOverlay').classList.remove('active'); }
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
 
-    loadData();
+// Boot up
+loadGameFromServer();
 </script>
 </body>
 </html>
