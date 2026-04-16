@@ -112,8 +112,8 @@ async function loadGameFromServer() {
         const formData = new FormData(); 
         formData.append('action', 'load');
         
-        // Make sure this points to the new PHP script you just saved!
-        const res = await fetch('evolve_backend.php', { method: 'POST', body: formData });
+        // FIXED: Pointing correctly to the root folder where the PHP file is!
+        const res = await fetch('../evolve_backend.php', { method: 'POST', body: formData });
         const result = await res.json();
         
         if (result.success) {
@@ -127,8 +127,14 @@ async function loadGameFromServer() {
             document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
             
             renderEvoLab();
+        } else {
+            console.error("Backend Error:", result.message);
+            document.getElementById('evoGrid').innerHTML = `<div style="grid-column: 1/-1; color: #ff4444; padding: 40px; border: 2px dashed #ff4444; border-radius: 16px;">Error loading data: ${result.message}</div>`;
         }
-    } catch(e) { console.error("Failed to load state.", e); }
+    } catch(e) { 
+        console.error("Failed to load state.", e); 
+        document.getElementById('evoGrid').innerHTML = `<div style="grid-column: 1/-1; color: #ff4444; padding: 40px; border: 2px dashed #ff4444; border-radius: 16px;">Failed to connect to the Evolution Server.</div>`;
+    }
 }
 
 function renderEvoLab() {
@@ -188,7 +194,7 @@ function renderEvoLab() {
     });
 
     if (!foundEligible) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; color: gray; padding: 40px; border: 2px dashed #444; border-radius: 16px;">No eligible base pets found in your inventory. Hatch and adopt pets to evolve them!</div>`;
+        grid.innerHTML = `<div style="grid-column: 1/-1; color: gray; padding: 40px; border: 2px dashed #444; border-radius: 16px;">No eligible base pets found in your inventory. You need a base pet (like Cyber Kitty, Living Treasure, etc) to evolve them!</div>`;
     }
 }
 
@@ -202,7 +208,8 @@ async function evolvePet(uid, baseId) {
     fd.append('uid', uid); // Send the exact Unique ID
     
     try {
-        const res = await fetch('evolve_backend.php', { method: 'POST', body: fd });
+        // FIXED: Pointing correctly to the root folder!
+        const res = await fetch('../evolve_backend.php', { method: 'POST', body: fd });
         const result = await res.json();
 
         if (result.success) {
