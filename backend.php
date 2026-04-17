@@ -23,6 +23,13 @@ $db_pass = trim($lines[1]);
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // NEW: Auto-create a small table to securely track server states (like the monthly reset)
+    $pdo->exec("CREATE TABLE IF NOT EXISTS global_state (
+        key_name VARCHAR(50) PRIMARY KEY,
+        key_value VARCHAR(255)
+    )");
+    
 } catch (PDOException $e) {
     die(json_encode(["success" => false, "message" => "Database connection failed."]));
 }
@@ -128,24 +135,24 @@ if ($action === 'save') {
 // --- GET LEADERBOARD & DISTRIBUTE MONTHLY REWARDS ---
 if ($action === 'get_leaderboard') {
     
-    // 1. Check if the month has rolled over
+    // 1. Check if the month has rolled over (Using Database)
     $current_month = date('Y-m'); // Example: "2026-04"
-    $reward_file = 'last_reward_month.txt';
-    $last_reward = file_exists($reward_file) ? file_get_contents($reward_file) : '';
+    
+    $stmt = $pdo->query("SELECT key_value FROM global_state WHERE key_name = 'last_reward_month'");
+    $last_reward = $stmt->fetchColumn() ?: '';
 
-    // If it's a new month, give out the rewards!
+    // If it's a new month in the database, give out the rewards!
     if ($last_reward !== $current_month) {
-        // Grab the top 10 players
-        $top_stmt = $pdo->query("SELECT id, owned_pets, pet_ages FROM users ORDER BY prestige_level DESC, coins DESC LIMIT 10");
-        $top_players = $top_stmt->fetchAll(PDO::FETCH_ASSOC);
-
         $pdo->beginTransaction();
         try {
+            // Grab the top 10 players
+            $top_stmt = $pdo->query("SELECT id, owned_pets, pet_ages FROM users ORDER BY prestige_level DESC, coins DESC LIMIT 10");
+            $top_players = $top_stmt->fetchAll(PDO::FETCH_ASSOC);
+
             foreach ($top_players as $p) {
                 $pets = json_decode($p['owned_pets'], true) ?: [];
                 $ages = json_decode($p['pet_ages'], true) ?: [];
                 
-                // Ensure inventory cap isn't exceeded, or just force the reward in
                 if (count($pets) < 50) {
                     // Generate unique Gem Beast pet ID
                     $uid = 'gb::' . round(microtime(true) * 1000) . '_' . mt_rand(100, 999);
@@ -156,8 +163,11 @@ if ($action === 'get_leaderboard') {
                     $upd->execute([json_encode(array_values($pets)), json_encode($ages), $p['id']]);
                 }
             }
-            // Update the tracker file so it doesn't trigger again this month
-            file_put_contents($reward_file, $current_month);
+            
+            // Save the current month into the database so it doesn't trigger again!
+            $stmt = $pdo->prepare("INSERT INTO global_state (key_name, key_value) VALUES ('last_reward_month', ?) ON DUPLICATE KEY UPDATE key_value = ?");
+            $stmt->execute([$current_month, $current_month]);
+            
             $pdo->commit();
         } catch (Exception $e) {
             $pdo->rollBack();
