@@ -50,6 +50,16 @@ $EVOLUTIONS = [
         "currency" => "gems",
         "img" => "../png/blossom_ninetails.png",
         "color" => "#00ffcc"
+    ],
+    "gb" => [
+        "base_name" => "Gem Beast",
+        "target_id" => "crystal_dragon",
+        "target_name" => "Crystal Dragon",
+        "req_level" => 60,
+        "cost" => 800,
+        "currency" => "gems",
+        "img" => "../png/crystal_dragon.png",
+        "color" => "#00ffcc"
     ]
 ];
 
