@@ -84,7 +84,7 @@ if ($action === 'load') {
         exit;
     }
 
-    // UPDATED: Added prestige_level and profile_pic
+    // Pulls prestige_level and profile_pic
     $stmt = $pdo->prepare("SELECT coins, gems, playtime, owned_cursors, equipped_cursor, owned_pets, active_pet, pet_ages, last_online, sakura_coins, event_tasks, owned_chests, prestige_level, profile_pic FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -118,7 +118,6 @@ if ($action === 'save') {
     $prestige_level = (int)($_POST['prestige_level'] ?? 0);
     $profile_pic = $_POST['profile_pic'] ?? '';
 
-    // UPDATED: Added prestige_level and profile_pic to the SQL
     $stmt = $pdo->prepare("UPDATE users SET coins=?, gems=?, playtime=?, owned_cursors=?, equipped_cursor=?, owned_pets=?, active_pet=?, pet_ages=?, last_online=?, sakura_coins=?, event_tasks=?, owned_chests=?, prestige_level=?, profile_pic=? WHERE id=?");
     $stmt->execute([
         $coins, $gems, $playtime, $owned_cursors, $equipped_cursor, $owned_pets, $active_pet, $pet_ages, $last_online, $sakura_coins, $event_tasks, $owned_chests, $prestige_level, $profile_pic, $_SESSION['user_id']
@@ -130,7 +129,8 @@ if ($action === 'save') {
 
 // --- GET LEADERBOARD ---
 if ($action === 'get_leaderboard') {
-    $stmt = $pdo->query("SELECT username, gems FROM users ORDER BY CAST(gems AS UNSIGNED) DESC LIMIT 100");
+    // Ranks by Prestige Level first, uses total Coins as a tie-breaker
+    $stmt = $pdo->query("SELECT username, prestige_level, profile_pic, coins FROM users ORDER BY prestige_level DESC, coins DESC LIMIT 100");
     $leaderboardData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode(["success" => true, "data" => $leaderboardData]);
