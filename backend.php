@@ -3,7 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 // --- READ CONFIG FILE ---
-$config_file = 'config.ini'; // Located in the same folder
+$config_file = 'config.ini'; 
 
 if (!file_exists($config_file)) {
     die(json_encode(["success" => false, "message" => "Server Error: Configuration file missing."]));
@@ -15,7 +15,6 @@ if (count($lines) < 2) {
     die(json_encode(["success" => false, "message" => "Server Error: Invalid configuration file format."]));
 }
 
-// --- DATABASE CONFIGURATION ---
 $db_host = 'localhost';
 $db_name = 'schoolexams';
 $db_user = trim($lines[0]); 
@@ -85,8 +84,8 @@ if ($action === 'load') {
         exit;
     }
 
-    // UPDATED: Added owned_chests alongside the event variables
-    $stmt = $pdo->prepare("SELECT coins, gems, playtime, owned_cursors, equipped_cursor, owned_pets, active_pet, pet_ages, last_online, sakura_coins, event_tasks, owned_chests FROM users WHERE id = ?");
+    // UPDATED: Added prestige_level and profile_pic
+    $stmt = $pdo->prepare("SELECT coins, gems, playtime, owned_cursors, equipped_cursor, owned_pets, active_pet, pet_ages, last_online, sakura_coins, event_tasks, owned_chests, prestige_level, profile_pic FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -111,27 +110,18 @@ if ($action === 'save') {
     $pet_ages = $_POST['pet_ages'];
     $last_online = time() * 1000;
     
-    // NEW & EVENT VARIABLES
     $sakura_coins = (int)($_POST['sakura_coins'] ?? 0);
     $event_tasks = $_POST['event_tasks'] ?? '[]';
-    $owned_chests = $_POST['owned_chests'] ?? '{}'; // Added this line!
+    $owned_chests = $_POST['owned_chests'] ?? '{}';
+    
+    // NEW PRESTIGE & PFP VARIABLES
+    $prestige_level = (int)($_POST['prestige_level'] ?? 0);
+    $profile_pic = $_POST['profile_pic'] ?? '';
 
-    // UPDATED: Added owned_chests to the SQL statement and execute array
-    $stmt = $pdo->prepare("UPDATE users SET coins=?, gems=?, playtime=?, owned_cursors=?, equipped_cursor=?, owned_pets=?, active_pet=?, pet_ages=?, last_online=?, sakura_coins=?, event_tasks=?, owned_chests=? WHERE id=?");
+    // UPDATED: Added prestige_level and profile_pic to the SQL
+    $stmt = $pdo->prepare("UPDATE users SET coins=?, gems=?, playtime=?, owned_cursors=?, equipped_cursor=?, owned_pets=?, active_pet=?, pet_ages=?, last_online=?, sakura_coins=?, event_tasks=?, owned_chests=?, prestige_level=?, profile_pic=? WHERE id=?");
     $stmt->execute([
-        $coins, 
-        $gems, 
-        $playtime, 
-        $owned_cursors, 
-        $equipped_cursor, 
-        $owned_pets, 
-        $active_pet, 
-        $pet_ages, 
-        $last_online, 
-        $sakura_coins, 
-        $event_tasks, 
-        $owned_chests, // Added this parameter!
-        $_SESSION['user_id']
+        $coins, $gems, $playtime, $owned_cursors, $equipped_cursor, $owned_pets, $active_pet, $pet_ages, $last_online, $sakura_coins, $event_tasks, $owned_chests, $prestige_level, $profile_pic, $_SESSION['user_id']
     ]);
 
     echo json_encode(["success" => true]);
