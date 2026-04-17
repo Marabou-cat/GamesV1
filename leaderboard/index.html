@@ -24,7 +24,20 @@
         .btn-back:hover { background: var(--p0); color: #fff; box-shadow: var(--glow); transform: translateX(-5px); }
 
         .header h1 { color: var(--gold); font-size: 3.5rem; margin: 0 0 10px 0; text-shadow: 0 0 20px rgba(255, 215, 0, 0.4); text-transform: uppercase; letter-spacing: 2px; }
-        .header p { color: #caf0f8; font-size: 1.1rem; margin: 0 0 40px 0; }
+        .header p { color: #caf0f8; font-size: 1.1rem; margin: 0 0 20px 0; }
+
+        /* SEASON TIMER STYLES */
+        .season-box {
+            background: rgba(0, 29, 61, 0.9); border: 2px solid #00ffcc; border-radius: 16px;
+            padding: 15px 30px; display: inline-block; margin-bottom: 40px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3); animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        
+        .season-title { color: #00ffcc; font-weight: 900; text-transform: uppercase; font-size: 14px; letter-spacing: 2px; margin-bottom: 8px; }
+        .season-timer { font-size: 32px; font-family: monospace; font-weight: bold; color: #fff; text-shadow: 0 0 10px #00ffcc; letter-spacing: 2px; }
+        .season-reward { font-size: 13px; color: #aaa; margin-top: 8px; font-weight: bold; }
+        .season-reward span { color: var(--gold); }
 
         .leaderboard-container { max-width: 800px; margin: 0 auto; background: rgba(0, 29, 61, 0.85); border: 2px solid var(--p0); border-radius: 20px; padding: 20px; box-shadow: var(--glow); backdrop-filter: blur(10px); }
         
@@ -68,11 +81,45 @@
         <p>The most prestigious scholars in the digital realm.</p>
     </div>
 
+    <div class="season-box">
+        <div class="season-title">Season Ends In</div>
+        <div class="season-timer" id="seasonTimer">00d 00h 00m 00s</div>
+        <div class="season-reward">Top 10 players receive the <span>💎 Gem Beast</span> at reset!</div>
+    </div>
+
     <div class="leaderboard-container" id="lbContainer">
         <div class="loading">Loading Top Players...</div>
     </div>
 
 <script>
+    // --- SEASON TIMER LOGIC ---
+    function updateTimer() {
+        const now = new Date();
+        // Get the very last millisecond of the current month
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).getTime();
+        const distance = endOfMonth - now.getTime();
+
+        if (distance < 0) {
+            document.getElementById("seasonTimer").innerText = "RESETTING...";
+            return;
+        }
+
+        const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("seasonTimer").innerText = 
+            `${d.toString().padStart(2, '0')}d ` +
+            `${h.toString().padStart(2, '0')}h ` +
+            `${m.toString().padStart(2, '0')}m ` +
+            `${s.toString().padStart(2, '0')}s`;
+    }
+    
+    setInterval(updateTimer, 1000);
+    updateTimer();
+
+    // --- LEADERBOARD LOGIC ---
     async function loadLeaderboard() {
         try {
             const formData = new FormData();
