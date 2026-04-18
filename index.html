@@ -1256,11 +1256,26 @@ function getIconForGame(name) {
 }
 
 function renderGrid(filter = "") {
-    const grid = document.getElementById('gamesGrid'); grid.innerHTML = "";
+    const grid = document.getElementById('gamesGrid'); 
+    grid.innerHTML = "";
     document.getElementById('searchInput').placeholder = `Search ${GAMES.length} verified modules...`;
+    
     GAMES.filter(g => g.name.toLowerCase().includes(filter.toLowerCase())).forEach(game => {
-        const card = document.createElement('div'); card.className = 'gameCard'; card.onclick = () => openGame(game.f, game.name);
-        card.innerHTML = `<div class="gameIcon">${getIconForGame(game.name)}</div><div class="gameName">${game.name}</div>`;
+        const card = document.createElement('div'); 
+        card.className = 'gameCard'; 
+        card.onclick = () => openGame(game.f, game.name);
+        
+        // 核心更新：如果存在图标路径，则加载图片。
+        // onerror 属性：如果图片找不到(404)，自动变回你原来的 Emoji 兜底图标！
+        let iconHTML = game.icon 
+            ? `<img src="${game.icon}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<span style=\\'font-size: 32px;\\'>${getIconForGame(game.name)}</span>'">`
+            : `<span style="font-size: 32px;">${getIconForGame(game.name)}</span>`;
+            
+        card.innerHTML = `
+            <div class="gameIcon">${iconHTML}</div>
+            <div class="gameName">${game.name}</div>
+        `;
+        
         grid.appendChild(card);
     });
 }
