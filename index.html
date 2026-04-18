@@ -46,7 +46,7 @@
         .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; font-size: 24px; color: var(--p1); text-decoration: none; letter-spacing: -1px; }
         .brand img { height: 45px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         
-        /* PROFILE & PRESTIGE SECTION */
+        /* NEW: PROFILE & PRESTIGE SECTION */
         .profile-section { display: flex; align-items: center; gap: 10px; cursor: pointer; background: rgba(0,0,0,0.5); padding: 5px 15px 5px 5px; border-radius: 30px; border: 1px solid var(--p0); transition: 0.3s; margin-left: 20px; }
         .profile-section:hover { background: var(--p2); box-shadow: var(--glow); }
         .profile-image { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--p1); background: #fff; }
@@ -102,11 +102,11 @@
         
         .rec-game { display: flex; flex-direction: column; align-items: center; animation: fadeUp 0.5s ease-out forwards; }
         
-        /* NEW IMAGE STYLING FOR RECOMMENDED ICONS */
+        /* IMAGE STYLING FOR RECOMMENDED ICONS */
         .rec-icon { 
             background: var(--bg0); width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; 
             border-radius: 20px; border: 2px solid var(--p1); margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
-            transition: 0.3s; padding: 0; overflow: hidden; position: relative;
+            transition: 0.3s; padding: 0; overflow: hidden; position: relative; font-size: 50px;
         }
         .rec-icon img { 
             width: 100%; height: 100%; object-fit: cover; transition: 0.3s; 
@@ -133,8 +133,8 @@
         .gameCard { background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; transition: 0.3s; }
         .gameCard:hover { transform: translateY(-8px); border-color: var(--p1); box-shadow: 0 0 20px rgba(144, 224, 239, 0.3); }
         
-        /* NEW IMAGE STYLING FOR MAIN GRID ICONS */
-        .gameIcon { height: 100px; background: var(--bg0); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--line); overflow: hidden; padding: 0; }
+        /* IMAGE STYLING FOR MAIN GRID ICONS */
+        .gameIcon { height: 100px; background: var(--bg0); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--line); overflow: hidden; padding: 0; font-size: 32px; }
         .gameIcon img { width: 100%; height: 100%; object-fit: cover; }
         
         .gameName { padding: 12px 10px; font-size: 11px; font-weight: 700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--w); }
@@ -767,10 +767,10 @@ function redeemCode() {
 
 // --- RECOMMENDED ROTATION LOGIC ---
 const REC_GAMES = [
-    { f: "cl3dash.html", name: "3 Dash", img: "game_icons/3dash.png" },
-    { f: "clsnowrider.html", name: "Snow Rider 3D", img: "game_icons/snowrider3d.png" },
-    { f: "clspacewaves.html", name: "Space Wave", img: "game_icons/spacewave.png" },
-    { f: "https://www.myinstants.com/en/categories/sound%20effects/us/", name: "Soundboard", img: "game_icons/soundboard.png" }
+    { f: "cl3dash.html", name: "3 Dash", img: "thumbnails/3dash.png" },
+    { f: "clsnowrider.html", name: "Snow Rider 3D", img: "thumbnails/snowrider3d.png" },
+    { f: "clspacewaves.html", name: "Space Wave", img: "thumbnails/spacewave.png" },
+    { f: "https://www.myinstants.com/en/categories/sound%20effects/us/", name: "Soundboard", img: "thumbnails/soundboard.png" }
 ];
 
 let currentRecIdx = 0;
@@ -783,10 +783,12 @@ function updateRecommended() {
     void progressBar.offsetWidth; 
     progressBar.classList.add('progress-animate');
     
+    let safeGameName = game.name.replace(/'/g, "\\'");
+
     container.innerHTML = `
         <div class="rec-game">
             <div class="rec-icon">
-                <img src="${game.img}" alt="${game.name}" onerror="this.src='png/default_game.png';">
+                <img src="${game.img}" alt="${game.name}" onerror="this.parentElement.innerHTML = getIconForGame('${safeGameName}');" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
             <div class="rec-title">${game.name}</div>
             <button class="rec-btn" onclick="openGame('${game.f}', '${game.name}'); event.stopPropagation();">Launch Module ▶</button>
@@ -1276,6 +1278,19 @@ document.getElementById('customCursorInput').addEventListener('change', function
     reader.readAsDataURL(file);
 });
 
+function getIconForGame(name) {
+    const n = name.toLowerCase();
+    if (n.includes('car') || n.includes('drive') || n.includes('rider') || n.includes('moto') || n.includes('wheely')) return '🏎️';
+    if (n.includes('space') || n.includes('alien') || n.includes('galaxy') || n.includes('astro')) return '🚀';
+    if (n.includes('mine') || n.includes('craft') || n.includes('block') || n.includes('build')) return '⛏️';
+    if (n.includes('ball') || n.includes('basket') || n.includes('soccer') || n.includes('fifa') || n.includes('sports')) return '⚽';
+    if (n.includes('math') || n.includes('logic') || n.includes('2048') || n.includes('puzzle') || n.includes('riddle')) return '🧩';
+    if (n.includes('fight') || n.includes('combat') || n.includes('war') || n.includes('strike') || n.includes('raze')) return '⚔️';
+    if (n.includes('fnaf') || n.includes('horror') || n.includes('scary') || n.includes('zombie')) return '👻';
+    if (n.includes('papa')) return '🍕';
+    return '📘';
+}
+
 function renderGrid(filter = "") {
     const grid = document.getElementById('gamesGrid'); 
     grid.innerHTML = "";
@@ -1286,12 +1301,15 @@ function renderGrid(filter = "") {
         card.className = 'gameCard'; 
         card.onclick = () => openGame(game.f, game.name);
         
-        // We inject the image here. If the image is missing, it falls back to a default picture!
+        let safeName = game.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        let imgSrc = game.img ? game.img : `thumbnails/${safeName}.png`;
+        let safeGameName = game.name.replace(/'/g, "\\'");
+
         card.innerHTML = `
             <div class="gameIcon" style="padding: 0;">
-                <img src="${game.img}" alt="${game.name}" 
+                <img src="${imgSrc}" alt="${game.name}" 
                      style="width: 100%; height: 100%; object-fit: cover;" 
-                     onerror="this.src='png/default_game.png';">
+                     onerror="this.parentElement.innerHTML = getIconForGame('${safeGameName}');">
             </div>
             <div class="gameName">${game.name}</div>
         `;
