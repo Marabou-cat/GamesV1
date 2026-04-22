@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-$config_file = 'config.ini'; // Make sure this path is correct for your folder structure
+$config_file = 'config.ini'; 
 if (!file_exists($config_file)) die(json_encode(["success" => false, "message" => "Config missing."]));
 
 $lines = file($config_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -16,8 +16,8 @@ try {
 }
 
 if (!isset($_SESSION['user_id'])) die(json_encode(["success" => false, "message" => "Not logged in."]));
-$action = $_POST['action'] ?? '';
 $user_id = $_SESSION['user_id'];
+$action = $_POST['action'] ?? '';
 
 // --- EVOLUTION RECIPES ---
 $EVOLUTIONS = [
@@ -30,6 +30,18 @@ $EVOLUTIONS = [
         "currency" => "coins",
         "img" => "../png/lva.png",
         "color" => "#ffd700"
+    ],
+    // NEW EVOLUTION: Mysterious Seed -> Full Moon Flytrap
+    "seed" => [
+        "base_name" => "Mysterious Seed",
+        "target_id" => "flytrap",
+        "target_name" => "Full Moon Flytrap",
+        "req_level" => 20,
+        "req_item" => "Moonstone", // The required item
+        "cost" => 500,
+        "currency" => "gems",
+        "img" => "../png/flytrap.png",
+        "color" => "#3ba55c"
     ],
     "cat" => [
         "base_name" => "Cyber Kitty",
@@ -65,9 +77,9 @@ $EVOLUTIONS = [
         "base_name" => "Mythic Phoenix",
         "target_id" => "griffin",
         "target_name" => "Flaming Griffin",
-        "req_level" => 30,
-        "cost" => 145000,
-        "currency" => "coins",
+        "req_level" => 35,
+        "cost" => 450,
+        "currency" => "gems",
         "img" => "../png/griffin.png",
         "color" => "#00ffcc"
     ],
@@ -76,7 +88,7 @@ $EVOLUTIONS = [
         "target_id" => "aerodactylus",
         "target_name" => "Eruption Aerodactylus",
         "req_level" => 75,
-        "cost" => 2000,
+        "cost" => 1250,
         "currency" => "gems",
         "img" => "../png/aerodactylus.png",
         "color" => "#00ffcc"
@@ -84,7 +96,8 @@ $EVOLUTIONS = [
 ];
 
 function getUser($pdo, $uid) {
-    $stmt = $pdo->prepare("SELECT coins, gems, owned_pets, pet_ages, active_pet FROM users WHERE id = ?");
+    // Added owned_items to the select
+    $stmt = $pdo->prepare("SELECT coins, gems, owned_pets, pet_ages, active_pet, owned_items FROM users WHERE id = ?");
     $stmt->execute([$uid]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
@@ -94,7 +107,6 @@ if ($action === 'load') {
     $pet_ages = json_decode($user['pet_ages'], true) ?: [];
     $owned_pets = json_decode($user['owned_pets'], true) ?: [];
     
-    // Calculate current levels for the frontend based on Unique IDs
     $current_levels = [];
     foreach ($owned_pets as $pet_uid) {
         $age = $pet_ages[$pet_uid] ?? 0;
@@ -102,64 +114,77 @@ if ($action === 'load') {
     }
 
     echo json_encode([
-        "success" => true, "coins" => (int)$user['coins'], "gems" => (int)$user['gems'], 
-        "owned_pets" => $owned_pets, "levels" => $current_levels, "catalog" => $EVOLUTIONS
+        "success" => true, 
+        "coins" => (int)$user['coins'], 
+        "gems" => (int)$user['gems'], 
+        "owned_pets" => $owned_pets, 
+        "levels" => $current_levels, 
+        "catalog" => $EVOLUTIONS
     ]);
     exit;
 }
 
 if ($action === 'evolve') {
-    // NEW: We now expect the specific Unique ID (e.g., cat::12345678)
     $uid = $_POST['uid'] ?? ''; 
     $parts = explode('::', $uid);
-    $base_id = $parts[0]; // Extracts "cat" from "cat::12345678"
+    $base_id = $parts[0];
 
     if (!isset($EVOLUTIONS[$base_id])) die(json_encode(["success" => false, "message" => "Invalid evolution."]));
 
     try {
         $pdo->beginTransaction();
         
-        $stmt = $pdo->prepare("SELECT coins, gems, owned_pets, pet_ages, active_pet FROM users WHERE id = ? FOR UPDATE");
+        $stmt = $pdo->prepare("SELECT coins, gems, owned_pets, pet_ages, active_pet, owned_items FROM users WHERE id = ? FOR UPDATE");
         $stmt->execute([$user_id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
         $owned_pets = json_decode($user['owned_pets'], true) ?: [];
         $pet_ages = json_decode($user['pet_ages'], true) ?: [];
+        $owned_items = json_decode($user['owned_items'], true) ?: [];
         
         $evo_data = $EVOLUTIONS[$base_id];
-        $target_id = $evo_data['target_id'];
         
-        // 1. Verify Ownership using the Unique ID
+        // 1. Verify Ownership
         if (!in_array($uid, $owned_pets)) throw new Exception("You don't own this specific pet!");
         
         // 2. Verify Level
         $current_age = $pet_ages[$uid] ?? 0;
         $current_level = floor($current_age / 600) + 1;
-        if ($current_level < $evo_data['req_level']) throw new Exception("Pet level is too low! Needs Level " . $evo_data['req_level']);
+        if ($current_level < $evo_data['req_level']) throw new Exception("Pet level low! Needs Level " . $evo_data['req_level']);
         
-        // 3. Verify & Deduct Currency
+        // 3. NEW: Verify Required Item
+        if (isset($evo_data['req_item'])) {
+            $required = $evo_data['req_item'];
+            if (!in_array($required, $owned_items)) {
+                throw new Exception("Missing required item: " . $required);
+            }
+            // Consume the item? (Uncomment below if the item should be destroyed on use)
+            /*
+            $key = array_search($required, $owned_items);
+            unset($owned_items[$key]);
+            */
+        }
+
+        // 4. Verify & Deduct Currency
         $currency = $evo_data['currency'];
         $cost = $evo_data['cost'];
         if ((int)$user[$currency] < $cost) throw new Exception("Not enough $currency!");
         $new_balance = (int)$user[$currency] - $cost;
         
-        // 4. Execute Evolution (Remove old, generate completely new separated ID)
-        $owned_pets = array_filter($owned_pets, function($p) use ($uid) { return $p !== $uid; }); // Remove old specific pet
+        // 5. Execute Mutation
+        $owned_pets = array_filter($owned_pets, function($p) use ($uid) { return $p !== $uid; });
+        $new_uid = $evo_data['target_id'] . '::' . round(microtime(true) * 1000) . '_' . mt_rand(100, 999);
+        $owned_pets[] = $new_uid;
         
-        $new_uid = $target_id . '::' . round(microtime(true) * 1000) . '_' . mt_rand(100, 999);
-        $owned_pets[] = $new_uid; // Add new evolved pet
-        
-        // 5. TRANSFER AGE! Do not reset it to 0!
         $pet_ages[$new_uid] = $current_age; 
         unset($pet_ages[$uid]);
         
-        // If they had the base pet equipped, auto-equip the new one
         $active_pet = $user['active_pet'];
         if ($active_pet === $uid) $active_pet = $new_uid;
 
-        // Save back to database
-        $stmt = $pdo->prepare("UPDATE users SET $currency = ?, owned_pets = ?, pet_ages = ?, active_pet = ? WHERE id = ?");
-        $stmt->execute([$new_balance, json_encode(array_values($owned_pets)), json_encode($pet_ages), $active_pet, $user_id]);
+        // Save back
+        $stmt = $pdo->prepare("UPDATE users SET $currency = ?, owned_pets = ?, pet_ages = ?, active_pet = ?, owned_items = ? WHERE id = ?");
+        $stmt->execute([$new_balance, json_encode(array_values($owned_pets)), json_encode($pet_ages), $active_pet, json_encode(array_values($owned_items)), $user_id]);
         
         $pdo->commit();
         echo json_encode(["success" => true, "new_balance" => $new_balance, "currency" => $currency, "target_name" => $evo_data['target_name']]);
