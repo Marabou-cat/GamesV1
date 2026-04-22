@@ -79,7 +79,7 @@
 
     <div class="header">
         <h1>🌸 Kawaii Festival</h1>
-        <p>Complete Tasks And Shake The Blossom With Points To Get Sakura Coins Or A 1% Secret Reward!</p>
+        <p>Complete Tasks And Shake The Blossom With Points To Get Sakura Coins Or Rare Secret Rewards!</p>
     </div>
 
     <div class="currency-bar">
@@ -150,7 +150,8 @@ async function loadGameFromServer() {
                 equipped_cursor: result.data.equipped_cursor || 'def',
                 owned_pets: JSON.parse(result.data.owned_pets || '[]'),
                 active_pet: result.data.active_pet || '',
-                pet_ages: JSON.parse(result.data.pet_ages || '{}')
+                pet_ages: JSON.parse(result.data.pet_ages || '{}'),
+                owned_items: JSON.parse(result.data.owned_items || '[]') // FIXED: Added Items array
             };
             updateCurrencies();
             fillTasks(); 
@@ -175,6 +176,7 @@ async function saveGameToServer() {
         formData.append('owned_pets', JSON.stringify(gameState.owned_pets));
         formData.append('active_pet', gameState.active_pet);
         formData.append('pet_ages', JSON.stringify(gameState.pet_ages));
+        formData.append('owned_items', JSON.stringify(gameState.owned_items || [])); // FIXED: Ensure items save to DB
         
         await fetch('../backend.php', { method: 'POST', body: formData });
     } catch(e) { console.error("Event failed to save state."); }
@@ -364,15 +366,21 @@ async function shakeTree() {
         let totalCoinsWon = 0;
         let totalPointsRedeemed = 0;
         let seedsWon = 0;
+        let moonstonesWon = 0; // NEW Variable
 
+        // Calculate rewards per point
         claimableTasks.forEach(task => {
             for (let i = 0; i < task.points; i++) {
                 totalPointsRedeemed++;
                 totalCoinsWon += 100;
                 
-                // 1% chance for the Mysterious Seed per point redeemed!
+                // Roll independent chances for secret items
                 if (Math.random() < 0.01) {
-                    seedsWon++;
+                    seedsWon++; // 1% chance for Seed
+                }
+                
+                if (Math.random() < 0.05) {
+                    moonstonesWon++; // 5% chance for Moonstone
                 }
             }
         });
@@ -390,13 +398,21 @@ async function shakeTree() {
                 actuallyGivenSeeds++;
             }
         }
+        
+        // Process Moonstone Drops
+        if (moonstonesWon > 0) {
+            if (!gameState.owned_items) gameState.owned_items = [];
+            for (let i = 0; i < moonstonesWon; i++) {
+                gameState.owned_items.push('Moonstone');
+            }
+        }
 
         // Filter out completed tasks
         gameState.event_tasks = gameState.event_tasks.filter(t => !t.completed);
         
         fillTasks(); 
         updateCurrencies();
-        await saveGameToServer(); // Immediately save newly added pets/coins
+        await saveGameToServer(); // Immediately save newly added items/pets/coins
 
         // Build the Reward Message dynamically
         let rewardMsg = `
@@ -404,19 +420,28 @@ async function shakeTree() {
             <span style="color: var(--p1); font-size: 22px;">+${totalCoinsWon} Sakura Coins</span>
         `;
         
-        if (actuallyGivenSeeds > 0) {
-            rewardMsg += `<br><br><span style="color: #3ba55c; font-size: 20px; text-shadow: 0 0 10px #3ba55c;">🌱 You found ${actuallyGivenSeeds} Mysterious Seed(s)!</span>`;
-            document.getElementById('rewardIcon').innerText = '🌱';
-            document.getElementById('rewardIcon').style.filter = 'drop-shadow(0 0 20px #3ba55c)';
-        } else if (seedsWon > 0 && actuallyGivenSeeds === 0) {
-            rewardMsg += `<br><br><span style="color: #ff4444; font-size: 14px;">You found a Mysterious Seed, but your Pet Inventory is full!</span>`;
-            document.getElementById('rewardIcon').innerText = '🌸';
-            document.getElementById('rewardIcon').style.filter = 'drop-shadow(0 0 20px rgba(255,255,255,0.4))';
-        } else {
-            document.getElementById('rewardIcon').innerText = '🌸';
-            document.getElementById('rewardIcon').style.filter = 'drop-shadow(0 0 20px rgba(255,255,255,0.4))';
+        let primaryIcon = '🌸';
+        let primaryColor = 'rgba(255,255,255,0.4)';
+        
+        // Append Moonstone message
+        if (moonstonesWon > 0) {
+            rewardMsg += `<br><br><span style="color: #00ffcc; font-size: 20px; text-shadow: 0 0 10px #00ffcc;">🌑 You found ${moonstonesWon} Moonstone(s)!</span>`;
+            primaryIcon = '🌑';
+            primaryColor = '#00ffcc';
         }
 
+        // Append Seed message (Overrides Moonstone for priority icon)
+        if (actuallyGivenSeeds > 0) {
+            rewardMsg += `<br><br><span style="color: #3ba55c; font-size: 20px; text-shadow: 0 0 10px #3ba55c;">🌱 You found ${actuallyGivenSeeds} Mysterious Seed(s)!</span>`;
+            primaryIcon = '🌱';
+            primaryColor = '#3ba55c';
+        } else if (seedsWon > 0 && actuallyGivenSeeds === 0) {
+            rewardMsg += `<br><br><span style="color: #ff4444; font-size: 14px;">You found a Mysterious Seed, but your Pet Inventory is full!</span>`;
+        } 
+
+        // Update popup UI
+        document.getElementById('rewardIcon').innerText = primaryIcon;
+        document.getElementById('rewardIcon').style.filter = `drop-shadow(0 0 20px ${primaryColor})`;
         document.getElementById('rewardDesc').innerHTML = rewardMsg;
         document.getElementById('rewardPopup').style.display = 'flex';
         
