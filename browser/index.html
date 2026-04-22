@@ -125,7 +125,7 @@
     </div>
 
     <div class="viewport">
-        <iframe id="browserFrame" src="https://duckduckgo.com"></iframe>
+        <iframe id="browserFrame" src="../proxy.php?url=https://lite.duckduckgo.com/lite/"></iframe>
     </div>
 
     <script>
@@ -135,12 +135,14 @@
 
         // If the user types "discord.com" instead of "https://discord.com"
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            if (url.includes('.') && !url.includes(' ')) {
-                url = 'https://' + url;
-            } else {
-                url = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
+                // If it looks like a website (has a dot and no spaces)
+                if (url.includes('.') && !url.includes(' ')) {
+                    url = 'https://' + url;
+                } else {
+                    // Otherwise, treat it as a search query using DuckDuckGo Lite
+                    url = 'https://lite.duckduckgo.com/lite/?q=' + encodeURIComponent(url);
+                }
             }
-        }
 
         // --- THE MAGIC HAPPENS HERE ---
         // Instead of putting the URL directly into the iframe, 
