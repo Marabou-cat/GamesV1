@@ -82,8 +82,13 @@ if (isset($_GET['logout'])) {
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #0a0a0c; 
-            background-image: radial-gradient(circle at 50% 0%, #1a1a24 0%, #0a0a0c 70%);
+            /* Set the background image here */
+            background-image: url('../png/login.png');
+            background-size: cover; /* Makes sure the image covers the entire screen */
+            background-position: center; /* Centers the image */
+            background-repeat: no-repeat; /* Prevents the image from tiling */
+            background-attachment: fixed; /* Keeps the background still if you scroll */
+            background-color: #0a0a0c; /* Fallback color just in case the image doesn't load */
             color: #fff;
             display: flex; 
             justify-content: center; 
