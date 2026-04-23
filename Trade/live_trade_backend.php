@@ -43,10 +43,12 @@ try {
     die(json_encode(["success" => false, "message" => "Database connection failed."]));
 }
 
-// --- SESSION LOCK RELEASE ---
+// --- SESSION LOCK RELEASE (THE LAG KILLER) ---
 if (!isset($_SESSION['user_id'])) die(json_encode(["success" => false, "message" => "Not logged in."]));
 $user_id = $_SESSION['user_id'];
-session_write_close(); // Kills the lag by letting other scripts run!
+
+// Release the session lock immediately so multiple AJAX pings don't queue up!
+session_write_close(); 
 
 $action = $_POST['action'] ?? '';
 
@@ -63,7 +65,7 @@ function getUserData($pdo, $uid) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// Transfer Logic Engine (Moved here so it's clean and globally accessible)
+// Transfer Logic Engine
 function transferItems($offer, &$from_pets, &$from_cursors, &$from_items, &$from_ages, &$from_active_pet, &$from_eq_cursor, &$to_pets, &$to_cursors, &$to_items, &$to_ages) {
     foreach($offer as $item) {
         if (strpos($item, 'item::') === 0) { 
@@ -95,8 +97,15 @@ function transferItems($offer, &$from_pets, &$from_cursors, &$from_items, &$from
     }
 }
 
-// --- CREATE ROOM ---
+// --- CREATE ROOM & GARBAGE COLLECTION ---
 if ($action === 'create_room') {
+    // --- AUTOMATIC CLEANUP ---
+    // Deletes trades finished over 1 hour ago, AND abandoned/empty rooms older than 3 hours
+    try {
+        $pdo->exec("DELETE FROM trade_rooms WHERE (status = 'completed' AND created_at < NOW() - INTERVAL 1 HOUR) OR (created_at < NOW() - INTERVAL 3 HOUR)");
+    } catch (Exception $e) { /* Fail silently, don't break the creation process */ }
+    
+    // Create the new room
     $code = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 5));
     $stmt = $pdo->prepare("INSERT INTO trade_rooms (room_code, player1_id, p1_offer, p2_offer, p1_pet_ages, p2_pet_ages) VALUES (?, ?, '[]', '[]', '{}', '{}')");
     $stmt->execute([$code, $user_id]);
@@ -169,11 +178,12 @@ if ($action === 'toggle_accept') {
         try {
             $pdo->beginTransaction();
 
-            // 1. LOCK THE ROOM
+            // 1. LOCK THE ROOM (The Anti-Void Fix)
             $stmt = $pdo->prepare("SELECT status, p1_offer, p2_offer, p1_gems, p2_gems FROM trade_rooms WHERE id = ? FOR UPDATE");
             $stmt->execute([$room['id']]);
             $lockedRoom = $stmt->fetch(PDO::FETCH_ASSOC);
 
+            // Double check it wasn't already processed by the other player's request
             if ($lockedRoom['status'] === 'completed' || $lockedRoom['status'] === 'processing') {
                 $pdo->rollBack();
                 echo json_encode(["success" => true]);
