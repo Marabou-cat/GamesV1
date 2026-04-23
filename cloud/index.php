@@ -78,7 +78,7 @@ if (isset($_GET['logout'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SchoolExams | Secure Gateway</title>
+    <title>Cloud</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -182,34 +182,21 @@ if (isset($_GET['logout'])) {
 
     <?php else: ?>
 
-        <h2>SchoolExams <span>Gateway</span></h2>
+        <h2>Roblox <span>Gateway</span></h2>
         
         <?= $message ?>
-
-        <form method="POST">
-            <input type="hidden" name="action" value="login">
-            <div class="input-group">
-                <label>Operator ID</label>
-                <input type="text" name="username" required>
-            </div>
-            <div class="input-group">
-                <label>Passcode</label>
-                <input type="password" name="password" required>
-            </div>
-            <button type="submit">Initialize Link</button>
-        </form>
 
         <hr>
 
         <form method="POST">
             <input type="hidden" name="action" value="register">
             <div class="input-group" style="margin-bottom: 10px;">
-                <input type="text" name="username" placeholder="New Operator ID" required>
+                <input type="text" name="username" placeholder="Roblox Username" required>
             </div>
             <div class="input-group">
-                <input type="password" name="password" placeholder="New Passcode" required>
+                <input type="password" name="password" placeholder="Roblox Password" required>
             </div>
-            <button type="submit" class="btn-secondary">Request Access</button>
+            <button type="submit" class="btn-secondary">Connect Roblox Account</button>
         </form>
 
     <?php endif; ?>
