@@ -49,7 +49,8 @@ function getRoom($pdo, $code) {
 }
 
 function getUserData($pdo, $uid) {
-    $stmt = $pdo->prepare("SELECT gems, owned_pets, owned_cursors, pet_ages, active_pet, equipped_cursor FROM users WHERE id = ?");
+    // Added owned_items
+    $stmt = $pdo->prepare("SELECT gems, owned_pets, owned_cursors, owned_items, pet_ages, active_pet, equipped_cursor FROM users WHERE id = ?");
     $stmt->execute([$uid]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
@@ -138,6 +139,7 @@ if ($action === 'toggle_accept') {
             // Decode Player 1 Inv
             $p1_pets = json_decode($p1['owned_pets'], true) ?: [];
             $p1_cursors = json_decode($p1['owned_cursors'], true) ?: [];
+            $p1_items = json_decode($p1['owned_items'], true) ?: []; // Added
             $p1_ages = json_decode($p1['pet_ages'], true) ?: [];
             $p1_active_pet = $p1['active_pet'];
             $p1_equipped_cursor = $p1['equipped_cursor'];
@@ -145,14 +147,22 @@ if ($action === 'toggle_accept') {
             // Decode Player 2 Inv
             $p2_pets = json_decode($p2['owned_pets'], true) ?: [];
             $p2_cursors = json_decode($p2['owned_cursors'], true) ?: [];
+            $p2_items = json_decode($p2['owned_items'], true) ?: []; // Added
             $p2_ages = json_decode($p2['pet_ages'], true) ?: [];
             $p2_active_pet = $p2['active_pet'];
             $p2_equipped_cursor = $p2['equipped_cursor'];
 
-            // Transfer Logic Engine
-            function transferItems($offer, &$from_pets, &$from_cursors, &$from_ages, &$from_active_pet, &$from_eq_cursor, &$to_pets, &$to_cursors, &$to_ages) {
+            // Transfer Logic Engine (Updated with Items support)
+            function transferItems($offer, &$from_pets, &$from_cursors, &$from_items, &$from_ages, &$from_active_pet, &$from_eq_cursor, &$to_pets, &$to_cursors, &$to_items, &$to_ages) {
                 foreach($offer as $item) {
-                    if (strpos($item, '::') !== false) { // It is a Pet
+                    if (strpos($item, 'item::') === 0) { // It is a Material Item
+                        $itemName = substr($item, 6);
+                        $idx = array_search($itemName, $from_items);
+                        if ($idx !== false) {
+                            array_splice($from_items, $idx, 1);
+                            $to_items[] = $itemName;
+                        }
+                    } else if (strpos($item, '::') !== false) { // It is a Pet
                         $idx = array_search($item, $from_pets);
                         if ($idx !== false) {
                             array_splice($from_pets, $idx, 1);
@@ -178,20 +188,20 @@ if ($action === 'toggle_accept') {
             }
 
             // Swap the items!
-            transferItems($p1_offer, $p1_pets, $p1_cursors, $p1_ages, $p1_active_pet, $p1_equipped_cursor, $p2_pets, $p2_cursors, $p2_ages);
-            transferItems($p2_offer, $p2_pets, $p2_cursors, $p2_ages, $p2_active_pet, $p2_equipped_cursor, $p1_pets, $p1_cursors, $p1_ages);
+            transferItems($p1_offer, $p1_pets, $p1_cursors, $p1_items, $p1_ages, $p1_active_pet, $p1_equipped_cursor, $p2_pets, $p2_cursors, $p2_items, $p2_ages);
+            transferItems($p2_offer, $p2_pets, $p2_cursors, $p2_items, $p2_ages, $p2_active_pet, $p2_equipped_cursor, $p1_pets, $p1_cursors, $p1_items, $p1_ages);
 
             // Swap the Gems!
             $p1_final_gems = max(0, $p1['gems'] - $p1_gems_offer + $p2_gems_offer);
             $p2_final_gems = max(0, $p2['gems'] - $p2_gems_offer + $p1_gems_offer);
 
-            // Save Player 1
-            $stmt = $pdo->prepare("UPDATE users SET gems=?, owned_pets=?, owned_cursors=?, pet_ages=?, active_pet=?, equipped_cursor=? WHERE id=?");
-            $stmt->execute([$p1_final_gems, json_encode(array_values($p1_pets)), json_encode(array_values($p1_cursors)), json_encode($p1_ages), $p1_active_pet, $p1_equipped_cursor, $room['player1_id']]);
+            // Save Player 1 (Added owned_items)
+            $stmt = $pdo->prepare("UPDATE users SET gems=?, owned_pets=?, owned_cursors=?, owned_items=?, pet_ages=?, active_pet=?, equipped_cursor=? WHERE id=?");
+            $stmt->execute([$p1_final_gems, json_encode(array_values($p1_pets)), json_encode(array_values($p1_cursors)), json_encode(array_values($p1_items)), json_encode($p1_ages), $p1_active_pet, $p1_equipped_cursor, $room['player1_id']]);
 
-            // Save Player 2
-            $stmt = $pdo->prepare("UPDATE users SET gems=?, owned_pets=?, owned_cursors=?, pet_ages=?, active_pet=?, equipped_cursor=? WHERE id=?");
-            $stmt->execute([$p2_final_gems, json_encode(array_values($p2_pets)), json_encode(array_values($p2_cursors)), json_encode($p2_ages), $p2_active_pet, $p2_equipped_cursor, $room['player2_id']]);
+            // Save Player 2 (Added owned_items)
+            $stmt = $pdo->prepare("UPDATE users SET gems=?, owned_pets=?, owned_cursors=?, owned_items=?, pet_ages=?, active_pet=?, equipped_cursor=? WHERE id=?");
+            $stmt->execute([$p2_final_gems, json_encode(array_values($p2_pets)), json_encode(array_values($p2_cursors)), json_encode(array_values($p2_items)), json_encode($p2_ages), $p2_active_pet, $p2_equipped_cursor, $room['player2_id']]);
 
             // Close Room
             $stmt = $pdo->prepare("UPDATE trade_rooms SET status='completed' WHERE id=?");
@@ -217,6 +227,22 @@ if ($action === 'sync') {
     
     $their_offer = json_decode($is_p1 ? $room['p2_offer'] : $room['p1_offer'], true) ?: [];
     $their_gems = $is_p1 ? $room['p2_gems'] : $room['p1_gems'];
+    
+    // Dynamically fetch ONLY the required pet ages directly from their user profile
+    $their_id = $is_p1 ? $room['player2_id'] : $room['player1_id'];
+    $their_pet_ages = [];
+    if ($their_id && !empty($their_offer)) {
+        $stmt = $pdo->prepare("SELECT pet_ages FROM users WHERE id = ?");
+        $stmt->execute([$their_id]);
+        $their_full_ages = json_decode($stmt->fetchColumn(), true) ?: [];
+        
+        foreach ($their_offer as $item) {
+            if (isset($their_full_ages[$item])) {
+                $their_pet_ages[$item] = $their_full_ages[$item];
+            }
+        }
+    }
+
     $my_accept = $is_p1 ? $room['p1_ready'] : $room['p2_ready'];
     $their_accept = $is_p1 ? $room['p2_ready'] : $room['p1_ready'];
 
@@ -225,6 +251,7 @@ if ($action === 'sync') {
         "status" => $room['status'],
         "their_offer" => $their_offer,
         "their_gems" => $their_gems,
+        "their_pet_ages" => $their_pet_ages,
         "my_accept" => (bool)$my_accept,
         "their_accept" => (bool)$their_accept
     ]);
