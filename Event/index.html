@@ -210,6 +210,7 @@ const MAX_CURSORS = 40;
 const ARCADE_SHOP = [
     { type: 'currency', id: 'buy_gems', name: '100 Gems', icon: '💎', desc: 'Exchange Arcade Coins back to Gems!', cost: 500, color: '#00ffcc' },
     { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500, color: '#00ffcc' },
+    { type: 'item', id: 'VirusUSB', name: 'VirusUSB', icon: '💾', desc: 'A rare hacking material!', cost: 1500, color: '#f72585' },
     { type: 'pet', id: 'seed', name: 'Mysterious Seed', img: '../png/seed.png', desc: 'A Rare Arcade Pet', cost: 6000, color: '#9d4edd' },
     { type: 'chest', id: 'arcade', name: 'Arcade Chest', img: '../png/arcade_chest.png', desc: 'Contains Ultra-Rare Arcade Drops!', cost: 500, isChest: true, color: '#f72585' }
 ];
@@ -572,14 +573,22 @@ function getClawReward() {
             descHTML = `You won a Pet, but your inventory was full! Here are <span style="color:#00ffcc;">100 Gems</span> instead.`;
         }
     } else {
-        if (gameState.owned_cursors.length < MAX_CURSORS) {
-            gameState.owned_cursors.push('hacked');
-            iconHTML = `<img src="../png/hacked.png" style="height:100px; object-fit:contain;" onerror="this.outerHTML='<div style=\\'font-size:80px;\\'>🖱️</div>'">`;
-            descHTML = `JACKPOT! You grabbed a <span style="color:var(--p2);">Hacked Cursor</span>!`;
+        // 1% JACKPOT - 50/50 split between Hacked Cursor and VirusUSB
+        if (Math.random() > 0.5) {
+            if (gameState.owned_cursors.length < MAX_CURSORS && !gameState.owned_cursors.includes('hacked')) {
+                gameState.owned_cursors.push('hacked');
+                iconHTML = `<img src="../png/hacked.png" style="height:100px; object-fit:contain;" onerror="this.outerHTML='<div style=\\'font-size:80px;\\'>🖱️</div>'">`;
+                descHTML = `JACKPOT! You grabbed a <span style="color:var(--p2);">Hacked Cursor</span>!`;
+            } else {
+                gameState.gems += 200;
+                iconHTML = `<div style="font-size:80px;">🖱️</div>`;
+                descHTML = `JACKPOT! But your Cursor Inventory is full! Here are <span style="color:#00ffcc;">200 Gems</span> instead.`;
+            }
         } else {
-            gameState.gems += 200;
-            iconHTML = `<div style="font-size:80px;">🖱️</div>`;
-            descHTML = `JACKPOT! But your Cursor Inventory is full! Here are <span style="color:#00ffcc;">200 Gems</span> instead.`;
+            if (!gameState.owned_items) gameState.owned_items = [];
+            gameState.owned_items.push('VirusUSB');
+            iconHTML = `<div style="font-size:80px; filter: drop-shadow(0 0 10px #00ffcc);">💾</div>`; 
+            descHTML = `JACKPOT! You grabbed a rare <span style="color:#00ffcc;">VirusUSB</span>!`;
         }
     }
 
@@ -651,6 +660,11 @@ async function buyItem(type, baseId, cost, name) {
         gameState.owned_pets.push(uid);
         gameState.pet_ages[uid] = 0;
         iconHtml = '🐾';
+    } else if (type === 'item') {
+        gameState.sakura_coins -= cost;
+        if (!gameState.owned_items) gameState.owned_items = [];
+        gameState.owned_items.push(baseId);
+        iconHtml = '💾';
     }
 
     updateCurrencies();
