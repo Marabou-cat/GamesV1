@@ -809,7 +809,23 @@ document.addEventListener('mouseout', (e) => { if (!e.relatedTarget && !isOverIf
 
 const BASE_URL = "UGS-Files/";
 
-function toggleMoreMenu() { document.getElementById('moreSidebar').classList.toggle('open'); }
+function toggleMoreMenu() { 
+    document.getElementById('moreSidebar').classList.toggle('open'); 
+
+    // ARCADE EVENT STORY QUEST LOGIC
+    if (gameState && gameState.event_tasks && gameState.event_tasks.length > 0) {
+        let task = gameState.event_tasks[0];
+        if (task.type === 'ui_action' && task.game === 'open_more' && !task.completed) {
+            task.current++;
+            if (task.current >= task.goal) {
+                task.current = task.goal;
+                task.completed = true;
+                showToast("✅ Arcade Chapter Quest Completed!");
+            }
+            saveGameToServer();
+        }
+    }
+}
 
 // --- REDEEM CODE SYSTEM ---
 let usedCodes = JSON.parse(localStorage.getItem('schoolExamsUsedCodes')) || [];
