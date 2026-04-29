@@ -40,7 +40,7 @@
         .btn-shop { border-color: var(--p2); color: var(--p2); }
         .btn-shop:hover { background: rgba(247, 37, 133, 0.1); box-shadow: var(--glow-pink); }
 
-        /* --- BALL DROP MACHINE STYLES --- */
+        /* --- CLAW MACHINE STYLES --- */
         .arcade-container {
             margin: 0 auto 40px auto;
             display: flex; flex-direction: column; align-items: center; gap: 20px;
@@ -56,17 +56,50 @@
             overflow: hidden;
         }
 
+        /* The physics canvas container */
+        #matter-box { position: absolute; inset: 0; z-index: 1; }
+
+        /* The string holding the claw */
+        .claw-line {
+            position: absolute; top: 0; left: 50%; width: 4px; height: 20px;
+            background: #aaa; transform: translateX(-50%); z-index: 4;
+            transition: height 1s ease-in-out, left 0.2s linear;
+        }
+
+        /* The Claw Image */
+        .claw-img {
+            position: absolute; top: 20px; left: 50%; width: 80px; height: 80px;
+            transform: translateX(-50%); z-index: 6; object-fit: contain;
+            transition: top 1s ease-in-out, left 0.2s linear;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8));
+        }
+
+        /* Visual Ball Grabbed by Claw */
+        .grabbed-ball {
+            position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+            width: 30px; height: 30px; border-radius: 50%; display: none; z-index: 5;
+            transition: top 1s ease-in-out, left 0.2s linear;
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.6);
+            border: 2px solid #fff;
+        }
+
         /* Controls Section */
         .controls-panel {
             display: flex; align-items: center; justify-content: center; gap: 30px;
-            background: rgba(0,0,0,0.6); padding: 15px 50px; border-radius: 20px;
+            background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 20px;
             border: 2px solid var(--p2); box-shadow: var(--glow-pink);
         }
 
+        .controller-box { display: flex; align-items: center; gap: 10px; }
+        .dir-btn { background: var(--bg2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 8px; font-size: 20px; cursor: pointer; transition: 0.1s; }
+        .dir-btn:active { background: var(--p2); transform: scale(0.9); }
+
+        .controller-img { height: 60px; object-fit: contain; }
+
         .action-box { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: 0.1s; }
         .action-box:active { transform: scale(0.95); }
-        .button-img { height: 70px; object-fit: contain; filter: drop-shadow(0 0 10px var(--p2)); }
-        .action-text { font-weight: 900; color: var(--p2); font-size: 16px; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+        .button-img { height: 60px; object-fit: contain; filter: drop-shadow(0 0 10px var(--p2)); }
+        .action-text { font-weight: 900; color: var(--p2); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
 
         /* --- TASKS --- */
         .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 900px; margin: 0 auto; }
@@ -104,7 +137,7 @@
 
     <div class="header">
         <h1>🕹️ Arcade Event</h1>
-        <p>Complete Tasks to get Arcade Coins. Drop the neon balls to win rare rewards!</p>
+        <p>Complete Tasks to get Arcade Coins. Play the Claw Machine to win rare rewards!</p>
     </div>
 
     <div class="currency-bar">
@@ -119,12 +152,23 @@
     </div>
 
     <div class="arcade-container">
-        <div class="machine-box" id="matter-box"></div>
+        <div class="machine-box">
+            <div id="matter-box"></div>
+            
+            <div class="claw-line" id="clawLine"></div>
+            <img src="../png/claw.png" class="claw-img" id="theClaw" onerror="this.outerHTML='<div class=\\'claw-img\\' id=\\'theClaw\\' style=\\'font-size:60px;\\'>🪝</div>'">
+            <div class="grabbed-ball" id="grabbedBall"></div>
+        </div>
         
         <div class="controls-panel">
-            <div class="action-box" onclick="dropBall()">
+            <div class="controller-box">
+                <button class="dir-btn" onmousedown="moveClaw(-1)">◀</button>
+                <img src="../png/controller.png" class="controller-img" onerror="this.outerHTML='<div style=\\'font-size:40px;\\'>🎮</div>'">
+                <button class="dir-btn" onmousedown="moveClaw(1)">▶</button>
+            </div>
+            <div class="action-box" onclick="handleClawButton()">
                 <img src="../png/button.png" class="button-img" onerror="this.outerHTML='<div style=\\'font-size:50px; filter: drop-shadow(0 0 10px #f72585);\\'>🔴</div>'">
-                <div class="action-text" id="arcadeActionText">Drop Ball (100 👾)</div>
+                <div class="action-text" id="arcadeActionText">Insert Coin (100 👾)</div>
             </div>
         </div>
     </div>
@@ -163,6 +207,20 @@ const ARCADE_SHOP = [
     { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500, color: '#00ffcc' },
     { type: 'pet', id: 'mboe', name: 'Beast Of Eclipse', img: '../png/mboe.png', desc: 'A Rare Arcade Pet', cost: 3000, color: '#9d4edd' },
     { type: 'chest', id: 'sakura', name: 'Arcade Chest', img: '../png/sakura_chest.png', desc: 'Contains Ultra-Rare Arcade Drops!', cost: 500, isChest: true, color: '#f72585' }
+];
+
+// PET DATA (Needed for the 9% Claw Machine Drop)
+const PET_SHOP = [
+    { id: "doge", name: "Pixel Doge", icon: "🐕" }, { id: "cat", name: "Cyber Kitty", icon: "🐈" },
+    { id: "frog", name: "Ninja Frog", icon: "🐸" }, { id: "dragon", name: "Neon Dragon", icon: "🐲" },
+    { id: "panda", name: "Ghost Panda", icon: "🐼" }, { id: "kraken", name: "67 Kraken", icon: "🦑" }
+];
+
+// CURSOR DATA (Needed for the 1% Claw Machine Drop)
+const CURSORS = [
+    { id: "m1", name: "Egg Twins", src: "../png/Twins.png" }, { id: "m2", name: "Gold Ingot", src: "../png/Goldingot.png" }, 
+    { id: "m3", name: "Cheesy Cursor", src: "../png/mouse.png" }, { id: "m4", name: "Sword Cursor", src: "../png/Katana.png" }, 
+    { id: "m5", name: "Pizza Slice", src: "../png/pizza.png" }
 ];
 
 async function loadGameFromServer() {
@@ -242,17 +300,14 @@ function exchangeGems() {
     }
 }
 
-// --- MATTER.JS 2D PHYSICS ENGINE (STACKING BALLS) ---
+// --- MATTER.JS 2D PHYSICS ENGINE & CLAW LOGIC ---
 const Engine = Matter.Engine,
       Render = Matter.Render,
       Runner = Matter.Runner,
       Bodies = Matter.Bodies,
       Composite = Matter.Composite;
 
-// Create physics engine
 let engine = Engine.create();
-
-// Create renderer targeting the machine-box
 let render = Render.create({
     element: document.getElementById('matter-box'),
     engine: engine,
@@ -264,54 +319,111 @@ let render = Render.create({
     }
 });
 
-// Create boundaries (Floor, Left Wall, Right Wall)
-const ground = Bodies.rectangle(160, 355, 320, 20, { isStatic: true, render: { fillStyle: '#222' } });
-const leftWall = Bodies.rectangle(-10, 175, 20, 350, { isStatic: true });
-const rightWall = Bodies.rectangle(330, 175, 20, 350, { isStatic: true });
+// Walls to keep balls inside
+const ground = Bodies.rectangle(160, 355, 320, 20, { isStatic: true, render: { fillStyle: 'transparent' } });
+const leftWall = Bodies.rectangle(-10, 175, 20, 350, { isStatic: true, render: { fillStyle: 'transparent' } });
+const rightWall = Bodies.rectangle(330, 175, 20, 350, { isStatic: true, render: { fillStyle: 'transparent' } });
 Composite.add(engine.world, [ground, leftWall, rightWall]);
 
-// Start the engine
+// Start engine
 Render.run(render);
 Runner.run(Runner.create(), engine);
 
-// The Neon Colors for the balls
 const ballColors = ['#f72585', '#7209b7', '#3a0ca3', '#4361ee', '#4cc9f0', '#00f5d4', '#ffd700'];
-let isDropping = false;
+let activeBalls = [];
 
-function dropBall() {
-    if (isDropping) return;
-    if (gameState.sakura_coins < 100) return showToast("Not enough Arcade Coins!");
+// Spawn 30 balls at start
+function spawnInitialBalls() {
+    for(let i=0; i<30; i++) {
+        let color = ballColors[Math.floor(Math.random() * ballColors.length)];
+        let ball = Bodies.circle(Math.random() * 280 + 20, Math.random() * 100 - 200, 15, {
+            restitution: 0.1, friction: 0.8, density: 0.05,
+            render: { fillStyle: color, strokeStyle: '#fff', lineWidth: 2 }
+        });
+        activeBalls.push(ball);
+        Composite.add(engine.world, ball);
+    }
+}
+spawnInitialBalls();
+
+let clawState = 'idle'; // 'idle', 'active', 'dropping'
+let clawPos = 50;
+
+function moveClaw(direction) {
+    if (clawState !== 'active') return;
+    clawPos += (direction * 5); 
+    if (clawPos < 10) clawPos = 10;
+    if (clawPos > 90) clawPos = 90;
     
-    gameState.sakura_coins -= 100;
-    updateCurrencies();
-    saveGameToServer();
-    
-    isDropping = true;
-    document.getElementById('arcadeActionText').innerText = "DROPPING...";
+    document.getElementById('theClaw').style.left = clawPos + '%';
+    document.getElementById('clawLine').style.left = clawPos + '%';
+    document.getElementById('grabbedBall').style.left = clawPos + '%'; // Keep the fake ball aligned
+}
 
-    // Spawn a physics ball at the top of the box
-    const randomColor = ballColors[Math.floor(Math.random() * ballColors.length)];
-    const randomX = 160 + (Math.random() * 80 - 40); // Drop slightly off-center for variety
-    
-    const ball = Bodies.circle(randomX, -20, 20, {
-        restitution: 0.1, // Almost 0 bounce so they stack quickly
-        friction: 0.8,    // High friction so they don't slide around
-        density: 0.05,
-        render: {
-            fillStyle: randomColor,
-            strokeStyle: '#fff',
-            lineWidth: 2
-        }
-    });
+function handleClawButton() {
+    if (clawState === 'idle') {
+        if (gameState.sakura_coins < 100) return showToast("Not enough Arcade Coins!");
+        
+        gameState.sakura_coins -= 100;
+        updateCurrencies();
+        saveGameToServer();
+        
+        clawState = 'active';
+        document.getElementById('arcadeActionText').innerText = "DROP CLAW!";
+        showToast("🕹️ Coin Inserted! Move the claw, then drop!");
+        
+    } else if (clawState === 'active') {
+        clawState = 'dropping';
+        document.getElementById('arcadeActionText').innerText = "DROPPING...";
+        
+        const claw = document.getElementById('theClaw');
+        const line = document.getElementById('clawLine');
+        const grabbedBallDom = document.getElementById('grabbedBall');
+        
+        // Drop animation
+        claw.style.top = "260px";
+        line.style.height = "260px";
+        grabbedBallDom.style.top = "290px";
+        
+        setTimeout(() => {
+            // Pick up ball visually from Physics World
+            if (activeBalls.length > 0) {
+                let grabbed = activeBalls.pop(); // Take one ball from array
+                let color = grabbed.render.fillStyle; // Get its color
+                Composite.remove(engine.world, grabbed); // Delete it from physics engine
+                
+                // Show the fake DOM ball inside the claw
+                grabbedBallDom.style.background = color;
+                grabbedBallDom.style.display = 'block';
+            }
 
-    Composite.add(engine.world, ball);
-
-    // Wait for the ball to fall to the bottom before showing the reward
-    setTimeout(() => {
-        getClawReward();
-        isDropping = false;
-        document.getElementById('arcadeActionText').innerText = "DROP BALL (100 👾)";
-    }, 1200); 
+            // Retract animation
+            claw.style.top = "20px";
+            line.style.height = "20px";
+            grabbedBallDom.style.top = "50px";
+            
+            setTimeout(() => {
+                getClawReward();
+                clawState = 'idle';
+                document.getElementById('arcadeActionText').innerText = "INSERT COIN (100 👾)";
+                grabbedBallDom.style.display = 'none'; // Drop into chute
+                
+                // Refill machine if it gets too low
+                if(activeBalls.length < 10) {
+                    for(let i=0; i<15; i++) {
+                        let c = ballColors[Math.floor(Math.random() * ballColors.length)];
+                        let b = Bodies.circle(Math.random() * 280 + 20, -50, 15, {
+                            restitution: 0.1, friction: 0.8, density: 0.05,
+                            render: { fillStyle: c, strokeStyle: '#fff', lineWidth: 2 }
+                        });
+                        activeBalls.push(b);
+                        Composite.add(engine.world, b);
+                    }
+                }
+            }, 1000); // Wait for retraction
+            
+        }, 1000); // Wait for drop
+    }
 }
 
 // --- REWARD LOGIC ---
