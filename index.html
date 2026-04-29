@@ -1247,7 +1247,17 @@ function renderInventory() {
             // Assign icons based on the item name
             let icon = '📦';
             let color = '#9b59b6';
-            if (itemName === 'Moonstone') { icon = '🌑'; color = '#00ffcc'; }
+            let desc = 'Special Item';
+            
+            if (itemName === 'Moonstone') { 
+                icon = '🌑'; 
+                color = '#00ffcc'; 
+                desc = 'Evolution Material';
+            } else if (itemName === 'VirusUSB') {
+                icon = '💾'; // Or use an image: <img src="../png/virus_usb.png" style="width: 100%;">
+                color = '#f72585'; // Arcade Pink
+                desc = 'Evolution Material';
+            }
             
             itemsContainer.innerHTML += `
                 <div class="shop-item" style="position:relative; border-color: ${color}; box-shadow: 0 0 10px ${color}40;">
