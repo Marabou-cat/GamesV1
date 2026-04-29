@@ -103,6 +103,17 @@ $EVOLUTIONS = [
         "currency" => "gems",
         "img" => "../png/aerodactylus.png",
         "color" => "#00ffcc"
+    ],
+    "virus_kitty" => [
+        "base_name" => "Virus Kitty",
+        "target_id" => "artificial_virus",
+        "target_name" => "Artificial Virus",
+        "req_level" => 45,
+        "req_item" => "VirusUSB",
+        "cost" => 700,
+        "currency" => "gems",
+        "img" => "../png/aerodactylus.png",
+        "color" => "#00ffcc"
     ]
 ];
 
