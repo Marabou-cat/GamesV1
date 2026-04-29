@@ -349,14 +349,14 @@ function getClawReward() {
 
     if (roll < 70) {
         // 70% Coins
-        let amt = Math.floor(Math.random() * 1500) + 500;
+        let amt = Math.floor(Math.random() * 500) + 230;
         gameState.coins += amt;
         iconHTML = `<div style="font-size:80px;">🪙</div>`;
         descHTML = `You won <span style="color:#ffd700;">${amt} ExamCoins</span>!`;
     } 
     else if (roll < 90) {
         // 20% Gems
-        let amt = Math.floor(Math.random() * 40) + 10;
+        let amt = Math.floor(Math.random() * 10) + 5;
         gameState.gems += amt;
         iconHTML = `<div style="font-size:80px;">💎</div>`;
         descHTML = `You won <span style="color:#00ffcc;">${amt} Gems</span>!`;
