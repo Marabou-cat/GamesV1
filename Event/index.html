@@ -81,7 +81,7 @@
             transition: top 1s ease-in-out, left 0.2s linear, opacity 0.2s;
             box-shadow: inset -5px -5px 15px rgba(0,0,0,0.6);
             border: 2px solid #fff;
-            opacity: 0; /* Use opacity instead of display to allow smooth transitions */
+            opacity: 0; 
             display: block;
         }
 
@@ -200,14 +200,29 @@
     <div id="toast">Data Synced Successfully</div>
 
 <script>
-// Play Music on first user interaction to bypass browser autoplay blocks
-document.addEventListener('click', function() {
-    let bgm = document.getElementById('bgm');
+// --- AGGRESSIVE AUTOPLAY BGM LOGIC ---
+const bgm = document.getElementById('bgm');
+bgm.volume = 0.4;
+
+function startMusic() {
     if (bgm.paused) {
-        bgm.volume = 0.4;
-        bgm.play().catch(e => console.log('Music blocked by browser until heavier interaction.'));
+        bgm.play().catch(e => console.log('Waiting for stricter interaction...'));
     }
-}, { once: true });
+    // Remove listeners once music starts so it doesn't keep firing
+    if (!bgm.paused) {
+        ['click', 'mousemove', 'keydown', 'touchstart'].forEach(evt => 
+            document.removeEventListener(evt, startMusic)
+        );
+    }
+}
+
+// Try to play immediately (works if they navigated here from the main portal seamlessly)
+startMusic();
+
+// Attach to ANY interaction to guarantee it starts immediately
+['click', 'mousemove', 'keydown', 'touchstart'].forEach(evt => 
+    document.addEventListener(evt, startMusic)
+);
 
 // --- GAME STATE & BACKEND SYNC ---
 let gameState = null;
@@ -221,6 +236,20 @@ const ARCADE_SHOP = [
     { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500, color: '#00ffcc' },
     { type: 'pet', id: 'mboe', name: 'Beast Of Eclipse', img: '../png/mboe.png', desc: 'A Rare Arcade Pet', cost: 3000, color: '#9d4edd' },
     { type: 'chest', id: 'sakura', name: 'Arcade Chest', img: '../png/sakura_chest.png', desc: 'Contains Ultra-Rare Arcade Drops!', cost: 500, isChest: true, color: '#f72585' }
+];
+
+// PET DATA (Needed for the 9% Claw Machine Drop)
+const PET_SHOP = [
+    { id: "doge", name: "Pixel Doge", icon: "🐕" }, { id: "cat", name: "Cyber Kitty", icon: "🐈" },
+    { id: "frog", name: "Ninja Frog", icon: "🐸" }, { id: "dragon", name: "Neon Dragon", icon: "🐲" },
+    { id: "panda", name: "Ghost Panda", icon: "🐼" }, { id: "kraken", name: "67 Kraken", icon: "🦑" }
+];
+
+// CURSOR DATA (Needed for the 1% Claw Machine Drop)
+const CURSORS = [
+    { id: "m1", name: "Egg Twins", src: "../png/Twins.png" }, { id: "m2", name: "Gold Ingot", src: "../png/Goldingot.png" }, 
+    { id: "m3", name: "Cheesy Cursor", src: "../png/mouse.png" }, { id: "m4", name: "Sword Cursor", src: "../png/Katana.png" }, 
+    { id: "m5", name: "Pizza Slice", src: "../png/pizza.png" }
 ];
 
 async function loadGameFromServer() {
@@ -238,7 +267,7 @@ async function loadGameFromServer() {
                 coins: parseInt(result.data.coins) || 0,
                 gems: parseInt(result.data.gems) || 0,
                 playtime: parseInt(result.data.playtime) || 0,
-                sakura_coins: parseInt(result.data.sakura_coins) || 0, // Used as Arcade Coins
+                sakura_coins: parseInt(result.data.sakura_coins) || 0, 
                 event_tasks: JSON.parse(result.data.event_tasks || '[]'),
                 owned_chests: JSON.parse(result.data.owned_chests || '{}'), 
                 owned_cursors: JSON.parse(result.data.owned_cursors || '["def"]'),
@@ -357,7 +386,7 @@ function moveClaw(direction) {
     
     document.getElementById('theClaw').style.left = clawPos + '%';
     document.getElementById('clawLine').style.left = clawPos + '%';
-    document.getElementById('grabbedBall').style.left = clawPos + '%'; // Keep the fake ball aligned horizontally
+    document.getElementById('grabbedBall').style.left = clawPos + '%'; 
 }
 
 function handleClawButton() {
