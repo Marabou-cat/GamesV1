@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Arcade Event - SchoolExams</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
     <style>
         :root {
             /* Neon Arcade Theme Variables */
@@ -37,7 +40,7 @@
         .btn-shop { border-color: var(--p2); color: var(--p2); }
         .btn-shop:hover { background: rgba(247, 37, 133, 0.1); box-shadow: var(--glow-pink); }
 
-        /* --- CLAW MACHINE STYLES --- */
+        /* --- BALL DROP MACHINE STYLES --- */
         .arcade-container {
             margin: 0 auto 40px auto;
             display: flex; flex-direction: column; align-items: center; gap: 20px;
@@ -53,43 +56,17 @@
             overflow: hidden;
         }
 
-        /* Background Image of the Arcade Machine */
-        .machine-bg {
-            position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; z-index: 1;
-        }
-
-        /* The string holding the claw */
-        .claw-line {
-            position: absolute; top: 0; left: 50%; width: 4px; height: 20px;
-            background: #aaa; transform: translateX(-50%); z-index: 4;
-            transition: height 1s ease-in-out, left 0.2s linear;
-        }
-
-        /* The Claw Image */
-        .claw-img {
-            position: absolute; top: 20px; left: 50%; width: 80px; height: 80px;
-            transform: translateX(-50%); z-index: 5; object-fit: contain;
-            transition: top 1s ease-in-out, left 0.2s linear;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8));
-        }
-
         /* Controls Section */
         .controls-panel {
             display: flex; align-items: center; justify-content: center; gap: 30px;
-            background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 20px;
+            background: rgba(0,0,0,0.6); padding: 15px 50px; border-radius: 20px;
             border: 2px solid var(--p2); box-shadow: var(--glow-pink);
         }
 
-        .controller-box { display: flex; align-items: center; gap: 10px; }
-        .dir-btn { background: var(--bg2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 8px; font-size: 20px; cursor: pointer; transition: 0.1s; }
-        .dir-btn:active { background: var(--p2); transform: scale(0.9); }
-
-        .controller-img { height: 60px; object-fit: contain; }
-
         .action-box { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: 0.1s; }
         .action-box:active { transform: scale(0.95); }
-        .button-img { height: 60px; object-fit: contain; filter: drop-shadow(0 0 10px var(--p2)); }
-        .action-text { font-weight: 900; color: var(--p2); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .button-img { height: 70px; object-fit: contain; filter: drop-shadow(0 0 10px var(--p2)); }
+        .action-text { font-weight: 900; color: var(--p2); font-size: 16px; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
 
         /* --- TASKS --- */
         .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 900px; margin: 0 auto; }
@@ -127,7 +104,7 @@
 
     <div class="header">
         <h1>🕹️ Arcade Event</h1>
-        <p>Complete Tasks to get Arcade Coins. Play the Claw Machine to win rare rewards!</p>
+        <p>Complete Tasks to get Arcade Coins. Drop the neon balls to win rare rewards!</p>
     </div>
 
     <div class="currency-bar">
@@ -142,21 +119,12 @@
     </div>
 
     <div class="arcade-container">
-        <div class="machine-box">
-            <img src="arcade.png" class="machine-bg" onerror="this.style.display='none'">
-            <div class="claw-line" id="clawLine"></div>
-            <img src="claw.png" class="claw-img" id="theClaw" onerror="this.outerHTML='<div class=\\'claw-img\\' id=\\'theClaw\\' style=\\'font-size:60px;\\'>🪝</div>'">
-        </div>
+        <div class="machine-box" id="matter-box"></div>
         
         <div class="controls-panel">
-            <div class="controller-box">
-                <button class="dir-btn" onmousedown="moveClaw(-1)">◀</button>
-                <img src="controller.png" class="controller-img" onerror="this.outerHTML='<div style=\\'font-size:40px;\\'>🎮</div>'">
-                <button class="dir-btn" onmousedown="moveClaw(1)">▶</button>
-            </div>
-            <div class="action-box" onclick="handleClawButton()">
-                <img src="button.png" class="button-img" onerror="this.outerHTML='<div style=\\'font-size:50px; filter: drop-shadow(0 0 10px #f72585);\\'>🔴</div>'">
-                <div class="action-text" id="arcadeActionText">Insert Coin (100 👾)</div>
+            <div class="action-box" onclick="dropBall()">
+                <img src="../png/button.png" class="button-img" onerror="this.outerHTML='<div style=\\'font-size:50px; filter: drop-shadow(0 0 10px #f72585);\\'>🔴</div>'">
+                <div class="action-text" id="arcadeActionText">Drop Ball (100 👾)</div>
             </div>
         </div>
     </div>
@@ -190,7 +158,6 @@ const MAX_CURSORS = 40;
 
 const GAME_POOL = ['3 Dash', 'Snow Rider 3D', 'Space Wave', 'Five Nights At Epsteins', '1 On 1 Soccer', 'BitLife', 'NHL 2002', 'Monkey Mart', 'Raft', 'Extreme Run 3D', 'Two Ball 3D'];
 
-// Same internal structure, rebranded visually to Arcade.
 const ARCADE_SHOP = [
     { type: 'currency', id: 'buy_gems', name: '100 Gems', icon: '💎', desc: 'Exchange Arcade Coins back to Gems!', cost: 500, color: '#00ffcc' },
     { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500, color: '#00ffcc' },
@@ -275,58 +242,79 @@ function exchangeGems() {
     }
 }
 
-// --- CLAW MACHINE LOGIC ---
-let clawState = 'idle'; // 'idle', 'active', 'dropping'
-let clawPos = 50;
+// --- MATTER.JS 2D PHYSICS ENGINE (STACKING BALLS) ---
+const Engine = Matter.Engine,
+      Render = Matter.Render,
+      Runner = Matter.Runner,
+      Bodies = Matter.Bodies,
+      Composite = Matter.Composite;
 
-function moveClaw(direction) {
-    if (clawState !== 'active') return;
-    clawPos += (direction * 5); // Move 5% left or right
-    if (clawPos < 10) clawPos = 10;
-    if (clawPos > 90) clawPos = 90;
-    
-    document.getElementById('theClaw').style.left = clawPos + '%';
-    document.getElementById('clawLine').style.left = clawPos + '%';
-}
+// Create physics engine
+let engine = Engine.create();
 
-function handleClawButton() {
-    if (clawState === 'idle') {
-        if (gameState.sakura_coins < 100) return showToast("Not enough Arcade Coins!");
-        
-        gameState.sakura_coins -= 100;
-        updateCurrencies();
-        saveGameToServer();
-        
-        clawState = 'active';
-        document.getElementById('arcadeActionText').innerText = "DROP CLAW!";
-        showToast("🕹️ Coin Inserted! Move the claw, then drop!");
-        
-    } else if (clawState === 'active') {
-        clawState = 'dropping';
-        document.getElementById('arcadeActionText').innerText = "DROPPING...";
-        
-        const claw = document.getElementById('theClaw');
-        const line = document.getElementById('clawLine');
-        
-        // Drop animation
-        claw.style.top = "250px";
-        line.style.height = "250px";
-        
-        setTimeout(() => {
-            // Retract animation
-            claw.style.top = "20px";
-            line.style.height = "20px";
-            
-            setTimeout(() => {
-                getClawReward();
-                clawState = 'idle';
-                document.getElementById('arcadeActionText').innerText = "INSERT COIN (100 👾)";
-            }, 1000); // Wait for retraction
-            
-        }, 1000); // Wait for drop
+// Create renderer targeting the machine-box
+let render = Render.create({
+    element: document.getElementById('matter-box'),
+    engine: engine,
+    options: {
+        width: 320,
+        height: 350,
+        wireframes: false,
+        background: 'transparent'
     }
+});
+
+// Create boundaries (Floor, Left Wall, Right Wall)
+const ground = Bodies.rectangle(160, 355, 320, 20, { isStatic: true, render: { fillStyle: '#222' } });
+const leftWall = Bodies.rectangle(-10, 175, 20, 350, { isStatic: true });
+const rightWall = Bodies.rectangle(330, 175, 20, 350, { isStatic: true });
+Composite.add(engine.world, [ground, leftWall, rightWall]);
+
+// Start the engine
+Render.run(render);
+Runner.run(Runner.create(), engine);
+
+// The Neon Colors for the balls
+const ballColors = ['#f72585', '#7209b7', '#3a0ca3', '#4361ee', '#4cc9f0', '#00f5d4', '#ffd700'];
+let isDropping = false;
+
+function dropBall() {
+    if (isDropping) return;
+    if (gameState.sakura_coins < 100) return showToast("Not enough Arcade Coins!");
+    
+    gameState.sakura_coins -= 100;
+    updateCurrencies();
+    saveGameToServer();
+    
+    isDropping = true;
+    document.getElementById('arcadeActionText').innerText = "DROPPING...";
+
+    // Spawn a physics ball at the top of the box
+    const randomColor = ballColors[Math.floor(Math.random() * ballColors.length)];
+    const randomX = 160 + (Math.random() * 80 - 40); // Drop slightly off-center for variety
+    
+    const ball = Bodies.circle(randomX, -20, 20, {
+        restitution: 0.1, // Almost 0 bounce so they stack quickly
+        friction: 0.8,    // High friction so they don't slide around
+        density: 0.05,
+        render: {
+            fillStyle: randomColor,
+            strokeStyle: '#fff',
+            lineWidth: 2
+        }
+    });
+
+    Composite.add(engine.world, ball);
+
+    // Wait for the ball to fall to the bottom before showing the reward
+    setTimeout(() => {
+        getClawReward();
+        isDropping = false;
+        document.getElementById('arcadeActionText').innerText = "DROP BALL (100 👾)";
+    }, 1200); 
 }
 
+// --- REWARD LOGIC ---
 function getClawReward() {
     const roll = Math.random() * 100;
     let title = "PRIZE GRABBED!";
@@ -342,7 +330,7 @@ function getClawReward() {
     } 
     else if (roll < 90) {
         // 20% Gems
-        let amt = Math.floor(Math.random() * 10) + 20;
+        let amt = Math.floor(Math.random() * 10) + 5;
         gameState.gems += amt;
         iconHTML = `<div style="font-size:80px;">💎</div>`;
         descHTML = `You won <span style="color:#00ffcc;">${amt} Gems</span>!`;
