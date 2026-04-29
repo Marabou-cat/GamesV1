@@ -270,7 +270,7 @@ async function saveGameToServer() {
         formData.append('gems', gameState.gems);
         formData.append('playtime', gameState.playtime);
         formData.append('sakura_coins', gameState.sakura_coins);
-        formData.append('event_tasks', JSON.stringify(gameState.event_tasks)); // This saves the questIndex to the database!
+        formData.append('event_tasks', JSON.stringify(gameState.event_tasks));
         formData.append('owned_chests', JSON.stringify(gameState.owned_chests || {})); 
         formData.append('owned_cursors', JSON.stringify(gameState.owned_cursors));
         formData.append('equipped_cursor', gameState.equipped_cursor);
@@ -290,6 +290,19 @@ function updateCurrencies() {
     }
 }
 
+// --- POPUP REWARD ENGINE ---
+function showPurchasePopup(iconHTML, itemName, extraDesc = '') {
+    document.getElementById('rewardTitle').innerText = "PURCHASE SUCCESSFUL!";
+    document.getElementById('rewardTitle').style.color = "#3ba55c"; // Green for success
+    
+    document.getElementById('rewardIcon').innerHTML = `<div style="font-size: 80px; filter: drop-shadow(0 0 20px #3ba55c);">${iconHTML}</div>`;
+    
+    document.getElementById('rewardDesc').innerHTML = `Item Successfully Bought:<br><span style="color: var(--p1); font-size: 24px;">${itemName}</span><br><br><span style="font-size: 14px; color: #aaa;">${extraDesc}</span>`;
+    
+    document.getElementById('rewardPopup').style.display = 'flex';
+}
+
+
 function exchangeGems() {
     if (!gameState) return;
     if (gameState.gems >= 150) {
@@ -297,7 +310,7 @@ function exchangeGems() {
         gameState.sakura_coins += 500;
         updateCurrencies();
         saveGameToServer();
-        showToast("👾 Converted 150 Gems to 500 Arcade Coins!");
+        showPurchasePopup('💎', '500 Arcade Coins', 'Converted from 150 Gems!');
     } else {
         alert("Not enough Gems!");
     }
@@ -306,11 +319,7 @@ function exchangeGems() {
 // --- STORY QUEST LOGIC ---
 function syncStoryTask() {
     if (!gameState) return;
-    
-    // Grab the first task in the array (where we store active quest state)
     let currentTaskState = gameState.event_tasks[0];
-
-    // If the database doesn't have a questIndex, or the array is empty, force start at Quest Index 0!
     if (!currentTaskState || currentTaskState.questIndex === undefined) {
         loadQuest(0);
     } else {
@@ -320,20 +329,16 @@ function syncStoryTask() {
 
 function loadQuest(index) {
     if (index >= STORY_QUESTS.length) {
-        // Story complete! We save 'isEnd: true' so the DB knows they finished.
         gameState.event_tasks = [{ questIndex: index, completed: true, isEnd: true }];
         saveGameToServer();
         renderTasks();
         return;
     }
 
-    // Pull the template from our Master Array above based on the pure Index
     let q = STORY_QUESTS[index];
-    
-    // Save this state into the event_tasks variable to be pushed to the DB
     gameState.event_tasks = [{
         id: Date.now(),
-        questIndex: index, // <--- THIS is what tracks their real progress reliably
+        questIndex: index,
         type: q.type,
         game: q.game,
         name: q.name,
@@ -343,7 +348,6 @@ function loadQuest(index) {
         reward: q.reward,
         completed: false
     }];
-    
     saveGameToServer();
     renderTasks();
 }
@@ -398,8 +402,6 @@ function claimStoryTask() {
     gameState.sakura_coins += task.reward;
     updateCurrencies();
     showToast(`Claimed ${task.reward} Arcade Coins!`);
-    
-    // Using questIndex is mathematically perfect. 0 + 1 = 1. 
     loadQuest(task.questIndex + 1);
 }
 
@@ -515,7 +517,7 @@ function handleClawButton() {
                 
                 setTimeout(() => {
                     getClawReward();
-                    checkClawTask(); // Increment the Story Task if applicable!
+                    checkClawTask();
                     
                     clawState = 'idle';
                     document.getElementById('arcadeActionText').innerText = "INSERT COIN (100 👾)";
@@ -539,6 +541,10 @@ function handleClawButton() {
 }
 
 function getClawReward() {
+    // Reset styling just in case the shop changed it
+    document.getElementById('rewardTitle').innerText = "PRIZE GRABBED!";
+    document.getElementById('rewardTitle').style.color = "var(--p1)";
+
     const roll = Math.random() * 100;
     let iconHTML = "";
     let descHTML = "";
@@ -626,27 +632,30 @@ async function buyGems() {
     gameState.gems += 100;
     updateCurrencies();
     await saveGameToServer();
-    showToast("💎 Bought 100 Gems!");
+    showPurchasePopup('💎', '100 Gems', '');
 }
 
 async function buyItem(type, baseId, cost, name) {
     if (gameState.sakura_coins < cost) return alert("Not enough Arcade Coins!");
     
+    let iconHtml = '🛍️';
     if (type === 'cursor') {
         if (gameState.owned_cursors.length >= MAX_CURSORS) return alert(`❌ Cursor Inventory Full!`);
         gameState.sakura_coins -= cost;
         gameState.owned_cursors.push(baseId);
+        iconHtml = '🖱️';
     } else if (type === 'pet') {
         if (gameState.owned_pets.length >= MAX_PETS) return alert(`❌ Pet Inventory Full!`);
         gameState.sakura_coins -= cost;
         let uid = baseId + '::' + Date.now();
         gameState.owned_pets.push(uid);
         gameState.pet_ages[uid] = 0;
+        iconHtml = '🐾';
     }
 
     updateCurrencies();
     await saveGameToServer();
-    showToast(`Purchased ${name}!`);
+    showPurchasePopup(iconHtml, name, 'It has been added to your inventory!');
 }
 
 async function buyArcadeChest() {
@@ -656,7 +665,7 @@ async function buyArcadeChest() {
     gameState.owned_chests['sakura'] = (gameState.owned_chests['sakura'] || 0) + 1; 
     updateCurrencies();
     await saveGameToServer();
-    showToast("📦 Arcade Chest bought and sent to Vault!");
+    showPurchasePopup('📦', 'Arcade Chest', 'It has been sent to your Vault to open!');
 }
 
 function showToast(msg) {
