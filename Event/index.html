@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Arcade Event - SchoolExams</title>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-
     <style>
         :root {
+            /* Neon Arcade Theme Variables */
             --bg0: #0b090a; --bg1: #161a1d; --bg2: #660708;
             --p0: #9d4edd; --p1: #00f5d4; --p2: #f72585;
             --line: rgba(0, 245, 212, 0.15);
@@ -40,58 +39,21 @@
         .btn-shop:hover { background: rgba(247, 37, 133, 0.1); box-shadow: var(--glow-pink); }
 
         /* --- CLAW MACHINE STYLES --- */
-        .arcade-container {
-            margin: 0 auto 40px auto;
-            display: flex; flex-direction: column; align-items: center; gap: 20px;
-        }
-
-        .machine-box {
-            position: relative;
-            width: 320px; height: 350px;
-            background: #111;
-            border: 6px solid var(--p0);
-            border-radius: 20px 20px 5px 5px;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.9), var(--glow);
-            overflow: hidden;
-        }
-
+        .arcade-container { margin: 0 auto 40px auto; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .machine-box { position: relative; width: 320px; height: 350px; background: #111; border: 6px solid var(--p0); border-radius: 20px 20px 5px 5px; box-shadow: inset 0 0 50px rgba(0,0,0,0.9), var(--glow); overflow: hidden; }
         #matter-box { position: absolute; inset: 0; z-index: 1; }
 
-        .claw-line {
-            position: absolute; top: 0; left: 50%; width: 4px; height: 20px;
-            background: #aaa; transform: translateX(-50%); z-index: 4;
-            transition: height 1s ease-in-out, left 0.2s linear;
-        }
+        .claw-line { position: absolute; top: 0; left: 50%; width: 4px; height: 20px; background: #aaa; transform: translateX(-50%); z-index: 4; transition: height 1s ease-in-out, left 0.2s linear; }
+        .claw-img { position: absolute; top: 20px; left: 50%; width: 80px; height: 80px; transform: translateX(-50%); z-index: 6; object-fit: contain; transition: top 1s ease-in-out, left 0.2s linear; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8)); }
+        
+        .grabbed-ball { position: absolute; top: 290px; left: 50%; transform: translateX(-50%); width: 30px; height: 30px; border-radius: 50%; z-index: 5; transition: top 1s ease-in-out, left 0.2s linear, opacity 0.2s; box-shadow: inset -5px -5px 15px rgba(0,0,0,0.6); border: 2px solid #fff; opacity: 0; display: block; }
 
-        .claw-img {
-            position: absolute; top: 20px; left: 50%; width: 80px; height: 80px;
-            transform: translateX(-50%); z-index: 6; object-fit: contain;
-            transition: top 1s ease-in-out, left 0.2s linear;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8));
-        }
-
-        .grabbed-ball {
-            position: absolute; top: 290px; left: 50%; transform: translateX(-50%);
-            width: 30px; height: 30px; border-radius: 50%; z-index: 5;
-            transition: top 1s ease-in-out, left 0.2s linear, opacity 0.2s;
-            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.6);
-            border: 2px solid #fff;
-            opacity: 0; 
-            display: block;
-        }
-
-        .controls-panel {
-            display: flex; align-items: center; justify-content: center; gap: 30px;
-            background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 20px;
-            border: 2px solid var(--p2); box-shadow: var(--glow-pink);
-        }
-
+        .controls-panel { display: flex; align-items: center; justify-content: center; gap: 30px; background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 20px; border: 2px solid var(--p2); box-shadow: var(--glow-pink); }
         .controller-box { display: flex; align-items: center; gap: 10px; }
         .dir-btn { background: var(--bg2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 8px; font-size: 20px; cursor: pointer; transition: 0.1s; }
         .dir-btn:active { background: var(--p2); transform: scale(0.9); }
 
         .controller-img { height: 60px; object-fit: contain; }
-
         .action-box { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: 0.1s; }
         .action-box:active { transform: scale(0.95); }
         .button-img { height: 60px; object-fit: contain; filter: drop-shadow(0 0 10px var(--p2)); }
@@ -197,48 +159,40 @@
 <script>
 // ==========================================
 // 📖 ARCADE STORY QUESTS
-// Add new steps here! The game automatically handles the progression.
-//
-// Types available:
-// 'play_specific' -> game: 'Game Name' (Goal is in seconds)
-// 'ui_action'     -> game: 'open_more' (Goal is clicks)
-// 'arcade_action' -> game: 'play_claw' (Goal is claw machine drops)
 // ==========================================
 const STORY_QUESTS = [
     { 
-        step: 1, type: 'ui_action', game: 'open_more', 
+        type: 'ui_action', game: 'open_more', 
         name: 'Chapter 1: Hidden Features', 
         desc: 'Go back to the Main Portal and open the MORE (⋮) menu.', 
         goal: 1, reward: 100 
     },
     { 
-        step: 2, type: 'arcade_action', game: 'play_claw', 
+        type: 'arcade_action', game: 'play_claw', 
         name: 'Chapter 2: The Gambler', 
         desc: 'Insert coins and use the Claw Machine 3 times.', 
         goal: 3, reward: 500 
     },
     { 
-        step: 3, type: 'arcade_action', game: 'play_claw', 
+        type: 'arcade_action', game: 'play_claw', 
         name: 'Chapter 3: The Gambler 2', 
         desc: 'Insert coins and use the Claw Machine 5 times.', 
         goal: 5, reward: 500 
     },
     { 
-        step: 4, type: 'play_specific', game: 'Monkey Mart', 
+        type: 'play_specific', game: 'Monkey Mart', 
         name: 'Chapter 4: The Market', 
         desc: 'Play Monkey Mart for 5 minutes.', 
         goal: 300, reward: 800 
     },
     { 
-        step: 5, type: 'play_specific', game: 'Snow Rider 3D', 
+        type: 'play_specific', game: 'Snow Rider 3D', 
         name: 'Chapter 5: The Winter Trip', 
         desc: 'Play Snow Rider for 5 minutes.', 
         goal: 300, reward: 800 
     }
-    
 ];
 
-// --- AGGRESSIVE AUTOPLAY BGM LOGIC ---
 const bgm = document.getElementById('bgm');
 bgm.volume = 0.4;
 function startMusic() {
@@ -316,7 +270,7 @@ async function saveGameToServer() {
         formData.append('gems', gameState.gems);
         formData.append('playtime', gameState.playtime);
         formData.append('sakura_coins', gameState.sakura_coins);
-        formData.append('event_tasks', JSON.stringify(gameState.event_tasks));
+        formData.append('event_tasks', JSON.stringify(gameState.event_tasks)); // This saves the questIndex to the database!
         formData.append('owned_chests', JSON.stringify(gameState.owned_chests || {})); 
         formData.append('owned_cursors', JSON.stringify(gameState.owned_cursors));
         formData.append('equipped_cursor', gameState.equipped_cursor);
@@ -353,27 +307,33 @@ function exchangeGems() {
 function syncStoryTask() {
     if (!gameState) return;
     
-    // If there are no tasks, or it's using the old format (no step property), start at Chapter 0
-    if (!gameState.event_tasks || gameState.event_tasks.length === 0 || gameState.event_tasks[0].step === undefined) {
+    // Grab the first task in the array (where we store active quest state)
+    let currentTaskState = gameState.event_tasks[0];
+
+    // If the database doesn't have a questIndex, or the array is empty, force start at Quest Index 0!
+    if (!currentTaskState || currentTaskState.questIndex === undefined) {
         loadQuest(0);
     } else {
         renderTasks();
     }
 }
 
-function loadQuest(stepIndex) {
-    if (stepIndex >= STORY_QUESTS.length) {
-        // Story complete!
-        gameState.event_tasks = [{ step: stepIndex, completed: true, isEnd: true }];
+function loadQuest(index) {
+    if (index >= STORY_QUESTS.length) {
+        // Story complete! We save 'isEnd: true' so the DB knows they finished.
+        gameState.event_tasks = [{ questIndex: index, completed: true, isEnd: true }];
         saveGameToServer();
         renderTasks();
         return;
     }
 
-    let q = STORY_QUESTS[stepIndex];
+    // Pull the template from our Master Array above based on the pure Index
+    let q = STORY_QUESTS[index];
+    
+    // Save this state into the event_tasks variable to be pushed to the DB
     gameState.event_tasks = [{
         id: Date.now(),
-        step: q.step,
+        questIndex: index, // <--- THIS is what tracks their real progress reliably
         type: q.type,
         game: q.game,
         name: q.name,
@@ -383,6 +343,7 @@ function loadQuest(stepIndex) {
         reward: q.reward,
         completed: false
     }];
+    
     saveGameToServer();
     renderTasks();
 }
@@ -438,7 +399,8 @@ function claimStoryTask() {
     updateCurrencies();
     showToast(`Claimed ${task.reward} Arcade Coins!`);
     
-    loadQuest(task.step + 1);
+    // Using questIndex is mathematically perfect. 0 + 1 = 1. 
+    loadQuest(task.questIndex + 1);
 }
 
 function checkClawTask() {
