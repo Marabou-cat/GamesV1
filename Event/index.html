@@ -3,71 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Kawaii Event - SchoolExams</title>
+    <title>Arcade Event - SchoolExams</title>
     <style>
         :root {
-            --bg0: #2a081d; --bg1: #4a1532; --bg2: #701f49;
-            --p0: #ff748c; --p1: #ffb7b2; --p2: #ff4d6d;
-            --line: rgba(255, 183, 178, 0.15);
-            --glow: 0 0 20px rgba(255, 116, 140, 0.5);
+            /* Neon Arcade Theme Variables */
+            --bg0: #0b090a; --bg1: #161a1d; --bg2: #660708;
+            --p0: #9d4edd; --p1: #00f5d4; --p2: #f72585;
+            --line: rgba(0, 245, 212, 0.15);
+            --glow: 0 0 20px rgba(0, 245, 212, 0.5);
+            --glow-pink: 0 0 20px rgba(247, 37, 133, 0.6);
             --r: 16px;
         }
 
         body { 
             background: var(--bg0); color: #fff; font-family: 'Segoe UI', system-ui, sans-serif; 
-            text-align: center; padding: 40px 20px; overflow-x: hidden; margin: 0;
+            text-align: center; padding: 20px; overflow-x: hidden; margin: 0;
             background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
             background-size: 40px 40px;
         }
 
         .header { margin-bottom: 20px; }
         .header h1 { color: var(--p1); font-size: 3rem; margin: 0 0 10px 0; text-shadow: var(--glow); text-transform: uppercase; letter-spacing: 2px; }
-        .header p { color: #ffd6e0; font-size: 1.1rem; margin: 0; }
+        .header p { color: #ccc; font-size: 1.1rem; margin: 0; }
         
-        .currency-bar { display: inline-flex; gap: 30px; background: rgba(0,0,0,0.6); border: 2px solid var(--p0); padding: 12px 30px; border-radius: 30px; margin-bottom: 20px; font-weight: bold; font-size: 18px; box-shadow: var(--glow); }
-        .currency-bar .sakura { color: var(--p1); text-shadow: 0 0 10px var(--p1); }
-        .currency-bar .gems { color: #00ffcc; }
+        .currency-bar { display: inline-flex; gap: 30px; background: rgba(0,0,0,0.8); border: 2px solid var(--p0); padding: 12px 30px; border-radius: 30px; margin-bottom: 20px; font-weight: bold; font-size: 18px; box-shadow: var(--glow-pink); }
+        .currency-bar .arcade { color: var(--p1); text-shadow: 0 0 10px var(--p1); }
+        .currency-bar .gems { color: #f72585; text-shadow: 0 0 10px #f72585;}
 
-        .exchange-btn { background: transparent; border: 2px dashed #00ffcc; color: #00ffcc; padding: 8px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; display: block; margin: 0 auto 30px auto; }
-        .exchange-btn:hover { background: rgba(0, 255, 204, 0.1); box-shadow: 0 0 15px rgba(0, 255, 204, 0.4); }
+        .top-actions { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .btn-top { background: var(--bg1); border: 2px dashed var(--p1); color: var(--p1); padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-top:hover { background: rgba(0, 245, 212, 0.1); box-shadow: var(--glow); transform: translateY(-2px); }
+        
+        .btn-shop { border-color: var(--p2); color: var(--p2); }
+        .btn-shop:hover { background: rgba(247, 37, 133, 0.1); box-shadow: var(--glow-pink); }
 
-        #tree-container { 
-            margin: 0 auto 40px auto; width: 220px; height: 220px; cursor: pointer; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            position: relative; display: flex; align-items: center; justify-content: center;
-            background: radial-gradient(circle, rgba(255, 116, 140, 0.2) 0%, transparent 70%); border-radius: 50%;
+        /* --- CLAW MACHINE STYLES --- */
+        .arcade-container {
+            margin: 0 auto 40px auto;
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
         }
-        #tree-container:hover { transform: scale(1.05); }
-        #tree-container:active { transform: scale(0.95); }
-        
-        .shaking { animation: shake 0.4s infinite; filter: brightness(1.2); }
-        @keyframes shake { 0% {transform: rotate(0deg)} 25% {transform: rotate(5deg)} 50% {transform: rotate(-5deg)} 75% {transform: rotate(5deg)} 100% {transform: rotate(0deg)} }
-        
-        #pointsDisplay { position: absolute; bottom: -20px; background: var(--p2); padding: 5px 15px; border-radius: 12px; font-weight: 900; box-shadow: var(--glow); border: 2px solid var(--p1); }
 
-        /* SHOP SECTION */
-        .shop-section { background: rgba(74, 21, 50, 0.6); border: 2px solid var(--p0); border-radius: 20px; padding: 30px; max-width: 900px; margin: 0 auto 40px auto; backdrop-filter: blur(10px); }
-        .shop-section h2 { color: var(--p1); margin-top: 0; border-bottom: 2px dashed var(--p0); padding-bottom: 10px; }
-        .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .shop-card { background: var(--bg0); border: 2px solid var(--line); border-radius: 12px; padding: 20px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center;}
-        .shop-card:hover { border-color: var(--p1); box-shadow: var(--glow); transform: translateY(-5px); }
-        .shop-card img { height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
-        .btn-buy { background: var(--p0); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: auto; cursor: pointer; transition: 0.2s; }
-        .btn-buy:hover { background: var(--p1); color: var(--bg0); }
-        .btn-buy-chest { background: linear-gradient(135deg, #ff748c, #ffb7b2); color: #000; box-shadow: 0 0 15px rgba(255, 183, 178, 0.5); }
-        .btn-buy-gems { background: linear-gradient(135deg, #00ffcc, #0099ff); color: #000; box-shadow: 0 0 15px rgba(0, 255, 204, 0.5); }
+        .machine-box {
+            position: relative;
+            width: 320px; height: 350px;
+            background: #111;
+            border: 6px solid var(--p0);
+            border-radius: 20px 20px 5px 5px;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.9), var(--glow);
+            overflow: hidden;
+        }
 
-        /* TASKS */
+        /* Background Image of the Arcade Machine */
+        .machine-bg {
+            position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; z-index: 1;
+        }
+
+        /* The string holding the claw */
+        .claw-line {
+            position: absolute; top: 0; left: 50%; width: 4px; height: 20px;
+            background: #aaa; transform: translateX(-50%); z-index: 4;
+            transition: height 1s ease-in-out, left 0.2s linear;
+        }
+
+        /* The Claw Image */
+        .claw-img {
+            position: absolute; top: 20px; left: 50%; width: 80px; height: 80px;
+            transform: translateX(-50%); z-index: 5; object-fit: contain;
+            transition: top 1s ease-in-out, left 0.2s linear;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8));
+        }
+
+        /* Controls Section */
+        .controls-panel {
+            display: flex; align-items: center; justify-content: center; gap: 30px;
+            background: rgba(0,0,0,0.6); padding: 15px 30px; border-radius: 20px;
+            border: 2px solid var(--p2); box-shadow: var(--glow-pink);
+        }
+
+        .controller-box { display: flex; align-items: center; gap: 10px; }
+        .dir-btn { background: var(--bg2); border: none; color: #fff; width: 40px; height: 40px; border-radius: 8px; font-size: 20px; cursor: pointer; transition: 0.1s; }
+        .dir-btn:active { background: var(--p2); transform: scale(0.9); }
+
+        .controller-img { height: 60px; object-fit: contain; }
+
+        .action-box { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; transition: 0.1s; }
+        .action-box:active { transform: scale(0.95); }
+        .button-img { height: 60px; object-fit: contain; filter: drop-shadow(0 0 10px var(--p2)); }
+        .action-text { font-weight: 900; color: var(--p2); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- TASKS --- */
         .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 900px; margin: 0 auto; }
-        .task-card { background: rgba(0, 0, 0, 0.4); border: 2px solid var(--p2); border-radius: var(--r); padding: 20px; text-align: left; transition: 0.3s; position: relative; overflow: hidden; }
-        .task-card.done { border-color: #3ba55c; background: rgba(59, 165, 92, 0.1); }
-        .task-card.claimed { border-color: #555; opacity: 0.6; }
+        .task-card { background: rgba(0, 0, 0, 0.6); border: 2px solid var(--p2); border-radius: var(--r); padding: 20px; text-align: left; transition: 0.3s; position: relative; overflow: hidden; }
+        .task-card.done { border-color: var(--p1); background: rgba(0, 245, 212, 0.1); }
         .task-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .task-pts { background: var(--p1); color: #000; padding: 2px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 900; }
+        .task-pts { background: var(--p0); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 900; }
         .progress-bg { background: var(--bg0); height: 12px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 1px solid var(--p2); }
-        .progress-fill { background: var(--p1); height: 100%; width: 0%; transition: width 0.5s ease; box-shadow: 0 0 10px var(--p1); }
-        .done .progress-fill { background: #3ba55c; box-shadow: 0 0 10px #3ba55c; }
+        .progress-fill { background: var(--p2); height: 100%; width: 0%; transition: width 0.5s ease; box-shadow: 0 0 10px var(--p2); }
+        .done .progress-fill { background: var(--p1); box-shadow: var(--glow); }
 
-        .reward-popup { display: none; position: fixed; inset: 0; background: rgba(42, 8, 29, 0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
+        .btn-claim { background: var(--p1); color: #000; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; box-shadow: var(--glow); }
+
+        /* --- OVERLAYS --- */
+        .overlay { position: fixed; inset: 0; background: var(--bg0); z-index: 2000; display: none; flex-direction: column; }
+        .overlay.open { display: flex; }
+        .overlay-bar { height: 60px; background: var(--bg1); display: flex; align-items: center; padding: 0 20px; border-bottom: 2px solid var(--p0); justify-content: space-between; }
+        .btn-close { background: #d00000; border: none; color: #fff; padding: 8px 16px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+        
+        .shop-container { padding: 30px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; width: 100%; }
+        .shop-card { background: var(--bg1); border: 2px solid var(--line); border-radius: 12px; padding: 20px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center;}
+        .shop-card:hover { border-color: var(--p1); box-shadow: var(--glow); transform: translateY(-5px); }
+        .shop-card img, .shop-card .emoji-icon { height: 80px; object-fit: contain; margin-bottom: 10px; font-size: 60px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+        .btn-buy { background: var(--p0); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: auto; cursor: pointer; }
+
+        .reward-popup { display: none; position: fixed; inset: 0; background: rgba(11, 9, 10, 0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(5px); }
         .reward-box { background: var(--bg1); border: 2px solid var(--p1); padding: 40px; border-radius: var(--r); text-align: center; box-shadow: var(--glow); max-width: 400px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
@@ -78,37 +126,57 @@
 <body>
 
     <div class="header">
-        <h1>🌸 Kawaii Festival</h1>
-        <p>Complete Tasks And Shake The Blossom With Points To Get Sakura Coins Or Rare Secret Rewards!</p>
+        <h1>🕹️ Arcade Event</h1>
+        <p>Complete Tasks to get Arcade Coins. Play the Claw Machine to win rare rewards!</p>
     </div>
 
     <div class="currency-bar">
-        <div class="sakura">🌸 <span id="sakuraDisplay">0</span> Sakura Coins</div>
+        <div class="arcade">👾 <span id="sakuraDisplay">0</span> Arcade Coins</div>
         <div class="gems">💎 <span id="gemDisplay">0</span> Gems</div>
     </div>
 
-    <button class="exchange-btn" onclick="exchangeGems()">Convert 150 💎 ➞ 500 🌸</button>
-
-    <div id="tree-container" onclick="shakeTree()">
-        <div id="treeImg" style="font-size: 120px; filter: drop-shadow(0 0 15px rgba(255, 183, 178, 0.8));">🌸</div>
-        <div id="pointsDisplay">Ready to Shake: 0</div>
+    <div class="top-actions">
+        <button class="btn-top" onclick="exchangeGems()">Convert 150 💎 ➞ 500 👾</button>
+        <button class="btn-top btn-shop" onclick="openShop()">🛍️ Open Arcade Shop</button>
+        <button class="btn-top" onclick="window.location.href='../'" style="border-color: #fff; color: #fff;">🏠 Back to Portal</button>
     </div>
 
-    <div class="shop-section">
-        <h2>🛍️ Limited Kawaii Shop</h2>
-        <div class="shop-grid" id="kawaiiShopGrid">
-            <div style="color: gray;">Loading Shop...</div>
+    <div class="arcade-container">
+        <div class="machine-box">
+            <img src="../png/arcade.png" class="machine-bg" onerror="this.style.display='none'">
+            <div class="claw-line" id="clawLine"></div>
+            <img src="../png/claw.png" class="claw-img" id="theClaw" onerror="this.outerHTML='<div class=\\'claw-img\\' id=\\'theClaw\\' style=\\'font-size:60px;\\'>🪝</div>'">
+        </div>
+        
+        <div class="controls-panel">
+            <div class="controller-box">
+                <button class="dir-btn" onmousedown="moveClaw(-1)">◀</button>
+                <img src="../png/controller.png" class="controller-img" onerror="this.outerHTML='<div style=\\'font-size:40px;\\'>🎮</div>'">
+                <button class="dir-btn" onmousedown="moveClaw(1)">▶</button>
+            </div>
+            <div class="action-box" onclick="handleClawButton()">
+                <img src="../png/button.png" class="button-img" onerror="this.outerHTML='<div style=\\'font-size:50px; filter: drop-shadow(0 0 10px #f72585);\\'>🔴</div>'">
+                <div class="action-text" id="arcadeActionText">Insert Coin (100 👾)</div>
+            </div>
         </div>
     </div>
 
     <div class="task-grid" id="taskList"></div>
 
+    <div class="overlay" id="shopOverlay">
+        <div class="overlay-bar">
+            <div class="bar-title" style="color: var(--p1); font-size: 20px; font-weight: 900;">🛍️ ARCADE PRIZE SHOP</div>
+            <button class="btn-close" onclick="closeShop()">CLOSE ✕</button>
+        </div>
+        <div class="shop-container" id="arcadeShopGrid"></div>
+    </div>
+
     <div class="reward-popup" id="rewardPopup">
         <div class="reward-box">
-            <h2 id="rewardTitle" style="color: var(--p1); margin-top:0; font-size: 28px;">KAWAII REWARD!</h2>
-            <div id="rewardIcon" style="font-size: 90px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); margin: 20px 0;">🌸</div>
+            <h2 id="rewardTitle" style="color: var(--p1); margin-top:0; font-size: 28px;">PRIZE GET!</h2>
+            <div id="rewardIcon" style="margin: 20px 0; display: flex; justify-content: center; filter: drop-shadow(0 0 20px var(--p1));"></div>
             <p id="rewardDesc" style="font-size: 18px; font-weight: bold; line-height: 1.5; color: #fff;"></p>
-            <button class="btn-buy" style="margin-top: 25px;" onclick="document.getElementById('rewardPopup').style.display='none'">YAY!</button>
+            <button class="btn-buy" style="margin-top: 25px; background: var(--p1); color: #000;" onclick="document.getElementById('rewardPopup').style.display='none'">AWESOME!</button>
         </div>
     </div>
 
@@ -120,21 +188,37 @@ let gameState = null;
 const MAX_PETS = 50;
 const MAX_CURSORS = 40;
 
-// Pool of games to randomly generate tasks for
 const GAME_POOL = ['3 Dash', 'Snow Rider 3D', 'Space Wave', 'Five Nights At Epsteins', '1 On 1 Soccer', 'BitLife', 'NHL 2002', 'Monkey Mart', 'Raft', 'Extreme Run 3D', 'Two Ball 3D'];
 
-// --- KAWAII SHOP CATALOG ---
-const KAWAII_SHOP = [
-    { type: 'currency', id: 'buy_gems', name: '100 Gems', icon: '💎', desc: 'Exchange Sakura Coins back to Gems!', cost: 500, color: '#00ffcc' },
-    { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500 },
-    { type: 'pet', id: 'phoenix', name: 'Mythic Phoenix', img: '../png/phoenix.png', desc: 'A Flaming Legend', cost: 3000 },
-    { type: 'chest', id: 'sakura', name: 'Sakura Chest', img: '../png/sakura_chest.png', desc: 'Contains Ultra-Rare Kawaii Drops!', cost: 500, isChest: true }
+// Same internal structure, rebranded visually to Arcade.
+const ARCADE_SHOP = [
+    { type: 'currency', id: 'buy_gems', name: '100 Gems', icon: '💎', desc: 'Exchange Arcade Coins back to Gems!', cost: 500, color: '#00ffcc' },
+    { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500, color: '#00ffcc' },
+    { type: 'pet', id: 'mboe', name: 'Beast Of Eclipse', img: '../png/mboe.png', desc: 'A Rare Arcade Pet', cost: 3000, color: '#9d4edd' },
+    { type: 'chest', id: 'sakura', name: 'Arcade Chest', img: '../png/sakura_chest.png', desc: 'Contains Ultra-Rare Arcade Drops!', cost: 500, isChest: true, color: '#f72585' }
+];
+
+// PET DATA (Needed for the 9% Claw Machine Drop)
+const PET_SHOP = [
+    { id: "doge", name: "Pixel Doge", icon: "🐕" }, { id: "cat", name: "Cyber Kitty", icon: "🐈" },
+    { id: "frog", name: "Ninja Frog", icon: "🐸" }, { id: "dragon", name: "Neon Dragon", icon: "🐲" },
+    { id: "panda", name: "Ghost Panda", icon: "🐼" }, { id: "kraken", name: "67 Kraken", icon: "🦑" }
+];
+
+// CURSOR DATA (Needed for the 1% Claw Machine Drop)
+const CURSORS = [
+    { id: "m1", name: "Egg Twins", src: "../png/Twins.png" }, { id: "m2", name: "Gold Ingot", src: "../png/Goldingot.png" }, 
+    { id: "m3", name: "Cheesy Cursor", src: "../png/mouse.png" }, { id: "m4", name: "Sword Cursor", src: "../png/Katana.png" }, 
+    { id: "m5", name: "Pizza Slice", src: "../png/pizza.png" }
 ];
 
 async function loadGameFromServer() {
     try {
         const formData = new FormData(); 
         formData.append('action', 'load');
+        const savedUser = localStorage.getItem('schoolExamsSavedUser');
+        if (savedUser) formData.append('username', savedUser);
+
         const res = await fetch('../backend.php', { method: 'POST', body: formData });
         const result = await res.json();
         
@@ -143,7 +227,7 @@ async function loadGameFromServer() {
                 coins: parseInt(result.data.coins) || 0,
                 gems: parseInt(result.data.gems) || 0,
                 playtime: parseInt(result.data.playtime) || 0,
-                sakura_coins: parseInt(result.data.sakura_coins) || 0,
+                sakura_coins: parseInt(result.data.sakura_coins) || 0, // Used as Arcade Coins
                 event_tasks: JSON.parse(result.data.event_tasks || '[]'),
                 owned_chests: JSON.parse(result.data.owned_chests || '{}'), 
                 owned_cursors: JSON.parse(result.data.owned_cursors || '["def"]'),
@@ -151,11 +235,11 @@ async function loadGameFromServer() {
                 owned_pets: JSON.parse(result.data.owned_pets || '[]'),
                 active_pet: result.data.active_pet || '',
                 pet_ages: JSON.parse(result.data.pet_ages || '{}'),
-                owned_items: JSON.parse(result.data.owned_items || '[]') // FIXED: Added Items array
+                owned_items: JSON.parse(result.data.owned_items || '[]')
             };
             updateCurrencies();
             fillTasks(); 
-            renderKawaiiShop(); 
+            renderArcadeShop(); 
         }
     } catch(e) { console.error("Event failed to load state."); }
 }
@@ -165,6 +249,9 @@ async function saveGameToServer() {
     try {
         const formData = new FormData();
         formData.append('action', 'save');
+        const savedUser = localStorage.getItem('schoolExamsSavedUser');
+        if (savedUser) formData.append('username', savedUser);
+
         formData.append('coins', gameState.coins);
         formData.append('gems', gameState.gems);
         formData.append('playtime', gameState.playtime);
@@ -176,7 +263,7 @@ async function saveGameToServer() {
         formData.append('owned_pets', JSON.stringify(gameState.owned_pets));
         formData.append('active_pet', gameState.active_pet);
         formData.append('pet_ages', JSON.stringify(gameState.pet_ages));
-        formData.append('owned_items', JSON.stringify(gameState.owned_items || [])); // FIXED: Ensure items save to DB
+        formData.append('owned_items', JSON.stringify(gameState.owned_items || []));
         
         await fetch('../backend.php', { method: 'POST', body: formData });
     } catch(e) { console.error("Event failed to save state."); }
@@ -196,34 +283,144 @@ function exchangeGems() {
         gameState.sakura_coins += 500;
         updateCurrencies();
         saveGameToServer();
-        showToast("🌸 Converted 150 Gems to 500 Sakura Coins!");
+        showToast("👾 Converted 150 Gems to 500 Arcade Coins!");
     } else {
         alert("Not enough Gems!");
     }
 }
 
-// --- DYNAMIC SHOP LOGIC ---
-function renderKawaiiShop() {
+// --- CLAW MACHINE LOGIC ---
+let clawState = 'idle'; // 'idle', 'active', 'dropping'
+let clawPos = 50;
+
+function moveClaw(direction) {
+    if (clawState !== 'active') return;
+    clawPos += (direction * 5); // Move 5% left or right
+    if (clawPos < 10) clawPos = 10;
+    if (clawPos > 90) clawPos = 90;
+    
+    document.getElementById('theClaw').style.left = clawPos + '%';
+    document.getElementById('clawLine').style.left = clawPos + '%';
+}
+
+function handleClawButton() {
+    if (clawState === 'idle') {
+        if (gameState.sakura_coins < 100) return showToast("Not enough Arcade Coins!");
+        
+        gameState.sakura_coins -= 100;
+        updateCurrencies();
+        saveGameToServer();
+        
+        clawState = 'active';
+        document.getElementById('arcadeActionText').innerText = "DROP CLAW!";
+        showToast("🕹️ Coin Inserted! Move the claw, then drop!");
+        
+    } else if (clawState === 'active') {
+        clawState = 'dropping';
+        document.getElementById('arcadeActionText').innerText = "DROPPING...";
+        
+        const claw = document.getElementById('theClaw');
+        const line = document.getElementById('clawLine');
+        
+        // Drop animation
+        claw.style.top = "250px";
+        line.style.height = "250px";
+        
+        setTimeout(() => {
+            // Retract animation
+            claw.style.top = "20px";
+            line.style.height = "20px";
+            
+            setTimeout(() => {
+                getClawReward();
+                clawState = 'idle';
+                document.getElementById('arcadeActionText').innerText = "INSERT COIN (100 👾)";
+            }, 1000); // Wait for retraction
+            
+        }, 1000); // Wait for drop
+    }
+}
+
+function getClawReward() {
+    const roll = Math.random() * 100;
+    let title = "PRIZE GRABBED!";
+    let iconHTML = "";
+    let descHTML = "";
+
+    if (roll < 70) {
+        // 70% Coins
+        let amt = Math.floor(Math.random() * 1500) + 500;
+        gameState.coins += amt;
+        iconHTML = `<div style="font-size:80px;">🪙</div>`;
+        descHTML = `You won <span style="color:#ffd700;">${amt} ExamCoins</span>!`;
+    } 
+    else if (roll < 90) {
+        // 20% Gems
+        let amt = Math.floor(Math.random() * 40) + 10;
+        gameState.gems += amt;
+        iconHTML = `<div style="font-size:80px;">💎</div>`;
+        descHTML = `You won <span style="color:#00ffcc;">${amt} Gems</span>!`;
+    } 
+    else if (roll < 99) {
+        // 9% Pet
+        let randomPet = PET_SHOP[Math.floor(Math.random() * PET_SHOP.length)];
+        let uid = randomPet.id + '::' + Date.now();
+        if (gameState.owned_pets.length < MAX_PETS) {
+            gameState.owned_pets.push(uid);
+            gameState.pet_ages[uid] = 0;
+            iconHTML = `<div style="font-size:80px;">${randomPet.icon}</div>`;
+            descHTML = `You grabbed a <span style="color:var(--p1);">${randomPet.name}</span>!`;
+        } else {
+            gameState.gems += 100;
+            iconHTML = `<div style="font-size:80px;">🐾</div>`;
+            descHTML = `You won a Pet, but your inventory was full! Here are <span style="color:#00ffcc;">100 Gems</span> instead.`;
+        }
+    } 
+    else {
+        // 1% Cursor
+        let randomCursor = CURSORS[Math.floor(Math.random() * CURSORS.length)];
+        if (gameState.owned_cursors.length < MAX_CURSORS && !gameState.owned_cursors.includes(randomCursor.id)) {
+            gameState.owned_cursors.push(randomCursor.id);
+            iconHTML = `<img src="${randomCursor.src}" style="height:100px; object-fit:contain;">`;
+            descHTML = `JACKPOT! You grabbed the <span style="color:var(--p2);">${randomCursor.name} Cursor</span>!`;
+        } else {
+            gameState.gems += 200;
+            iconHTML = `<div style="font-size:80px;">🖱️</div>`;
+            descHTML = `JACKPOT! But you already had that Cursor! Here are <span style="color:#00ffcc;">200 Gems</span> instead.`;
+        }
+    }
+
+    saveGameToServer();
+    document.getElementById('rewardIcon').innerHTML = iconHTML;
+    document.getElementById('rewardDesc').innerHTML = descHTML;
+    document.getElementById('rewardPopup').style.display = 'flex';
+}
+
+// --- SHOP LOGIC ---
+function openShop() { document.getElementById('shopOverlay').classList.add('open'); }
+function closeShop() { document.getElementById('shopOverlay').classList.remove('open'); }
+
+function renderArcadeShop() {
     if (!gameState) return;
-    const grid = document.getElementById('kawaiiShopGrid');
+    const grid = document.getElementById('arcadeShopGrid');
     grid.innerHTML = '';
 
-    KAWAII_SHOP.forEach(item => {
-        let cardStyle = item.isChest || item.color ? `border-color: ${item.color || 'var(--p1)'};` : '';
+    ARCADE_SHOP.forEach(item => {
+        let cardStyle = `border-color: ${item.color || 'var(--p1)'};`;
         let imgStyle = item.isChest ? 'filter: drop-shadow(0 0 10px var(--p1));' : '';
-        let titleStyle = item.isChest || item.color ? `color: ${item.color || 'var(--p1)'};` : '';
+        let titleStyle = `color: ${item.color || 'var(--p1)'};`;
         
         let visual = item.img 
             ? `<img src="${item.img}" alt="${item.name}" style="${imgStyle}">`
-            : `<div style="font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0 0 10px ${item.color});">${item.icon}</div>`;
+            : `<div class="emoji-icon" style="filter: drop-shadow(0 0 10px ${item.color});">${item.icon}</div>`;
 
         let btnHTML = '';
         if (item.isChest) {
-            btnHTML = `<button class="btn-buy btn-buy-chest" onclick="buySakuraChest()">Buy for ${item.cost.toLocaleString()} 🌸</button>`;
+            btnHTML = `<button class="btn-buy" style="background: ${item.color}; color:#000;" onclick="buyArcadeChest()">Buy for ${item.cost.toLocaleString()} 👾</button>`;
         } else if (item.type === 'currency') {
-            btnHTML = `<button class="btn-buy btn-buy-gems" onclick="buyGems()">Buy for ${item.cost.toLocaleString()} 🌸</button>`;
+            btnHTML = `<button class="btn-buy" style="background: ${item.color}; color:#000;" onclick="buyGems()">Buy for ${item.cost.toLocaleString()} 👾</button>`;
         } else {
-            btnHTML = `<button class="btn-buy" onclick="buyItem('${item.type}', '${item.id}', ${item.cost}, '${item.name}')">Buy for ${item.cost.toLocaleString()} 🌸</button>`;
+            btnHTML = `<button class="btn-buy" style="background: ${item.color}; color:#000;" onclick="buyItem('${item.type}', '${item.id}', ${item.cost}, '${item.name}')">Buy for ${item.cost.toLocaleString()} 👾</button>`;
         }
 
         grid.innerHTML += `
@@ -238,28 +435,23 @@ function renderKawaiiShop() {
 }
 
 async function buyGems() {
-    if (gameState.sakura_coins < 500) return alert("Not enough Sakura Coins!");
-    
+    if (gameState.sakura_coins < 500) return alert("Not enough Arcade Coins!");
     gameState.sakura_coins -= 500;
     gameState.gems += 100;
-    
     updateCurrencies();
     await saveGameToServer();
-    
-    document.getElementById('rewardIcon').innerText = '💎';
-    document.getElementById('rewardDesc').innerHTML = `You successfully bought <br><span style="color: #00ffcc; font-size: 24px;">100 Gems</span>!`;
-    document.getElementById('rewardPopup').style.display = 'flex';
+    showToast("💎 Bought 100 Gems!");
 }
 
 async function buyItem(type, baseId, cost, name) {
-    if (gameState.sakura_coins < cost) return alert("Not enough Sakura Coins!");
+    if (gameState.sakura_coins < cost) return alert("Not enough Arcade Coins!");
     
     if (type === 'cursor') {
-        if (gameState.owned_cursors.length >= MAX_CURSORS) return alert(`❌ Cursor Inventory Full! (${MAX_CURSORS}/${MAX_CURSORS})`);
+        if (gameState.owned_cursors.length >= MAX_CURSORS) return alert(`❌ Cursor Inventory Full!`);
         gameState.sakura_coins -= cost;
         gameState.owned_cursors.push(baseId);
     } else if (type === 'pet') {
-        if (gameState.owned_pets.length >= MAX_PETS) return alert(`❌ Pet Inventory Full! (${MAX_PETS}/${MAX_PETS})`);
+        if (gameState.owned_pets.length >= MAX_PETS) return alert(`❌ Pet Inventory Full!`);
         gameState.sakura_coins -= cost;
         let uid = baseId + '::' + Date.now();
         gameState.owned_pets.push(uid);
@@ -268,29 +460,17 @@ async function buyItem(type, baseId, cost, name) {
 
     updateCurrencies();
     await saveGameToServer();
-    
-    document.getElementById('rewardIcon').innerText = type === 'pet' ? '🐾' : '🎀';
-    document.getElementById('rewardDesc').innerHTML = `You successfully bought the <br><span style="color: var(--p1); font-size: 24px;">${name}</span>!`;
-    document.getElementById('rewardPopup').style.display = 'flex';
+    showToast(`Purchased ${name}!`);
 }
 
-async function buySakuraChest() {
-    if (gameState.sakura_coins < 500) return alert("Not enough Sakura Coins to buy the chest!");
-
+async function buyArcadeChest() {
+    if (gameState.sakura_coins < 500) return alert("Not enough Arcade Coins!");
     gameState.sakura_coins -= 500;
-    
     if (!gameState.owned_chests) gameState.owned_chests = {};
-    gameState.owned_chests['sakura'] = (gameState.owned_chests['sakura'] || 0) + 1;
-
+    gameState.owned_chests['sakura'] = (gameState.owned_chests['sakura'] || 0) + 1; // Backend uses sakura key still
     updateCurrencies();
     await saveGameToServer();
-
-    document.getElementById('rewardIcon').innerText = '📦';
-    document.getElementById('rewardDesc').innerHTML = `
-        You successfully bought the <br><span style="color: var(--p1); font-size: 24px;">Sakura Chest</span>!<br><br>
-        <span style="color: #aaa; font-size: 14px;">(It has been sent to your Vault to open!)</span>
-    `;
-    document.getElementById('rewardPopup').style.display = 'flex';
+    showToast("📦 Arcade Chest bought and sent to Vault!");
 }
 
 // --- DYNAMIC TASKS LOGIC ---
@@ -307,7 +487,7 @@ function fillTasks() {
             name: `Play ${randomGame} (5 mins)`,
             current: 0,
             goal: 300, 
-            points: 2,
+            points: 2, // 1 point = 100 Arcade Coins
             completed: false
         };
         gameState.event_tasks.push(newTask);
@@ -321,132 +501,42 @@ function fillTasks() {
 function renderTasks() {
     if (!gameState) return;
     const container = document.getElementById('taskList');
-    let pointsToShake = 0;
-    
     container.innerHTML = "";
+    
     gameState.event_tasks.forEach(t => {
-        if (t.completed) pointsToShake += t.points;
-        
         let percent = Math.min(100, (t.current / t.goal) * 100);
         let currentMins = Math.floor(t.current / 60);
-        let statusText = t.completed ? 'READY TO CLAIM! ✓' : `${currentMins}m / 5m`;
+        let rewardCoins = t.points * 100;
+        
+        let statusText = t.completed ? 'COMPLETED!' : `${currentMins}m / 5m`;
+        let btnHTML = t.completed 
+            ? `<button class="btn-claim" onclick="claimTask(${t.id}, ${rewardCoins})">Claim ${rewardCoins} 👾</button>` 
+            : ``;
 
         const card = document.createElement('div');
         card.className = `task-card ${t.completed ? 'done' : ''}`;
         card.innerHTML = `
             <div class="task-title">
                 <span>${t.name}</span>
-                <span class="task-pts">+${t.points} Pt</span>
+                <span class="task-pts">+${rewardCoins} 👾</span>
             </div>
             <div style="font-size: 0.9rem; color: #aaa;">Status: <strong style="color: #fff;">${statusText}</strong></div>
             <div class="progress-bg">
                 <div class="progress-fill" style="width: ${percent}%"></div>
             </div>
+            ${btnHTML}
         `;
         container.appendChild(card);
     });
-    
-    document.getElementById('pointsDisplay').innerText = `Ready to Shake: ${pointsToShake}`;
 }
 
-let isShaking = false;
-async function shakeTree() {
-    if(isShaking || !gameState) return;
-    
-    let claimableTasks = gameState.event_tasks.filter(t => t.completed);
-    if (claimableTasks.length === 0) return showToast("Complete tasks to get points!");
-
-    isShaking = true;
-    const img = document.getElementById('treeImg');
-    img.classList.add('shaking');
-    
-    setTimeout(async () => {
-        img.classList.remove('shaking');
-        
-        let totalCoinsWon = 0;
-        let totalPointsRedeemed = 0;
-        let seedsWon = 0;
-        let moonstonesWon = 0; // NEW Variable
-
-        // Calculate rewards per point
-        claimableTasks.forEach(task => {
-            for (let i = 0; i < task.points; i++) {
-                totalPointsRedeemed++;
-                totalCoinsWon += 100;
-                
-                // Roll independent chances for secret items
-                if (Math.random() < 0.01) {
-                    seedsWon++; // 1% chance for Seed
-                }
-                
-                if (Math.random() < 0.05) {
-                    moonstonesWon++; // 5% chance for Moonstone
-                }
-            }
-        });
-
-        // Add coins
-        gameState.sakura_coins += totalCoinsWon;
-        
-        // Process Seed Drops
-        let actuallyGivenSeeds = 0;
-        for (let i = 0; i < seedsWon; i++) {
-            if (gameState.owned_pets.length < MAX_PETS) {
-                let uid = 'seed::' + Date.now() + '_' + i;
-                gameState.owned_pets.push(uid);
-                gameState.pet_ages[uid] = 0;
-                actuallyGivenSeeds++;
-            }
-        }
-        
-        // Process Moonstone Drops
-        if (moonstonesWon > 0) {
-            if (!gameState.owned_items) gameState.owned_items = [];
-            for (let i = 0; i < moonstonesWon; i++) {
-                gameState.owned_items.push('Moonstone');
-            }
-        }
-
-        // Filter out completed tasks
-        gameState.event_tasks = gameState.event_tasks.filter(t => !t.completed);
-        
-        fillTasks(); 
-        updateCurrencies();
-        await saveGameToServer(); // Immediately save newly added items/pets/coins
-
-        // Build the Reward Message dynamically
-        let rewardMsg = `
-            <span style="color: #ffd700;">Redeemed ${totalPointsRedeemed} Points!</span><br><br>
-            <span style="color: var(--p1); font-size: 22px;">+${totalCoinsWon} Sakura Coins</span>
-        `;
-        
-        let primaryIcon = '🌸';
-        let primaryColor = 'rgba(255,255,255,0.4)';
-        
-        // Append Moonstone message
-        if (moonstonesWon > 0) {
-            rewardMsg += `<br><br><span style="color: #00ffcc; font-size: 20px; text-shadow: 0 0 10px #00ffcc;">🌑 You found ${moonstonesWon} Moonstone(s)!</span>`;
-            primaryIcon = '🌑';
-            primaryColor = '#00ffcc';
-        }
-
-        // Append Seed message (Overrides Moonstone for priority icon)
-        if (actuallyGivenSeeds > 0) {
-            rewardMsg += `<br><br><span style="color: #3ba55c; font-size: 20px; text-shadow: 0 0 10px #3ba55c;">🌱 You found ${actuallyGivenSeeds} Mysterious Seed(s)!</span>`;
-            primaryIcon = '🌱';
-            primaryColor = '#3ba55c';
-        } else if (seedsWon > 0 && actuallyGivenSeeds === 0) {
-            rewardMsg += `<br><br><span style="color: #ff4444; font-size: 14px;">You found a Mysterious Seed, but your Pet Inventory is full!</span>`;
-        } 
-
-        // Update popup UI
-        document.getElementById('rewardIcon').innerText = primaryIcon;
-        document.getElementById('rewardIcon').style.filter = `drop-shadow(0 0 20px ${primaryColor})`;
-        document.getElementById('rewardDesc').innerHTML = rewardMsg;
-        document.getElementById('rewardPopup').style.display = 'flex';
-        
-        isShaking = false;
-    }, 600);
+function claimTask(taskId, reward) {
+    gameState.sakura_coins += reward;
+    gameState.event_tasks = gameState.event_tasks.filter(t => t.id !== taskId);
+    updateCurrencies();
+    fillTasks();
+    saveGameToServer();
+    showToast(`Claimed ${reward} Arcade Coins!`);
 }
 
 function showToast(msg) {
@@ -456,10 +546,7 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-setInterval(() => {
-    loadGameFromServer();
-}, 5000);
-
+setInterval(() => { loadGameFromServer(); }, 5000);
 loadGameFromServer();
 </script>
 </body>
