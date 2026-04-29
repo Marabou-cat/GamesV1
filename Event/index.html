@@ -76,11 +76,13 @@
 
         /* Visual Ball Grabbed by Claw */
         .grabbed-ball {
-            position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
-            width: 30px; height: 30px; border-radius: 50%; display: none; z-index: 5;
-            transition: top 1s ease-in-out, left 0.2s linear;
+            position: absolute; top: 290px; left: 50%; transform: translateX(-50%);
+            width: 30px; height: 30px; border-radius: 50%; z-index: 5;
+            transition: top 1s ease-in-out, left 0.2s linear, opacity 0.2s;
             box-shadow: inset -5px -5px 15px rgba(0,0,0,0.6);
             border: 2px solid #fff;
+            opacity: 0; /* Use opacity instead of display to allow smooth transitions */
+            display: block;
         }
 
         /* Controls Section */
@@ -135,9 +137,11 @@
 </head>
 <body>
 
+    <audio id="bgm" src="arcade.mp3" loop preload="auto"></audio>
+
     <div class="header">
         <h1>🕹️ Arcade Event</h1>
-        <p>Complete Tasks to get Arcade Coins. Play the Claw Machine to win rare rewards!</p>
+        <p>Complete Tasks to get Arcade Coins. Drop the neon balls to win rare rewards!</p>
     </div>
 
     <div class="currency-bar">
@@ -155,6 +159,7 @@
         <div class="machine-box">
             <div id="matter-box"></div>
             
+            <img src="arcade.png" class="machine-bg" onerror="this.style.display='none'">
             <div class="claw-line" id="clawLine"></div>
             <img src="claw.png" class="claw-img" id="theClaw" onerror="this.outerHTML='<div class=\\'claw-img\\' id=\\'theClaw\\' style=\\'font-size:60px;\\'>🪝</div>'">
             <div class="grabbed-ball" id="grabbedBall"></div>
@@ -195,6 +200,15 @@
     <div id="toast">Data Synced Successfully</div>
 
 <script>
+// Play Music on first user interaction to bypass browser autoplay blocks
+document.addEventListener('click', function() {
+    let bgm = document.getElementById('bgm');
+    if (bgm.paused) {
+        bgm.volume = 0.4;
+        bgm.play().catch(e => console.log('Music blocked by browser until heavier interaction.'));
+    }
+}, { once: true });
+
 // --- GAME STATE & BACKEND SYNC ---
 let gameState = null;
 const MAX_PETS = 50;
@@ -207,20 +221,6 @@ const ARCADE_SHOP = [
     { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500, color: '#00ffcc' },
     { type: 'pet', id: 'mboe', name: 'Beast Of Eclipse', img: '../png/mboe.png', desc: 'A Rare Arcade Pet', cost: 3000, color: '#9d4edd' },
     { type: 'chest', id: 'sakura', name: 'Arcade Chest', img: '../png/sakura_chest.png', desc: 'Contains Ultra-Rare Arcade Drops!', cost: 500, isChest: true, color: '#f72585' }
-];
-
-// PET DATA (Needed for the 9% Claw Machine Drop)
-const PET_SHOP = [
-    { id: "doge", name: "Pixel Doge", icon: "🐕" }, { id: "cat", name: "Cyber Kitty", icon: "🐈" },
-    { id: "frog", name: "Ninja Frog", icon: "🐸" }, { id: "dragon", name: "Neon Dragon", icon: "🐲" },
-    { id: "panda", name: "Ghost Panda", icon: "🐼" }, { id: "kraken", name: "67 Kraken", icon: "🦑" }
-];
-
-// CURSOR DATA (Needed for the 1% Claw Machine Drop)
-const CURSORS = [
-    { id: "m1", name: "Egg Twins", src: "../png/Twins.png" }, { id: "m2", name: "Gold Ingot", src: "../png/Goldingot.png" }, 
-    { id: "m3", name: "Cheesy Cursor", src: "../png/mouse.png" }, { id: "m4", name: "Sword Cursor", src: "../png/Katana.png" }, 
-    { id: "m5", name: "Pizza Slice", src: "../png/pizza.png" }
 ];
 
 async function loadGameFromServer() {
@@ -357,7 +357,7 @@ function moveClaw(direction) {
     
     document.getElementById('theClaw').style.left = clawPos + '%';
     document.getElementById('clawLine').style.left = clawPos + '%';
-    document.getElementById('grabbedBall').style.left = clawPos + '%'; // Keep the fake ball aligned
+    document.getElementById('grabbedBall').style.left = clawPos + '%'; // Keep the fake ball aligned horizontally
 }
 
 function handleClawButton() {
@@ -380,10 +380,13 @@ function handleClawButton() {
         const line = document.getElementById('clawLine');
         const grabbedBallDom = document.getElementById('grabbedBall');
         
-        // Drop animation
+        // Reset the ball's position to the bottom of the tank before it becomes visible
+        grabbedBallDom.style.opacity = '0';
+        grabbedBallDom.style.top = "290px"; 
+        
+        // Drop animation for the claw
         claw.style.top = "260px";
         line.style.height = "260px";
-        grabbedBallDom.style.top = "290px";
         
         setTimeout(() => {
             // Pick up ball visually from Physics World
@@ -392,37 +395,40 @@ function handleClawButton() {
                 let color = grabbed.render.fillStyle; // Get its color
                 Composite.remove(engine.world, grabbed); // Delete it from physics engine
                 
-                // Show the fake DOM ball inside the claw
+                // Show the fake DOM ball sitting inside the claw at the bottom
                 grabbedBallDom.style.background = color;
-                grabbedBallDom.style.display = 'block';
+                grabbedBallDom.style.opacity = '1';
             }
 
-            // Retract animation
-            claw.style.top = "20px";
-            line.style.height = "20px";
-            grabbedBallDom.style.top = "50px";
-            
+            // Small delay to ensure the browser paints the ball at the bottom before moving it
             setTimeout(() => {
-                getClawReward();
-                clawState = 'idle';
-                document.getElementById('arcadeActionText').innerText = "INSERT COIN (100 👾)";
-                grabbedBallDom.style.display = 'none'; // Drop into chute
+                // Retract animation
+                claw.style.top = "20px";
+                line.style.height = "20px";
+                grabbedBallDom.style.top = "50px"; // Smoothly transitions upward following the claw!
                 
-                // Refill machine if it gets too low
-                if(activeBalls.length < 10) {
-                    for(let i=0; i<15; i++) {
-                        let c = ballColors[Math.floor(Math.random() * ballColors.length)];
-                        let b = Bodies.circle(Math.random() * 280 + 20, -50, 15, {
-                            restitution: 0.1, friction: 0.8, density: 0.05,
-                            render: { fillStyle: c, strokeStyle: '#fff', lineWidth: 2 }
-                        });
-                        activeBalls.push(b);
-                        Composite.add(engine.world, b);
+                setTimeout(() => {
+                    getClawReward();
+                    clawState = 'idle';
+                    document.getElementById('arcadeActionText').innerText = "INSERT COIN (100 👾)";
+                    grabbedBallDom.style.opacity = '0'; // Hide the ball as it drops into the chute
+                    
+                    // Refill machine if it gets too empty
+                    if(activeBalls.length < 10) {
+                        for(let i=0; i<15; i++) {
+                            let c = ballColors[Math.floor(Math.random() * ballColors.length)];
+                            let b = Bodies.circle(Math.random() * 280 + 20, -50, 15, {
+                                restitution: 0.1, friction: 0.8, density: 0.05,
+                                render: { fillStyle: c, strokeStyle: '#fff', lineWidth: 2 }
+                            });
+                            activeBalls.push(b);
+                            Composite.add(engine.world, b);
+                        }
                     }
-                }
-            }, 1000); // Wait for retraction
+                }, 1000); // Wait for retraction to finish
+            }, 50); 
             
-        }, 1000); // Wait for drop
+        }, 1000); // Wait for drop to finish
     }
 }
 
@@ -448,7 +454,7 @@ function getClawReward() {
         descHTML = `You won <span style="color:#00ffcc;">${amt} Gems</span>!`;
     } 
     else if (roll < 99) {
-        // 9% Pet - Virus Kitty (Specific Drop)
+        // 9% Pet - Virus Kitty (Specific Drop, images are in ../png/ folder)
         let uid = 'virus_kitty::' + Date.now();
         if (gameState.owned_pets.length < MAX_PETS) {
             gameState.owned_pets.push(uid);
@@ -462,7 +468,7 @@ function getClawReward() {
         }
     } 
     else {
-        // 1% Cursor - Hacked Cursor (Specific Drop)
+        // 1% Cursor - Hacked Cursor (Specific Drop, images are in ../png/ folder)
         if (gameState.owned_cursors.length < MAX_CURSORS && !gameState.owned_cursors.includes('hacked')) {
             gameState.owned_cursors.push('hacked');
             iconHTML = `<img src="../png/hacked.png" style="height:100px; object-fit:contain;" onerror="this.outerHTML='<div style=\\'font-size:80px;\\'>🖱️</div>'">`;
