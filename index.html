@@ -409,14 +409,7 @@
 <script>
 // --- BACKEND STATE MANAGEMENT ---
 let isLoggedIn = false;
-let gameState = {
-    coins: 0, gems: 0, playtime: 0, sakura_coins: 0, event_tasks: [],
-    owned_cursors: ["def"], equipped_cursor: "def",
-    owned_pets: [], active_pet: "", pet_ages: {},
-    owned_items: [], // NEW: Added Items Array
-    prestige_level: 0, profile_pic: "",
-    last_online: Date.now()
-};
+let gameState = null;
 
 const MAX_PETS = 50;
 const MAX_CURSORS = 40;
@@ -449,6 +442,7 @@ function navigateAuth(url) {
 
 // --- PROFILE & PRESTIGE LOGIC ---
 function updateProfileUI() {
+    if(!gameState) return;
     const user = localStorage.getItem('schoolExamsSavedUser') || 'Guest';
     const pfpSrc = gameState.profile_pic || `https://api.dicebear.com/7.x/bottts/svg?seed=${user}`;
     const pLevel = gameState.prestige_level || 0;
@@ -536,7 +530,6 @@ async function performAuth(action, userField, passField) {
         const result = await response.json();
 
         if (result.success) {
-            // INSTANT LOGIN: Only save the username. We don't need the password anymore!
             localStorage.setItem('schoolExamsSavedUser', user);
             closeLoginOverlay();
             
@@ -565,7 +558,6 @@ function logout() {
 window.addEventListener('DOMContentLoaded', () => {
     const savedUser = localStorage.getItem('schoolExamsSavedUser');
     if (savedUser) {
-        // BAM! Instant login without checking password.
         isLoggedIn = true;
         document.getElementById('welcomeUserText').innerText = `Logged in as: ${savedUser}`;
         document.getElementById('guestLoginBtn').style.display = 'none';
@@ -586,22 +578,31 @@ function loadGuestState() {
     if (guestData) {
         try {
             const parsed = JSON.parse(guestData);
-            gameState.coins = parsed.coins || 0;
-            gameState.gems = parsed.gems || 0;
-            gameState.playtime = parsed.playtime || 0;
-            gameState.owned_cursors = parsed.owned_cursors || ["def"];
-            gameState.equipped_cursor = parsed.equipped_cursor || "def";
+            gameState = {
+                coins: parsed.coins || 0,
+                gems: parsed.gems || 0,
+                playtime: parsed.playtime || 0,
+                owned_cursors: parsed.owned_cursors || ["def"],
+                equipped_cursor: parsed.equipped_cursor || "def"
+            };
             updateStatsUI();
             applyCursor();
         } catch(e){}
     } else {
+        gameState = {
+            coins: 0, gems: 0, playtime: 0, sakura_coins: 0, event_tasks: [],
+            owned_cursors: ["def"], equipped_cursor: "def",
+            owned_pets: [], active_pet: "", pet_ages: {},
+            owned_items: [], prestige_level: 0, profile_pic: "",
+            last_online: Date.now()
+        };
         updateStatsUI();
         applyCursor();
     }
 }
 
-// --- MIGRATION: SEPARATE INDIVIDUAL PETS ---
 function sanitizePets() {
+    if(!gameState) return;
     let migrated = false;
     let new_owned = [];
     let new_ages = {};
@@ -641,20 +642,22 @@ async function loadGameFromServer() {
         const result = await response.json();
         
         if (result.success && result.data) {
-            gameState.coins = parseInt(result.data.coins) || 0;
-            gameState.gems = parseInt(result.data.gems) || 0;
-            gameState.playtime = parseInt(result.data.playtime) || 0;
-            gameState.sakura_coins = parseInt(result.data.sakura_coins) || 0;
-            gameState.event_tasks = JSON.parse(result.data.event_tasks || '[]');
-            gameState.owned_cursors = JSON.parse(result.data.owned_cursors || '["def"]');
-            gameState.equipped_cursor = result.data.equipped_cursor || 'def';
-            gameState.owned_pets = JSON.parse(result.data.owned_pets || '[]');
-            gameState.active_pet = result.data.active_pet || '';
-            gameState.pet_ages = JSON.parse(result.data.pet_ages || '{}');
-            gameState.last_online = parseInt(result.data.last_online) || Date.now();
-            gameState.prestige_level = parseInt(result.data.prestige_level) || 0;
-            gameState.profile_pic = result.data.profile_pic || null;
-            gameState.owned_items = JSON.parse(result.data.owned_items || '[]'); // <-- THIS IS THE MISSING LINE!
+            gameState = {
+                coins: parseInt(result.data.coins) || 0,
+                gems: parseInt(result.data.gems) || 0,
+                playtime: parseInt(result.data.playtime) || 0,
+                sakura_coins: parseInt(result.data.sakura_coins) || 0,
+                event_tasks: JSON.parse(result.data.event_tasks || '[]'),
+                owned_cursors: JSON.parse(result.data.owned_cursors || '["def"]'),
+                equipped_cursor: result.data.equipped_cursor || 'def',
+                owned_pets: JSON.parse(result.data.owned_pets || '[]'),
+                active_pet: result.data.active_pet || '',
+                pet_ages: JSON.parse(result.data.pet_ages || '{}'),
+                last_online: parseInt(result.data.last_online) || Date.now(),
+                prestige_level: parseInt(result.data.prestige_level) || 0,
+                profile_pic: result.data.profile_pic || null,
+                owned_items: JSON.parse(result.data.owned_items || '[]')
+            };
             
             sanitizePets(); 
             updateStatsUI();
@@ -693,7 +696,7 @@ async function saveGameToServer() {
     formData.append('pet_ages', JSON.stringify(gameState.pet_ages));
     formData.append('prestige_level', gameState.prestige_level || 0);
     formData.append('profile_pic', gameState.profile_pic || '');
-    formData.append('owned_items', JSON.stringify(gameState.owned_items || [])); // <-- THIS IS THE MISSING LINE!
+    formData.append('owned_items', JSON.stringify(gameState.owned_items || []));
 
     try { fetch('backend.php', { method: 'POST', body: formData }); } catch(e) {}
 }
@@ -820,7 +823,7 @@ function toggleMoreMenu() {
             if (task.current >= task.goal) {
                 task.current = task.goal;
                 task.completed = true;
-                showToast("✅ Arcade Chapter Quest Completed!");
+                showToast("✅ Mission Complete!");
             }
             saveGameToServer();
         }
@@ -932,6 +935,7 @@ const PET_SHOP = [
 ];
 
 function calculatePetNeglect() {
+    if(!gameState) return;
     let hoursOffline = (Date.now() - gameState.last_online) / (1000 * 60 * 60);
     if (hoursOffline >= 12 && Object.keys(gameState.pet_ages).length > 0) {
         let levelsToLose = Math.floor(hoursOffline / 12); let secondsToLose = levelsToLose * 600; let lostLevelsAlert = false;
@@ -945,6 +949,7 @@ function calculatePetNeglect() {
 }
 
 function updateStatsUI() {
+    if(!gameState) return;
     document.getElementById('coinDisplay').innerText = gameState.coins.toLocaleString();
     document.getElementById('gemDisplay').innerText = gameState.gems.toLocaleString();
     document.getElementById('stat-time').innerText = Math.floor(gameState.playtime / 60); 
@@ -958,6 +963,7 @@ function showToast(msg) {
 
 // MAIN INTERVAL LOOP (1 Second)
 setInterval(() => {
+    if(!gameState) return;
     if (document.getElementById('loginOverlay').classList.contains('open')) return;
     if (document.hidden) return; 
 
@@ -974,7 +980,7 @@ setInterval(() => {
                     if (task.current >= task.goal) {
                         task.current = task.goal;
                         task.completed = true;
-                        showToast(`🌸 Kawaii Event Task Complete: ${task.name}!`);
+                        showToast(`✅ Mission Complete: ${task.name}!`); // UPDATED TEXT
                     }
                     tasksChanged = true;
                 }
@@ -1031,6 +1037,7 @@ function renderPetShop() {
 }
 
 function buyPet(baseId, price) {
+    if(!gameState) return;
     if (gameState.owned_pets.length >= MAX_PETS) return alert(`❌ Pet Inventory Full! (${MAX_PETS}/${MAX_PETS})`);
     
     if (gameState.coins >= price) {
@@ -1045,6 +1052,7 @@ function buyPet(baseId, price) {
 }
 
 function equipPet(uid) {
+    if(!gameState) return;
     gameState.active_pet = uid;
     renderInventory(); 
     updatePetUI();
@@ -1052,7 +1060,7 @@ function equipPet(uid) {
 }
 
 function feedPet() {
-    if (!gameState.active_pet) return;
+    if (!gameState || !gameState.active_pet) return;
     const level = Math.floor((gameState.pet_ages[gameState.active_pet] || 0) / 600) + 1; const feedCost = 50 + ((level - 1) * 25); 
 
     if (gameState.coins >= feedCost) {
@@ -1064,6 +1072,7 @@ function feedPet() {
 }
 
 function updatePetUI() {
+    if(!gameState) return;
     const panel = document.getElementById('petPanel');
     if (!gameState.active_pet) { panel.style.display = "none"; return; }
     panel.style.display = "block";
@@ -1100,6 +1109,7 @@ const CURSORS = [
 ];
 
 function applyCursor() {
+    if(!gameState) return;
     let targetSrc = gameState.equipped_cursor === "custom" ? (localStorage.getItem('customCursorDataUrl') || CURSORS[0].src) : (CURSORS.find(c => c.id === gameState.equipped_cursor)?.src || CURSORS[0].src);
     domCursor.src = targetSrc; localStorage.setItem('currentCursorSrc', targetSrc);
 }
@@ -1126,6 +1136,7 @@ function renderShop() {
 }
 
 function buyCursor(id, price) {
+    if(!gameState) return;
     if (gameState.owned_cursors.length >= MAX_CURSORS) return alert(`❌ Cursor Inventory Full! (${MAX_CURSORS}/${MAX_CURSORS})`);
 
     if (gameState.coins >= price) {
@@ -1136,6 +1147,7 @@ function buyCursor(id, price) {
 }
 
 function equipCursor(id) {
+    if(!gameState) return;
     gameState.equipped_cursor = id; 
     applyCursor(); 
     renderInventory();
@@ -1190,6 +1202,7 @@ function toggleSelectSale(id, isCursor = false, maxAvailable = 1) {
 }
 
 function confirmSale() {
+    if(!gameState) return;
     let totalReward = 0; let itemsSold = 0;
 
     selectedForSale.forEach(id => {
@@ -1207,15 +1220,16 @@ function confirmSale() {
 }
 
 function renderInventory() {
+    if (!gameState) return;
     const petContainer = document.getElementById('invPetsContainer'); 
     const curContainer = document.getElementById('invCursorsContainer');
-    const itemsContainer = document.getElementById('invItemsContainer'); // NEW
+    const itemsContainer = document.getElementById('invItemsContainer'); 
     
     petContainer.innerHTML = ''; curContainer.innerHTML = ''; itemsContainer.innerHTML = '';
     
     document.getElementById('tabBtnPets').innerText = `🐾 My Pets (${gameState.owned_pets.length}/${MAX_PETS})`;
     document.getElementById('tabBtnCursors').innerText = `🖱️ My Cursors (${gameState.owned_cursors.length}/${MAX_CURSORS})`;
-    document.getElementById('tabBtnItems').innerText = `🎒 My Items (${gameState.owned_items.length})`; // NEW
+    document.getElementById('tabBtnItems').innerText = `🎒 My Items (${gameState.owned_items.length})`;
 
     const btnSell = document.getElementById('btnSellMode'); const btnCancel = document.getElementById('btnCancelSell');
 
