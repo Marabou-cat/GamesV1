@@ -489,7 +489,7 @@ function getClawReward() {
             gameState.owned_pets.push(uid);
             gameState.pet_ages[uid] = 0;
             iconHTML = `<img src="../png/virus_kitty.png" style="height:80px; object-fit:contain;" onerror="this.outerHTML='<div style=\\'font-size:80px;\\'>👾</div>'">`;
-            descHTML = `You grabbed the <span style="color:var(--p1);">Virus Kitty</span>!`;
+            descHTML = `You grabbed a <span style="color:var(--p1);">Virus Kitty</span>!`;
         } else {
             gameState.gems += 100;
             iconHTML = `<div style="font-size:80px;">🐾</div>`;
@@ -498,14 +498,14 @@ function getClawReward() {
     } 
     else {
         // 1% Cursor - Hacked Cursor (Specific Drop, images are in ../png/ folder)
-        if (gameState.owned_cursors.length < MAX_CURSORS && !gameState.owned_cursors.includes('hacked')) {
+        if (gameState.owned_cursors.length < MAX_CURSORS) {
             gameState.owned_cursors.push('hacked');
             iconHTML = `<img src="../png/hacked.png" style="height:100px; object-fit:contain;" onerror="this.outerHTML='<div style=\\'font-size:80px;\\'>🖱️</div>'">`;
-            descHTML = `JACKPOT! You grabbed the <span style="color:var(--p2);">Hacked Cursor</span>!`;
+            descHTML = `JACKPOT! You grabbed a <span style="color:var(--p2);">Hacked Cursor</span>!`;
         } else {
             gameState.gems += 200;
             iconHTML = `<div style="font-size:80px;">🖱️</div>`;
-            descHTML = `JACKPOT! But you already had that Cursor! Here are <span style="color:#00ffcc;">200 Gems</span> instead.`;
+            descHTML = `JACKPOT! But your Cursor Inventory is full! Here are <span style="color:#00ffcc;">200 Gems</span> instead.`;
         }
     }
 
