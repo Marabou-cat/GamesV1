@@ -206,29 +206,34 @@
 // ==========================================
 const STORY_QUESTS = [
     { 
-        step: 0, type: 'play_specific', game: '3 Dash', 
-        name: 'Chapter 1: The Awakening', 
-        desc: 'Play the module 3 Dash for 1 minute to power up the Arcade Machine.', 
-        goal: 60, reward: 200 
-    },
-    { 
         step: 1, type: 'ui_action', game: 'open_more', 
-        name: 'Chapter 2: Hidden Connections', 
+        name: 'Chapter 1: Hidden Features', 
         desc: 'Go back to the Main Portal and open the MORE (⋮) menu.', 
-        goal: 1, reward: 300 
+        goal: 1, reward: 100 
     },
     { 
         step: 2, type: 'arcade_action', game: 'play_claw', 
-        name: 'Chapter 3: The Gambler', 
+        name: 'Chapter 2: The Gambler', 
         desc: 'Insert coins and use the Claw Machine 3 times.', 
         goal: 3, reward: 500 
     },
     { 
-        step: 3, type: 'play_specific', game: 'Monkey Mart', 
-        name: 'Chapter 4: The Capitalist Grind', 
+        step: 3, type: 'arcade_action', game: 'play_claw', 
+        name: 'Chapter 3: The Gambler 2', 
+        desc: 'Insert coins and use the Claw Machine 5 times.', 
+        goal: 5, reward: 500 
+    },
+    { 
+        step: 4, type: 'play_specific', game: 'Monkey Mart', 
+        name: 'Chapter 4: The Market', 
         desc: 'Play Monkey Mart for 5 minutes.', 
         goal: 300, reward: 800 
-    }
+    },
+    { 
+        step: 5, type: 'play_specific', game: 'Snow Rider 3D', 
+        name: 'Chapter 5: The Winter Trip', 
+        desc: 'Play Snow Rider for 5 minutes.', 
+        goal: 300, reward: 800 
 ];
 
 // --- AGGRESSIVE AUTOPLAY BGM LOGIC ---
