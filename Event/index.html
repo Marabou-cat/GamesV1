@@ -165,7 +165,7 @@ const STORY_QUESTS = [
         type: 'ui_action', game: 'open_more', 
         name: 'Chapter 1: Hidden Features', 
         desc: 'Go back to the Main Portal and open the MORE (⋮) menu.', 
-        goal: 1, reward: 100 
+        goal: 1, reward: 300
     },
     { 
         type: 'arcade_action', game: 'play_claw', 
@@ -177,7 +177,7 @@ const STORY_QUESTS = [
         type: 'arcade_action', game: 'play_claw', 
         name: 'Chapter 3: The Gambler 2', 
         desc: 'Insert coins and use the Claw Machine 5 times.', 
-        goal: 5, reward: 400 
+        goal: 5, reward: 200 
     },
     { 
         type: 'play_specific', game: 'Monkey Mart', 
@@ -190,6 +190,12 @@ const STORY_QUESTS = [
         name: 'Chapter 5: The Winter Trip', 
         desc: 'Play Snow Rider for 10 minutes.', 
         goal: 600, reward: 200 
+    },
+    { 
+        type: 'play_specific', game: 'Five Nights At Epsteins', 
+        name: 'Chapter 5: A Story hard to forget', 
+        desc: 'Play Five Nights At Epsteins for 10 minutes.', 
+        goal: 600, reward: 300 
     }
 ];
 
@@ -210,7 +216,8 @@ const MAX_CURSORS = 40;
 const ARCADE_SHOP = [
     { type: 'currency', id: 'buy_gems', name: '100 Gems', icon: '💎', desc: 'Exchange Arcade Coins back to Gems!', cost: 500, color: '#00ffcc' },
     { type: 'cursor', id: 'prism', name: 'Prism Wing', img: '../png/Prism.png', desc: 'Exclusive Event Cursor', cost: 1500, color: '#00ffcc' },
-    { type: 'item', id: 'VirusUSB', name: 'VirusUSB', icon: '💾', desc: 'A rare hacking material!', cost: 1500, color: '#f72585' },
+    { type: 'item', id: 'VirusUSB', name: 'VirusUSB', icon: '💾', desc: 'Evolution Material', cost: 1500, color: '#f72585' },
+    { type: 'item', id: 'moonstone', name: 'Moonstone', icon: '🌑', desc: 'Evolution Material', cost: 2000, color: '#f72585' },
     { type: 'pet', id: 'seed', name: 'Mysterious Seed', img: '../png/seed.png', desc: 'A Rare Arcade Pet', cost: 6000, color: '#9d4edd' },
     { type: 'chest', id: 'arcade', name: 'Arcade Chest', img: '../png/arcade_chest.png', desc: 'Contains Ultra-Rare Arcade Drops!', cost: 500, isChest: true, color: '#f72585' }
 ];
