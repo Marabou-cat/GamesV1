@@ -56,10 +56,18 @@ $CHESTS = [
     ],
     "sakura" => [
         "name" => "Sakura Chest",
-        "desc" => "Contains Event Limited Kawaii Items",
+        "desc" => "Contains Event Limited Kawaii Items 2026",
         "price" => "Sakura Coins at the Kawaii Festival Event",
         "currency" => "gems",
         "img" => "../png/sakura_chest.png",
+        "color" => "#ffb7b2"
+    ],
+    "arcade" => [
+        "name" => "Arcade Chest",
+        "desc" => "Contains Event Limited Arcade Items 2026",
+        "price" => "Obtained with 500 Arcade Coins In Arcade Shop",
+        "currency" => "gems",
+        "img" => "../png/arcade_chest.png",
         "color" => "#ffb7b2"
     ]
 ];
@@ -201,6 +209,17 @@ if ($action === 'open') {
                 $reward_type = 'pet';
             } else {
                 $pool = ['kitsune' => 'Sakura kitsune'];
+                $reward_type = 'pet';
+            }
+        } else if ($type === 'arcade') {
+            if ($roll <= 60) {
+                $pool = ['usb' => 'USB'];
+                $reward_type = 'cursor';
+            } else if ($roll <= 95) {
+                $pool = ['digital_minion' => 'Digital Minion'];
+                $reward_type = 'pet';
+            } else {
+                $pool = ['claws_machine' => 'Claws Machine'];
                 $reward_type = 'pet';
             }
         }
