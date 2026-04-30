@@ -683,7 +683,7 @@ async function buyArcadeChest() {
     if (gameState.sakura_coins < 500) return alert("Not enough Arcade Coins!");
     gameState.sakura_coins -= 500;
     if (!gameState.owned_chests) gameState.owned_chests = {};
-    gameState.owned_chests['sakura'] = (gameState.owned_chests['sakura'] || 0) + 1; 
+    gameState.owned_chests['arcade'] = (gameState.owned_chests['arcade'] || 0) + 1; // <--- FIXED THIS LINE
     updateCurrencies();
     await saveGameToServer();
     showPurchasePopup('📦', 'Arcade Chest', 'It has been sent to your Vault to open!');
