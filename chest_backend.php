@@ -72,9 +72,9 @@ $CHESTS = [
     ]
 ];
 
-// Helper to get user data
+// Helper to get user data (FIXED: Added owned_items)
 function getUser($pdo, $uid) {
-    $stmt = $pdo->prepare("SELECT coins, gems, owned_chests, owned_cursors, owned_pets, pet_ages FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT coins, gems, owned_chests, owned_cursors, owned_pets, pet_ages, owned_items FROM users WHERE id = ?");
     $stmt->execute([$uid]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
@@ -150,8 +150,8 @@ if ($action === 'open') {
     try {
         $pdo->beginTransaction();
         
-        // Fetch pet_ages so we can initialize new pets!
-        $stmt = $pdo->prepare("SELECT owned_chests, owned_cursors, owned_pets, pet_ages FROM users WHERE id = ? FOR UPDATE");
+        // Fetch inventory (FIXED: Added owned_items to SELECT)
+        $stmt = $pdo->prepare("SELECT owned_chests, owned_cursors, owned_pets, pet_ages, owned_items FROM users WHERE id = ? FOR UPDATE");
         $stmt->execute([$user_id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -213,8 +213,8 @@ if ($action === 'open') {
             }
         } else if ($type === 'arcade') {
             if ($roll <= 60) {
-                $pool = ['usb' => 'USB'];
-                $reward_type = 'cursor';
+                $pool = ['VirusUSB' => 'VirusUSB']; // FIXED: Changed ID to VirusUSB
+                $reward_type = 'cursor';              // FIXED: Changed type to item
             } else if ($roll <= 95) {
                 $pool = ['digital_minion' => 'Digital Minion'];
                 $reward_type = 'pet';
@@ -236,7 +236,15 @@ if ($action === 'open') {
             $reward_type = ($reward_id === 'dragon') ? 'cursor' : 'pet';
         }
 
-        $inv_column = ($reward_type === 'cursor') ? 'owned_cursors' : 'owned_pets';
+        // FIXED: Added 'item' logic to the column routing
+        if ($reward_type === 'cursor') {
+            $inv_column = 'owned_cursors';
+        } else if ($reward_type === 'pet') {
+            $inv_column = 'owned_pets';
+        } else if ($reward_type === 'item') {
+            $inv_column = 'owned_items';
+        }
+
         $inventory = json_decode($user[$inv_column], true) ?: [];
         $pet_ages = json_decode($user['pet_ages'], true) ?: [];
         
@@ -258,6 +266,9 @@ if ($action === 'open') {
                 $inventory[] = $uid;
                 $pet_ages[$uid] = 0; // Initialize age to 0
             }
+        } else if ($reward_type === 'item') {
+            // Items don't have a strict inventory limit in this build, just add it!
+            $inventory[] = $reward_id;
         }
 
         // Save everything back to the database
