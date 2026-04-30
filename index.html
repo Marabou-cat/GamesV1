@@ -19,6 +19,20 @@
             --r: 16px;
         }
 
+        /* CURSOR CLICK EFFECTS */
+@keyframes fadeOutEffect {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.8); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+.cursor-fx-image {
+    position: fixed;
+    pointer-events: none; /* So it doesn't block other clicks */
+    z-index: 9999999;
+    animation: fadeOutEffect forwards; /* Duration set dynamically in JS */
+}
+
         *, *::before, *::after, html, body, button, a, input, div, span, p, h1, h2, h3, section, header, main { cursor: none !important; }
         iframe { cursor: auto !important; }
 
@@ -741,6 +755,9 @@ function spawnFlyingCoin() {
         updateStatsUI();
         saveGameToServer();
         showFloatText(e.clientX, e.clientY, `+${reward}`);
+        
+        // Trigger the visual effect based on the equipped cursor
+        triggerCursorEffect(e.clientX, e.clientY, gameState.equipped_cursor);
     };
 
     setTimeout(() => { if(document.body.contains(coin)) coin.remove(); }, 8000);
@@ -1110,6 +1127,46 @@ const CURSORS = [
     { id: "sakura_star", name: "Sakura Star", src: "png/star.png", price: "Sakura Chest Drop", isEvent: true, color: "#ffb7b2", baseCoin: 175 },
     { id: "hacked", name: "Hacked Pointer", src: "png/hacked.png", price: "Arcade Event 1% from claw machine", isEvent: true, color: "#008000", baseCoin: 799 }
 ];
+
+// --- CURSOR EFFECTS CONFIGURATION ---
+// Add new cursors here to give them custom click effects
+const CURSOR_EFFECTS = {
+    "hacked": {
+        src: "png/hacked_effect.gif", // Replace with your actual GIF path
+        size: 150,                    // Size in pixels
+        duration: 1500                // How long the effect lasts in milliseconds
+    },
+    // Example of adding another one later:
+    // "dragon": {
+    //     src: "png/fire_burst.gif",
+    //     size: 200,
+    //     duration: 1000
+    // }
+};
+
+// --- EFFECT TRIGGER FUNCTION ---
+function triggerCursorEffect(x, y, cursorId) {
+    const fxConfig = CURSOR_EFFECTS[cursorId];
+    if (!fxConfig) return; // Do nothing if this cursor has no effect
+
+    const fxEl = document.createElement('img');
+    
+    // Adding a timestamp query forces the GIF to restart its animation from frame 1 every click
+    fxEl.src = fxConfig.src + "?t=" + Date.now(); 
+    fxEl.className = 'cursor-fx-image';
+    fxEl.style.left = `${x}px`;
+    fxEl.style.top = `${y}px`;
+    fxEl.style.width = `${fxConfig.size}px`;
+    fxEl.style.height = `${fxConfig.size}px`;
+    fxEl.style.animationDuration = `${fxConfig.duration}ms`;
+
+    document.body.appendChild(fxEl);
+
+    // Clean up the element after the animation finishes
+    setTimeout(() => {
+        if (fxEl.parentNode) fxEl.remove();
+    }, fxConfig.duration);
+}
 
 function applyCursor() {
     if(!gameState) return;
