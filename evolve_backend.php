@@ -112,7 +112,18 @@ $EVOLUTIONS = [
         "req_item" => "VirusUSB",
         "cost" => 700,
         "currency" => "gems",
-        "img" => "../png/aerodactylus.png",
+        "img" => "../png/artificial_virus.png",
+        "color" => "#00ffcc"
+    ],
+    "claws_machine" => [
+        "base_name" => "Claws Machine",
+        "target_id" => "clawed_plushie",
+        "target_name" => "Clawed Plushie",
+        "req_level" => 50,
+        "req_item" => "VirusUSB",
+        "cost" => 750,
+        "currency" => "gems",
+        "img" => "../png/clawed_plushie.png",
         "color" => "#00ffcc"
     ]
 ];
