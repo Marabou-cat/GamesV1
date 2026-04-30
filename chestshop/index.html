@@ -212,7 +212,7 @@ async function openChest(type) {
         if (res.reward.is_duplicate) {
             document.getElementById('lootDesc').innerHTML = `
                 You found the <span style="color: var(--p1); font-size: 22px;">${res.reward.name}</span> ${typeName}.<br><br>
-                <span style="color: #aaa; font-size: 14px;">(You already owned this item. It was discarded.)</span>
+                <span style="color: #aaa; font-size: 14px;">(Max Inventory! It was discarded)</span>
             `;
         } else {
             document.getElementById('lootDesc').innerHTML = `
