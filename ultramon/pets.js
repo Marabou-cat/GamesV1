@@ -82,11 +82,12 @@ const ATTACKS = {
     sun_light: { name: "Sun Light", type: "grass", damage: 75, powerCost: 40, damageType: "special", effectImg: "petpng/grass_hit.png" },
     
     // Boost Moves
-    focus_energy: { name: "Focus Energy", type: "basic", damage: 0, powerCost: 0, damageType: "boost", boostType: "energy", amount: 40, effectImg: "petpng/basic_hit.png" },
+    focus_energy: { name: "Focus Energy", type: "basic", damage: 0, powerCost: 0, damageType: "boost", boostType: "energy", amount: 50, effectImg: "petpng/basic_hit.png" },
     synthesize: { name: "Synthesize", type: "grass", damage: 0, powerCost: 20, damageType: "boost", boostType: "hp", amount: 60, effectImg: "petpng/grass_hit.png" },
     sharpen: { name: "Sharpen", type: "stone", damage: 0, powerCost: 15, damageType: "boost", boostType: "stat", statTarget: "attack", amount: 20, effectImg: "petpng/stone_hit.png" },
     iron_defense: { name: "Iron Defense", type: "metal", damage: 0, powerCost: 15, damageType: "boost", boostType: "stat", statTarget: "defense", amount: 20, effectImg: "petpng/metal_hit.png" },
-    mystic_water: { name: "Mystic Water", type: "water", damage: 0, powerCost: 25, damageType: "boost", boostType: "stat", statTarget: "spAttack", amount: 25, effectImg: "petpng/water_hit.png" }
+    mystic_water: { name: "Mystic Water", type: "water", damage: 15, powerCost: 25, damageType: "boost", boostType: "stat", statTarget: "spAttack", amount: 25, effectImg: "petpng/water_hit.png" },
+    magma_shell: { name: "Magma Shell", type: "fire", damage: 0, powerCost: 100, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 120, effectImg: "petpng/water_hit.png" }
 };
 
 let isActionLocked = false; // Prevents spamming and input abuse during animations
@@ -119,7 +120,9 @@ const PETS = {
         moves: [
             { id: "scratch", levelToLearn: 1 },
             { id: "ember", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "flame_dash", levelToLearn: 5 },
+            { id: "magma_shell", levelToLearn: 10 },
             { id: "inferno_blast", levelToLearn: 10 }
         ]
     },
@@ -138,7 +141,9 @@ const PETS = {
         moves: [
             { id: "scratch", levelToLearn: 1 },
             { id: "ember", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "flame_dash", levelToLearn: 5 },
+            { id: "magma_shell", levelToLearn: 5 },
             { id: "inferno_blast", levelToLearn: 10 },
             { id: "burn_out_high", levelToLearn: 1 }
         ]
@@ -158,7 +163,9 @@ const PETS = {
         moves: [
             { id: "scratch", levelToLearn: 1 },
             { id: "ember", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "rock_throw", levelToLearn: 5 },
+            { id: "magma_shell", levelToLearn: 5 },
             { id: "flame_dash", levelToLearn: 10 }
         ]
     },
@@ -177,7 +184,9 @@ const PETS = {
         moves: [
             { id: "scratch", levelToLearn: 1 },
             { id: "ember", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "rock_throw", levelToLearn: 5 },
+            { id: "magma_shell", levelToLearn: 5 },
             { id: "sharpen", levelToLearn: 8 },
             { id: "flame_dash", levelToLearn: 10 },
             { id: "stone_edge", levelToLearn: 16 }
@@ -197,6 +206,7 @@ const PETS = {
         maxStats:  { hp: 540, attack: 130, defense: 170, spAttack: 150, spDefense: 195, speed: 240 },
         moves: [
             { id: "tackle", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "water_gun", levelToLearn: 1 },
             { id: "bubble_beam", levelToLearn: 5 },
             { id: "hydro_pump", levelToLearn: 16 }
@@ -216,6 +226,7 @@ const PETS = {
         maxStats:  { hp: 780, attack: 160, defense: 210, spAttack: 190, spDefense: 240, speed: 280 },
         moves: [
             { id: "tackle", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "water_gun", levelToLearn: 1 },
             { id: "bubble_beam", levelToLearn: 5 },
             { id: "hydro_pump", levelToLearn: 10 },
@@ -236,6 +247,7 @@ const PETS = {
         maxStats:  { hp: 600, attack: 185, defense: 155, spAttack: 100, spDefense: 130, speed: 145 },
         moves: [
             { id: "tackle", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "vine_whip", levelToLearn: 1 },
             { id: "synthesize", levelToLearn: 4 },
             { id: "razor_leaf", levelToLearn: 5 },
@@ -257,6 +269,7 @@ const PETS = {
         moves: [
             { id: "tackle", levelToLearn: 1 },
             { id: "vine_whip", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "synthesize", levelToLearn: 4 },
             { id: "razor_leaf", levelToLearn: 5 },
             { id: "solar_beam", levelToLearn: 10 }
@@ -277,6 +290,7 @@ const PETS = {
         moves: [
             { id: "quick_peck", levelToLearn: 1 },
             { id: "thundershock", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "spark_wing", levelToLearn: 5 },
             { id: "thunderbolt", levelToLearn: 10 }
         ]
@@ -296,6 +310,7 @@ const PETS = {
         moves: [
             { id: "stick_impact", levelToLearn: 1 },
             { id: "burn_out_low", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "heavy_slam", levelToLearn: 5 },
             { id: "flamethrower", levelToLearn: 10 },
             { id: "vine_whip_strong", levelToLearn: 16 }
@@ -316,6 +331,7 @@ const PETS = {
         moves: [
             { id: "stick_impact", levelToLearn: 1 },
             { id: "burn_out_low", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "heavy_slam", levelToLearn: 5 },
             { id: "flamethrower", levelToLearn: 10 },
             { id: "vine_whip_strong", levelToLearn: 16 },
@@ -338,6 +354,7 @@ const PETS = {
         moves: [
             { id: "sticky_webs", levelToLearn: 1 },
             { id: "power_punch", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "focus_energy", levelToLearn: 3 },
             { id: "fighting_aura", levelToLearn: 5 },
             { id: "bug_bite", levelToLearn: 10 }
@@ -358,6 +375,7 @@ const PETS = {
         moves: [
             { id: "sticky_webs", levelToLearn: 1 },
             { id: "dragons_breath", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "dragon_webs", levelToLearn: 15 },
             { id: "bug_bite", levelToLearn: 10 }
         ]
@@ -377,6 +395,7 @@ const PETS = {
         moves: [
             { id: "tackle", levelToLearn: 1 },
             { id: "dragons_breath", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "mystic_water", levelToLearn: 5 },
             { id: "dragon_orb", levelToLearn: 15 },
             { id: "magical_burst", levelToLearn: 20 }
@@ -397,6 +416,7 @@ const PETS = {
         moves: [
             { id: "tackle", levelToLearn: 1 },
             { id: "flame_burst", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "water_blade", levelToLearn: 15 },
             { id: "self_destruct", levelToLearn: 20 }
         ]
@@ -416,6 +436,7 @@ const PETS = {
         moves: [
             { id: "tackle", levelToLearn: 1 },
             { id: "flame_burst", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "water_blade", levelToLearn: 15 },
             { id: "self_destruct", levelToLearn: 20 },
             { id: "silver_gleam", levelToLearn: 20 }
@@ -436,6 +457,7 @@ const PETS = {
         moves: [
             { id: "tackle", levelToLearn: 1 },
             { id: "web", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "charged_tackle", levelToLearn: 5 },
             { id: "self_destruct", levelToLearn: 10 },
             { id: "shining_eye", levelToLearn: 15 }
@@ -456,6 +478,7 @@ const PETS = {
         moves: [
             { id: "tackle", levelToLearn: 1 },
             { id: "blade_slash", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "iron_defense", levelToLearn: 10 },
             { id: "water_blade_spec", levelToLearn: 15 },
             { id: "heavy_tackle", levelToLearn: 20 },
@@ -477,6 +500,7 @@ const PETS = {
         moves: [
             { id: "tackle", levelToLearn: 1 },
             { id: "tentacle_venom", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
             { id: "water_blade_phys", levelToLearn: 1 },
             { id: "mystic_water", levelToLearn: 5 },
             { id: "poison_spread", levelToLearn: 10 },
