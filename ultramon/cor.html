@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Map Coordinate Checker</title>
+    <style>
+        :root {
+            --bg0: #000814;
+            --bg1: #001d3d;
+            --bg2: #003566;
+            --p0: #0077b6;
+            --p1: #90e0ef;
+            --gold: #ffd700;
+            --w: #caf0f8;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg0);
+            color: var(--w);
+            display: flex;
+            gap: 20px;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- CONTROL PANEL --- */
+        .sidebar {
+            width: 380px;
+            background: var(--bg1);
+            border: 2px solid var(--p0);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            flex-shrink: 0;
+        }
+
+        h2 {
+            margin: 0;
+            color: var(--p1);
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            background: var(--bg0);
+            border: 1px solid var(--p0);
+            border-radius: 8px;
+            color: #fff;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            resize: vertical;
+            outline: none;
+        }
+        textarea:focus { border-color: var(--p1); }
+
+        button {
+            background: var(--p0);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background: var(--p1); color: var(--bg0); }
+
+        .info-card {
+            background: var(--bg2);
+            border: 1px solid var(--p0);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .info-title {
+            font-size: 12px;
+            color: var(--gold);
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(144, 224, 239, 0.1);
+            padding-bottom: 4px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: var(--p1);
+            font-family: monospace;
+        }
+
+        .tag-walkable { color: var(--success); font-weight: bold; }
+        .tag-blocked { color: var(--danger); font-weight: bold; }
+
+        /* --- MAP VIEWPORT --- */
+        .map-viewport {
+            flex: 1;
+            background: #000;
+            border: 2px solid var(--p0);
+            border-radius: 12px;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 20px;
+        }
+
+        .map-grid {
+            position: relative;
+            display: grid;
+            gap: 0;
+            user-select: none;
+        }
+
+        .tile {
+            width: 48px;
+            height: 48px;
+            box-sizing: border-box;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s, border-color 0.1s;
+        }
+
+        .tile:hover {
+            outline: 2px solid #fff;
+            z-index: 10;
+        }
+
+        .tile.selected {
+            outline: 3px solid var(--gold) !important;
+            z-index: 20;
+            box-shadow: 0 0 12px var(--gold);
+        }
+
+        /* --- TILE COLOR PALETTE --- */
+        .tile-grass { background: #27ae60 url('petpng/gras.png') center/cover no-repeat; }
+        .tile-tall_grass { background: #1e8449 url('petpng/tall_grass.png') center/cover no-repeat; }
+        .tile-wall { background: #4a5568 url('petpng/rock.png') center/cover no-repeat; }
+        .tile-water { background: #3498db url('petpng/water.png') center/cover no-repeat; }
+        .tile-planks { background: #8b5a2b url('petpng/planks.png') center/cover no-repeat; }
+        .tile-route { background: #f1c40f; }
+        .tile-gate { background: #d35400; }
+        .tile-gate::after { content: "🚪"; font-size: 18px; }
+        .tile-stone { background: #718096 url('petpng/stone.png') center/cover no-repeat; }
+        .tile-lava { background: #c0392b url('petpng/lava.png') center/cover no-repeat; }
+        .tile-tree { background: #27ae60 url('petpng/tree.png') center/cover no-repeat; }
+        .tile-prev_gate { background: #8e44ad; }
+        .tile-prev_gate::after { content: "◀️🚪"; font-size: 14px; }
+        .tile-next_gate { background: #d35400; }
+        .tile-next_gate::after { content: "🚪▶️"; font-size: 14px; }
+        .tile-unknown { background: #333333; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Coordinate Checker</h2>
+        
+        <label for="mapInput" style="font-size: 12px; color: var(--p1);">Paste Entire Map Const / Array:</label>
+        <textarea id="mapInput" placeholder="Paste map here, e.g.&#10;const map1 = [&#10;  ['grass', 'wall', 'water'],&#10;  ['tall_grass', 'tree', 'stone']&#10;];"></textarea>
+        
+        <button onclick="parseAndRenderMap()">🗺️ Render Map</button>
+
+        <div class="info-card">
+            <div class="info-title">Selected Tile Details</div>
+            <div class="stat-line">
+                <span>Tile Type:</span>
+                <span class="stat-value" id="dispType">None</span>
+            </div>
+            <div class="stat-line">
+                <span>Grid Index (Row, Col):</span>
+                <span class="stat-value" id="dispGrid">-</span>
+            </div>
+            <div class="stat-line">
+                <span>In-Game Spawn (x, y):</span>
+                <span class="stat-value" id="dispSpawn">-</span>
+            </div>
+            <div class="stat-line">
+                <span>Collision:</span>
+                <span class="stat-value" id="dispCollision">-</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="map-viewport">
+        <div id="mapGrid" class="map-grid"></div>
+    </div>
+
+    <script>
+        let currentMapData = [];
+        let selectedTileEl = null;
+
+        const blockedTiles = ['wall', 'water', 'lava', 'tree'];
+
+        function parseAndRenderMap() {
+            const rawInput = document.getElementById('mapInput').value.trim();
+            if (!rawInput) {
+                alert("Please paste map data into the text box.");
+                return;
+            }
+
+            try {
+                // Extracts array content from variable declarations like "const map1 = [...]" or raw "[...]"
+                let sanitized = rawInput;
+                if (sanitized.includes('=')) {
+                    sanitized = sanitized.substring(sanitized.indexOf('=') + 1).trim();
+                }
+                if (sanitized.endsWith(';')) {
+                    sanitized = sanitized.slice(0, -1).trim();
+                }
+
+                currentMapData = new Function(`return ${sanitized}`)();
+
+                if (!Array.isArray(currentMapData) || !Array.isArray(currentMapData[0])) {
+                    throw new Error("Parsed content is not a 2D array.");
+                }
+
+                renderGrid();
+            } catch (err) {
+                alert("Error parsing map array. Make sure you pasted a valid JavaScript array format!\n\n" + err.message);
+            }
+        }
+
+        function renderGrid() {
+            const gridContainer = document.getElementById('mapGrid');
+            gridContainer.innerHTML = '';
+
+            const rows = currentMapData.length;
+            const cols = currentMapData[0].length;
+
+            gridContainer.style.gridTemplateColumns = `repeat(${cols}, 48px)`;
+            gridContainer.style.gridTemplateRows = `repeat(${rows}, 48px)`;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const tileType = currentMapData[r][c];
+                    const tile = document.createElement('div');
+                    
+                    tile.className = `tile tile-${tileType} ${!tileType ? 'tile-unknown' : ''}`;
+                    tile.dataset.row = r;
+                    tile.dataset.col = c;
+                    tile.dataset.type = tileType;
+
+                    tile.onclick = () => selectTile(tile, r, c, tileType);
+
+                    gridContainer.appendChild(tile);
+                }
+            }
+        }
+
+        function selectTile(element, row, col, type) {
+            if (selectedTileEl) {
+                selectedTileEl.classList.remove('selected');
+            }
+            element.classList.add('selected');
+            selectedTileEl = element;
+
+            const spawnX = (col + 0.5).toFixed(1);
+            const spawnY = (row + 0.5).toFixed(1);
+            const isBlocked = blockedTiles.includes(type);
+
+            document.getElementById('dispType').innerText = type || 'unknown';
+            document.getElementById('dispGrid').innerText = `Row ${row}, Col ${col}`;
+            document.getElementById('dispSpawn').innerText = `{ x: ${spawnX}, y: ${spawnY} }`;
+            
+            const collisionEl = document.getElementById('dispCollision');
+            if (isBlocked) {
+                collisionEl.innerText = "Blocked";
+                collisionEl.className = "stat-value tag-blocked";
+            } else {
+                collisionEl.innerText = "Walkable";
+                collisionEl.className = "stat-value tag-walkable";
+            }
+        }
+    </script>
+</body>
+</html>
