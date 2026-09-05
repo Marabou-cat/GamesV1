@@ -81,6 +81,7 @@ const ATTACKS = {
     poison_spread: { name: "Poison Spread", type: "poison", damage: 250, powerCost: 100, damageType: "special", effectImg: "petpng/poison_hit.png" },
     sun_light: { name: "Sun Light", type: "grass", damage: 75, powerCost: 40, damageType: "special", effectImg: "petpng/grass_hit.png" },
     explosive_punch: { name: "Explosive Punch", type: "combat", damage: 100, powerCost: 70, damageType: "special", effectImg: "petpng/combat_hit.png" },
+    electric_tackle: { name: "Electric Tackle", type: "electric", damage: 75, powerCost: 50, damageType: "physical", effectImg: "petpng/electric_hit.png" },
     
     // Boost Moves
     focus_energy: { name: "Focus Energy", type: "basic", damage: 0, powerCost: 0, damageType: "boost", boostType: "energy", amount: 50, effectImg: "petpng/basic_hit.png" },
@@ -284,7 +285,7 @@ const PETS = {
         img: "petpng/sparkwing.png",
         catchRate: 40,
         evolvingLevel: 8,
-        evolutionId: "",
+        evolutionId: "sparkite",
         size: 0.85,
         baseStats: { hp: 95, attack: 13, defense: 8, spAttack: 17, spDefense: 9, speed: 18 },
         maxStats:  { hp: 450, attack: 150, defense: 105, spAttack: 205, spDefense: 115, speed: 210 },
@@ -550,7 +551,28 @@ const PETS = {
             { id: "explosive_punch", levelToLearn: 10 },
             { id: "sun_light", levelToLearn: 10 }
         ]
-    }
+    },
+    sparkite: {
+        id: "sparkite",
+        name: "Sparkite",
+        type: ["electric", "air"],
+        spawn_routes: [],
+        img: "petpng/sparkite.png",
+        catchRate: 40,
+        evolvingLevel: 8,
+        evolutionId: "",
+        size: 1.3,
+        baseStats: { hp: 125, attack: 20, defense: 10, spAttack: 17, spDefense: 9, speed: 35 },
+        maxStats:  { hp: 550, attack: 180, defense: 125, spAttack: 205, spDefense: 125, speed: 280 },
+        moves: [
+            { id: "quick_peck", levelToLearn: 1 },
+            { id: "thundershock", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "spark_wing", levelToLearn: 5 },
+            { id: "thunderbolt", levelToLearn: 10 },
+            { id: "electric_tackle", levelToLearn: 16 }
+        ]
+    },
 };
 
 function getCalculatedPet(petData) {
