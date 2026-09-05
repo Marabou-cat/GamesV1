@@ -62,5 +62,22 @@ const npc = [
         ],
         rewards: { coins: 1500 },
         defeated: false
+    },
+    {
+        id: "Thirsty Trainer",
+        name: "Thirsty Trainer",
+        route: 4,
+        x: 3,
+        y: 25,
+        color: "#e67e22",
+        img: "npcpng/trainer2.png",
+        team: [
+            { id: "malime", lvl: 10 },
+            { id: "hydrini", lvl: 8 },
+            { id: "sparkwing", lvl: 10 }
+            
+        ],
+        rewards: { coins: 500 },
+        defeated: false
     }
 ];
