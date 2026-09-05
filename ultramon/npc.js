@@ -79,5 +79,22 @@ const npc = [
         ],
         rewards: { coins: 500 },
         defeated: false
+    },
+    {
+        id: "miner",
+        name: "Cave Miner",
+        route: 4,
+        x: 15,
+        y: 23,
+        color: "#e67e22",
+        img: "npcpng/trainer3.png",
+        team: [
+            { id: "malime", lvl: 10 },
+            { id: "malime", lvl: 10 },
+            { id: "magmud", lvl: 25 }
+            
+        ],
+        rewards: { coins: 500 },
+        defeated: false
     }
 ];
