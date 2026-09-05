@@ -80,6 +80,7 @@ const ATTACKS = {
     water_blade_spec: { name: "Water Blade", type: "water", damage: 75, powerCost: 40, damageType: "special", effectImg: "petpng/water_hit.png" },
     poison_spread: { name: "Poison Spread", type: "poison", damage: 250, powerCost: 100, damageType: "special", effectImg: "petpng/poison_hit.png" },
     sun_light: { name: "Sun Light", type: "grass", damage: 75, powerCost: 40, damageType: "special", effectImg: "petpng/grass_hit.png" },
+    explosive_punch: { name: "Explosive Punch", type: "combat", damage: 100, powerCost: 70, damageType: "special", effectImg: "petpng/combat_hit.png" },
     
     // Boost Moves
     focus_energy: { name: "Focus Energy", type: "basic", damage: 0, powerCost: 0, damageType: "boost", boostType: "energy", amount: 50, effectImg: "petpng/basic_hit.png" },
@@ -504,6 +505,49 @@ const PETS = {
             { id: "water_blade_phys", levelToLearn: 1 },
             { id: "mystic_water", levelToLearn: 5 },
             { id: "poison_spread", levelToLearn: 10 },
+            { id: "sun_light", levelToLearn: 10 }
+        ]
+    },
+    balluga: {
+        id: "balluga",
+        name: "Balluga",
+        type: ["water"],
+        spawn_routes: [2, 3],
+        img: "petpng/balluga.png",
+        catchRate: 45,
+        evolvingLevel: 20,
+        evolutionId: "rorclaw",
+        size: 1.3,
+        baseStats: { hp: 100, attack: 15, defense: 25, spAttack: 8, spDefense: 35, speed: 10 },
+        maxStats:  { hp: 500, attack: 110, defense: 130, spAttack: 60, spDefense: 150, speed: 170 },
+        moves: [
+            { id: "tackle", levelToLearn: 1 },
+            { id: "mystic_water", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "water_blade_phys", levelToLearn: 1 },
+            { id: "power_punch", levelToLearn: 10 },
+            { id: "sun_light", levelToLearn: 10 }
+        ]
+    },
+    rorclaw: {
+        id: "rorclaw",
+        name: "Rorclaw",
+        type: ["water", "combat"],
+        spawn_routes: [],
+        img: "petpng/rorclaw.png",
+        catchRate: 45,
+        evolvingLevel: 20,
+        evolutionId: "",
+        size: 1.6,
+        baseStats: { hp: 150, attack: 25, defense: 25, spAttack: 30, spDefense: 35, speed: 50 },
+        maxStats:  { hp: 750, attack: 170, defense: 130, spAttack: 145, spDefense: 150, speed: 300 },
+        moves: [
+            { id: "tackle", levelToLearn: 1 },
+            { id: "power_punch", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "water_blade_phys", levelToLearn: 1 },
+            { id: "mystic_water", levelToLearn: 5 },
+            { id: "explosive_punch", levelToLearn: 10 },
             { id: "sun_light", levelToLearn: 10 }
         ]
     }
