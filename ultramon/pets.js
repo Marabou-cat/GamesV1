@@ -82,6 +82,7 @@ const ATTACKS = {
     sun_light: { name: "Sun Light", type: "grass", damage: 75, powerCost: 40, damageType: "special", effectImg: "petpng/grass_hit.png" },
     explosive_punch: { name: "Explosive Punch", type: "combat", damage: 100, powerCost: 70, damageType: "special", effectImg: "petpng/combat_hit.png" },
     electric_tackle: { name: "Electric Tackle", type: "electric", damage: 75, powerCost: 50, damageType: "physical", effectImg: "petpng/electric_hit.png" },
+    dragon_claw: { name: "Dragon Claw", type: "dragon", damage: 55, powerCost: 20, damageType: "physical", effectImg: "petpng/dragon_scratch.png" },
     
     // Boost Moves
     focus_energy: { name: "Focus Energy", type: "basic", damage: 0, powerCost: 0, damageType: "boost", boostType: "energy", amount: 50, effectImg: "petpng/basic_hit.png" },
@@ -89,7 +90,7 @@ const ATTACKS = {
     sharpen: { name: "Sharpen", type: "stone", damage: 0, powerCost: 15, damageType: "boost", boostType: "stat", statTarget: "attack", amount: 20, effectImg: "petpng/stone_hit.png" },
     iron_defense: { name: "Iron Defense", type: "metal", damage: 0, powerCost: 15, damageType: "boost", boostType: "stat", statTarget: "defense", amount: 20, effectImg: "petpng/metal_hit.png" },
     mystic_water: { name: "Mystic Water", type: "water", damage: 15, powerCost: 25, damageType: "boost", boostType: "stat", statTarget: "spAttack", amount: 25, effectImg: "petpng/water_hit.png" },
-    magma_shell: { name: "Magma Shell", type: "fire", damage: 0, powerCost: 100, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 120, effectImg: "petpng/water_hit.png" }
+    magma_shell: { name: "Magma Shell", type: "fire", damage: 0, powerCost: 40, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 40, effectImg: "petpng/water_hit.png" }
 };
 
 let isActionLocked = false; // Prevents spamming and input abuse during animations
@@ -125,7 +126,8 @@ const PETS = {
             { id: "focus_energy", levelToLearn: 1 },
             { id: "flame_dash", levelToLearn: 5 },
             { id: "magma_shell", levelToLearn: 10 },
-            { id: "inferno_blast", levelToLearn: 10 }
+            { id: "inferno_blast", levelToLearn: 10 },
+            { id: "dragon_claw", levelToLearn: 10 }
         ]
     },
     pyrodon: {
@@ -147,6 +149,7 @@ const PETS = {
             { id: "flame_dash", levelToLearn: 5 },
             { id: "magma_shell", levelToLearn: 5 },
             { id: "inferno_blast", levelToLearn: 10 },
+            { id: "dragon_claw", levelToLearn: 10 },
             { id: "burn_out_high", levelToLearn: 1 }
         ]
     },
