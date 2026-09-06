@@ -83,6 +83,7 @@ const ATTACKS = {
     explosive_punch: { name: "Explosive Punch", type: "combat", damage: 100, powerCost: 70, damageType: "special", effectImg: "petpng/combat_hit.png" },
     electric_tackle: { name: "Electric Tackle", type: "electric", damage: 75, powerCost: 50, damageType: "physical", effectImg: "petpng/electric_hit.png" },
     dragon_claw: { name: "Dragon Claw", type: "dragon", damage: 55, powerCost: 20, damageType: "physical", effectImg: "petpng/dragon_scratch.png" },
+    tsunami: { name: "tsunami", type: "water", damage: 75, powerCost: 45, damageType: "special", effectImg: "petpng/water_hit.png" },
     
     // Boost Moves
     focus_energy: { name: "Focus Energy", type: "basic", damage: 0, powerCost: 0, damageType: "boost", boostType: "energy", amount: 50, effectImg: "petpng/basic_hit.png" },
@@ -90,6 +91,7 @@ const ATTACKS = {
     sharpen: { name: "Sharpen", type: "stone", damage: 0, powerCost: 15, damageType: "boost", boostType: "stat", statTarget: "attack", amount: 20, effectImg: "petpng/stone_hit.png" },
     iron_defense: { name: "Iron Defense", type: "metal", damage: 0, powerCost: 15, damageType: "boost", boostType: "stat", statTarget: "defense", amount: 20, effectImg: "petpng/metal_hit.png" },
     mystic_water: { name: "Mystic Water", type: "water", damage: 15, powerCost: 25, damageType: "boost", boostType: "stat", statTarget: "spAttack", amount: 25, effectImg: "petpng/water_hit.png" },
+    healing_drop: { name: "Healing Drop", type: "water", damage: 0, powerCost: 20, damageType: "boost", boostType: "hp", amount: 40, effectImg: "petpng/grass_hit.png" },
     magma_shell: { name: "Magma Shell", type: "fire", damage: 0, powerCost: 40, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 40, effectImg: "petpng/water_hit.png" }
 };
 
@@ -576,6 +578,31 @@ const PETS = {
             { id: "electric_tackle", levelToLearn: 16 }
         ]
     },
+    leviadrop: {
+        id: "leviadrop",
+        name: "Leviadrop",
+        type: ["dragon", "water"],
+        spawn_routes: [],
+        img: "petpng/leviadrop.png",
+        catchRate: 45,
+        evolvingLevel: 32,
+        evolutionId: "",
+        size: 1.3,
+        baseStats: { hp: 120, attack: 25, defense: 40, spAttack: 25, spDefense: 30, speed: 30 },
+        maxStats:  { hp: 550, attack: 150, defense: 140, spAttack: 145, spDefense: 120, speed: 220 },
+        moves: [
+            { id: "tackle", levelToLearn: 1 },
+            { id: "dragons_breath", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "mystic_water", levelToLearn: 5 },
+            { id: "dragon_claw", levelToLearn: 5 },
+            { id: "healing_drop", levelToLearn: 5 },
+            { id: "dragon_orb", levelToLearn: 15 },
+            { id: "magical_burst", levelToLearn: 18 },
+            { id: "tsunami", levelToLearn: 20 }
+            
+        ]
+    }
 };
 
 function getCalculatedPet(petData) {
