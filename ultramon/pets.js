@@ -83,7 +83,8 @@ const ATTACKS = {
     explosive_punch: { name: "Explosive Punch", type: "combat", damage: 100, powerCost: 70, damageType: "special", effectImg: "petpng/combat_hit.png" },
     electric_tackle: { name: "Electric Tackle", type: "electric", damage: 75, powerCost: 50, damageType: "physical", effectImg: "petpng/electric_hit.png" },
     dragon_claw: { name: "Dragon Claw", type: "dragon", damage: 55, powerCost: 20, damageType: "physical", effectImg: "petpng/dragon_scratch.png" },
-    tsunami: { name: "tsunami", type: "water", damage: 75, powerCost: 45, damageType: "special", effectImg: "petpng/water_hit.png" },
+    tsunami: { name: "Tsunami", type: "water", damage: 75, powerCost: 45, damageType: "special", effectImg: "petpng/water_hit.png" },
+    rage: { name: "Rage", type: "basic", damage: 125, powerCost: 100, damageType: "physical", effectImg: "petpng/basic_hit.png" },
     
     // Boost Moves
     focus_energy: { name: "Focus Energy", type: "basic", damage: 0, powerCost: 0, damageType: "boost", boostType: "energy", amount: 50, effectImg: "petpng/basic_hit.png" },
@@ -92,7 +93,8 @@ const ATTACKS = {
     iron_defense: { name: "Iron Defense", type: "metal", damage: 0, powerCost: 15, damageType: "boost", boostType: "stat", statTarget: "defense", amount: 20, effectImg: "petpng/metal_hit.png" },
     mystic_water: { name: "Mystic Water", type: "water", damage: 15, powerCost: 25, damageType: "boost", boostType: "stat", statTarget: "spAttack", amount: 25, effectImg: "petpng/water_hit.png" },
     healing_drop: { name: "Healing Drop", type: "water", damage: 0, powerCost: 20, damageType: "boost", boostType: "hp", amount: 40, effectImg: "petpng/grass_hit.png" },
-    magma_shell: { name: "Magma Shell", type: "fire", damage: 0, powerCost: 40, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 40, effectImg: "petpng/water_hit.png" }
+    magma_shell: { name: "Magma Shell", type: "fire", damage: 0, powerCost: 40, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 40, effectImg: "petpng/water_hit.png" },
+    reform: { name: "Reform", type: "basic", damage: 0, powerCost: 100, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 80, effectImg: "petpng/water_hit.png" }
 };
 
 let isActionLocked = false; // Prevents spamming and input abuse during animations
@@ -601,6 +603,71 @@ const PETS = {
             { id: "magical_burst", levelToLearn: 18 },
             { id: "tsunami", levelToLearn: 20 }
             
+        ]
+    },
+    moulder: {
+        id: "moulder",
+        name: "Moulder",
+        type: ["stone", "grass"],
+        spawn_routes: [5],
+        img: "petpng/moulder.png",
+        catchRate: 45,
+        evolvingLevel: 16,
+        evolutionId: "bouldercap",
+        size: 1.0,
+        baseStats: { hp: 50, attack: 20, defense: 40, spAttack: 5, spDefense: 10, speed: 10 },
+        maxStats:  { hp: 300, attack: 100, defense: 140, spAttack: 75, spDefense: 60, speed: 30 },
+        moves: [
+            { id: "tackle", levelToLearn: 1 },
+            { id: "rock_throw", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "vine_whip", levelToLearn: 5 },
+            { id: "rage", levelToLearn: 15 }
+        ]
+    },
+    bouldercap: {
+        id: "bouldercap",
+        name: "Bouldercap",
+        type: ["stone", "grass"],
+        spawn_routes: [],
+        img: "petpng/bouldercap.png",
+        catchRate: 45,
+        evolvingLevel: 25,
+        evolutionId: "vinolith",
+        size: 1.3,
+        baseStats: { hp: 150, attack: 30, defense: 50, spAttack: 5, spDefense: 20, speed: 25 },
+        maxStats:  { hp: 550, attack: 175, defense: 170, spAttack: 75, spDefense: 90, speed: 60 },
+        moves: [
+            { id: "tackle", levelToLearn: 1 },
+            { id: "rock_throw", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "vine_whip", levelToLearn: 5 },
+            { id: "rage", levelToLearn: 15 },
+            { id: "stone_edge", levelToLearn: 15 },
+            { id: "reform", levelToLearn: 20 }
+        ]
+    },
+    vinolith: {
+        id: "vinolith",
+        name: "Vinolith",
+        type: ["stone", "grass"],
+        spawn_routes: [],
+        img: "petpng/vinolith.png",
+        catchRate: 45,
+        evolvingLevel: 25,
+        evolutionId: "",
+        size: 2,
+        baseStats: { hp: 250, attack: 50, defense: 60, spAttack: 10, spDefense: 25, speed: 30 },
+        maxStats:  { hp: 800, attack: 250, defense: 200, spAttack: 100, spDefense: 110, speed: 70 },
+        moves: [
+            { id: "tackle", levelToLearn: 1 },
+            { id: "rock_throw", levelToLearn: 1 },
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "vine_whip", levelToLearn: 5 },
+            { id: "rage", levelToLearn: 15 },
+            { id: "stone_edge", levelToLearn: 15 },
+            { id: "reform", levelToLearn: 20 },
+            { id: "meteor_rain", levelToLearn: 20 }
         ]
     }
 };
