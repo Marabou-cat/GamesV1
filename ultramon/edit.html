@@ -67,6 +67,7 @@
         .brush-void { background: #000000; border: 1px solid #333; }
         .brush-gate_next { background: #d35400; }
         .brush-gate_prev { background: #c0392b; }
+        .brush-fill { background: #8e44ad; }
 
         .editor-container {
             display: grid;
@@ -167,19 +168,19 @@
     <h1>RPG Map Editor</h1>
     
     <div class="toolbar" id="toolbar">
-        <button class="brush-btn brush-grass active" onclick="setBrush('grass')">Grass</button>
-        <button class="brush-btn brush-tall_grass" onclick="setBrush('tall_grass')">Tall Grass</button>
-        <button class="brush-btn brush-wall" onclick="setBrush('wall')">Wall</button>
-        <button class="brush-btn brush-water" onclick="setBrush('water')">Water</button>
-        <button class="brush-btn brush-planks" onclick="setBrush('planks')">Planks</button>
-        <button class="brush-btn brush-route" onclick="setBrush('route')">Route</button>
-        <button class="brush-btn brush-stone" onclick="setBrush('stone')">Stone</button>
-        <button class="brush-btn brush-lava" onclick="setBrush('lava')">Lava</button>
-        <button class="brush-btn brush-tree" onclick="setBrush('tree')">Tree</button>
-        <button class="brush-btn brush-void" onclick="setBrush('void')">Void</button>
-        <button class="brush-btn brush-gate_next" onclick="setBrush('gate_next')">Next Gate</button>
-        <button class="brush-btn brush-gate_prev" onclick="setBrush('gate_prev')">Prev Gate</button>
-        <button class="brush-btn" style="background: #8e44ad;" onclick="setBrush('fill')">Bucket Fill Tool</button>
+        <button class="brush-btn brush-grass active" onclick="setBrush('grass', event)">Grass</button>
+        <button class="brush-btn brush-tall_grass" onclick="setBrush('tall_grass', event)">Tall Grass</button>
+        <button class="brush-btn brush-wall" onclick="setBrush('wall', event)">Wall</button>
+        <button class="brush-btn brush-water" onclick="setBrush('water', event)">Water</button>
+        <button class="brush-btn brush-planks" onclick="setBrush('planks', event)">Planks</button>
+        <button class="brush-btn brush-route" onclick="setBrush('route', event)">Route</button>
+        <button class="brush-btn brush-stone" onclick="setBrush('stone', event)">Stone</button>
+        <button class="brush-btn brush-lava" onclick="setBrush('lava', event)">Lava</button>
+        <button class="brush-btn brush-tree" onclick="setBrush('tree', event)">Tree</button>
+        <button class="brush-btn brush-void" onclick="setBrush('void', event)">Void</button>
+        <button class="brush-btn brush-gate_next" onclick="setBrush('gate_next', event)">Next Gate</button>
+        <button class="brush-btn brush-gate_prev" onclick="setBrush('gate_prev', event)">Prev Gate</button>
+        <button class="brush-btn brush-fill" onclick="setBrush('fill', event)">Bucket Fill Tool</button>
     </div>
 
     <div class="editor-container" id="editorContainer"></div>
@@ -198,6 +199,7 @@
     <script>
         const MAP_SIZE = 30;
         let currentBrush = 'grass';
+        let paintBrush = 'grass'; // Remembers the actual tile type to paint/fill with
         let isMouseDown = false;
         let mapData = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill('grass'));
 
@@ -209,6 +211,8 @@
                 for (let c = 0; c < MAP_SIZE; c++) {
                     const cell = document.createElement('div');
                     cell.className = `cell ${mapData[r][c]}`;
+                    if (mapData[r][c] === 'gate_next') cell.innerHTML = '➡️';
+                    if (mapData[r][c] === 'gate_prev') cell.innerHTML = '⬅️';
                     cell.dataset.row = r;
                     cell.dataset.col = c;
 
@@ -232,40 +236,27 @@
             isMouseDown = false;
         });
 
-        function setBrush(brushType) {
+        function setBrush(brushType, event) {
             currentBrush = brushType;
+            if (brushType !== 'fill') {
+                paintBrush = brushType;
+            }
             document.querySelectorAll('.brush-btn').forEach(btn => btn.classList.remove('active'));
             event.currentTarget.classList.add('active');
         }
 
         function handleCellAction(r, c) {
             if (currentBrush === 'fill') {
-                floodFill(r, c, mapData[r][c], selectedActiveTileType());
+                floodFill(r, c, mapData[r][c], paintBrush);
             } else {
                 paintCell(r, c);
             }
-        }
-
-        function selectedActiveTileType() {
-            // If fill is selected, fall back or check the last non-fill active brush
-            // For simplicity, let's look at the active brush button that isn't the fill tool
-            const activeBtn = document.querySelector('.brush-btn.active');
-            if (!activeBtn || activeBtn.textContent.includes('Bucket')) return 'grass';
-            
-            // Extract type from class name (e.g., 'brush-tree' -> 'tree')
-            for (let cls of activeBtn.classList) {
-                if (cls.startsWith('brush-')) {
-                    return cls.replace('brush-', '');
-                }
-            }
-            return 'grass';
         }
 
         function paintCell(r, c) {
             mapData[r][c] = currentBrush;
             const cell = editorContainer.children[r * MAP_SIZE + c];
             cell.className = `cell ${currentBrush}`;
-            // Clear out any custom HTML content like gate arrows if painting over them with normal tiles
             cell.innerHTML = '';
             if (currentBrush === 'gate_next') cell.innerHTML = '➡️';
             if (currentBrush === 'gate_prev') cell.innerHTML = '⬅️';
@@ -286,7 +277,6 @@
                 visited[r][c] = true;
                 mapData[r][c] = replacementVal;
                 
-                // Update DOM element directly
                 const cell = editorContainer.children[r * MAP_SIZE + c];
                 cell.className = `cell ${replacementVal}`;
                 cell.innerHTML = '';
@@ -301,9 +291,8 @@
         }
 
         function fillAllMap() {
-            const tileToFill = selectedActiveTileType();
-            if (confirm(`Are you sure you want to fill the entire map with ${tileToFill}?`)) {
-                mapData = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(tileToFill));
+            if (confirm(`Are you sure you want to fill the entire map with ${paintBrush}?`)) {
+                mapData = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(paintBrush));
                 initEditor();
                 document.getElementById('outputContainer').style.display = 'none';
             }
