@@ -63,6 +63,8 @@
         .brush-route { background: #f1c40f; color: black; }
         .brush-stone { background: #718096; }
         .brush-lava { background: #c0392b; }
+        .brush-tree { background: #145a32; }
+        .brush-void { background: #000000; border: 1px solid #333; }
         .brush-gate_next { background: #d35400; }
         .brush-gate_prev { background: #c0392b; }
 
@@ -91,6 +93,8 @@
         .cell.route { background: #f1c40f; }
         .cell.stone { background: #718096; }
         .cell.lava { background: #c0392b; }
+        .cell.tree { background: #145a32; }
+        .cell.void { background: #000000; }
         
         .cell.gate_next { 
             background: #d35400; 
@@ -132,6 +136,8 @@
         }
 
         .btn-ready:hover { background: #27ae60; }
+        .btn-fill-all { background: #2980b9; color: white; border: none; padding: 15px; border-radius: var(--r); font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-fill-all:hover { background: #1f618d; }
         .btn-clear { background: #e74c3c; color: white; border: none; padding: 15px; border-radius: var(--r); font-weight: bold; cursor: pointer; }
         .btn-clear:hover { background: #c0392b; }
 
@@ -169,14 +175,18 @@
         <button class="brush-btn brush-route" onclick="setBrush('route')">Route</button>
         <button class="brush-btn brush-stone" onclick="setBrush('stone')">Stone</button>
         <button class="brush-btn brush-lava" onclick="setBrush('lava')">Lava</button>
+        <button class="brush-btn brush-tree" onclick="setBrush('tree')">Tree</button>
+        <button class="brush-btn brush-void" onclick="setBrush('void')">Void</button>
         <button class="brush-btn brush-gate_next" onclick="setBrush('gate_next')">Next Gate</button>
         <button class="brush-btn brush-gate_prev" onclick="setBrush('gate_prev')">Prev Gate</button>
+        <button class="brush-btn" style="background: #8e44ad;" onclick="setBrush('fill')">Bucket Fill Tool</button>
     </div>
 
     <div class="editor-container" id="editorContainer"></div>
 
     <div class="action-row">
         <button class="btn-ready" onclick="generateMapCode()">Generate Map Code</button>
+        <button class="btn-fill-all" onclick="fillAllMap()">Fill All</button>
         <button class="btn-clear" onclick="clearMap()">Clear Map</button>
     </div>
 
@@ -204,11 +214,13 @@
 
                     cell.addEventListener('mousedown', (e) => {
                         isMouseDown = true;
-                        paintCell(r, c);
+                        handleCellAction(r, c);
                     });
 
                     cell.addEventListener('mouseover', (e) => {
-                        if (isMouseDown) paintCell(r, c);
+                        if (isMouseDown && currentBrush !== 'fill') {
+                            paintCell(r, c);
+                        }
                     });
 
                     editorContainer.appendChild(cell);
@@ -226,10 +238,75 @@
             event.currentTarget.classList.add('active');
         }
 
+        function handleCellAction(r, c) {
+            if (currentBrush === 'fill') {
+                floodFill(r, c, mapData[r][c], selectedActiveTileType());
+            } else {
+                paintCell(r, c);
+            }
+        }
+
+        function selectedActiveTileType() {
+            // If fill is selected, fall back or check the last non-fill active brush
+            // For simplicity, let's look at the active brush button that isn't the fill tool
+            const activeBtn = document.querySelector('.brush-btn.active');
+            if (!activeBtn || activeBtn.textContent.includes('Bucket')) return 'grass';
+            
+            // Extract type from class name (e.g., 'brush-tree' -> 'tree')
+            for (let cls of activeBtn.classList) {
+                if (cls.startsWith('brush-')) {
+                    return cls.replace('brush-', '');
+                }
+            }
+            return 'grass';
+        }
+
         function paintCell(r, c) {
             mapData[r][c] = currentBrush;
             const cell = editorContainer.children[r * MAP_SIZE + c];
             cell.className = `cell ${currentBrush}`;
+            // Clear out any custom HTML content like gate arrows if painting over them with normal tiles
+            cell.innerHTML = '';
+            if (currentBrush === 'gate_next') cell.innerHTML = '➡️';
+            if (currentBrush === 'gate_prev') cell.innerHTML = '⬅️';
+        }
+
+        function floodFill(startR, startC, targetVal, replacementVal) {
+            if (targetVal === replacementVal) return;
+            const queue = [[startR, startC]];
+            const visited = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(false));
+
+            while (queue.length > 0) {
+                let [r, c] = queue.pop();
+
+                if (r < 0 || r >= MAP_SIZE || c < 0 || c >= MAP_SIZE) continue;
+                if (visited[r][c]) continue;
+                if (mapData[r][c] !== targetVal) continue;
+
+                visited[r][c] = true;
+                mapData[r][c] = replacementVal;
+                
+                // Update DOM element directly
+                const cell = editorContainer.children[r * MAP_SIZE + c];
+                cell.className = `cell ${replacementVal}`;
+                cell.innerHTML = '';
+                if (replacementVal === 'gate_next') cell.innerHTML = '➡️';
+                if (replacementVal === 'gate_prev') cell.innerHTML = '⬅️';
+
+                queue.push([r + 1, c]);
+                queue.push([r - 1, c]);
+                queue.push([r, c + 1]);
+                queue.push([r, c - 1]);
+            }
+        }
+
+        function fillAllMap() {
+            const tileToFill = selectedActiveTileType();
+            if (confirm(`Are you sure you want to fill the entire map with ${tileToFill}?`)) {
+                mapData = Array(MAP_SIZE).fill().map(() => Array(MAP_SIZE).fill(tileToFill));
+                initEditor();
+                document.getElementById('outputContainer').style.display = 'none';
+            }
         }
 
         function clearMap() {
