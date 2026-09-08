@@ -956,6 +956,17 @@
     </div>
 </div>
 
+<!-- NPC DIALOGUE BOX OVERLAY -->
+<div class="modal-overlay hidden" id="npcDialogueOverlay" style="z-index: 9998;">
+    <div class="menu-box" style="height: auto; max-height: 250px; padding: 20px; text-align: left;">
+        <div id="npcDialogueName" style="font-weight: 900; color: var(--gold); font-size: 18px; margin-bottom: 10px;">Trainer Name</div>
+        <div id="npcDialogueText" style="font-size: 15px; color: #fff; line-height: 1.5; min-height: 50px; margin-bottom: 20px;">Dialogue text goes here...</div>
+        <div style="text-align: right;">
+            <button class="btn-action" onclick="advanceNpcDialogue()" style="padding: 8px 20px; background: var(--p0);">Continue ➔</button>
+        </div>
+    </div>
+</div>
+
 <!-- GATE PET CENTER MODAL -->
 <div class="modal-overlay hidden" id="gateModal">
     <div class="menu-box" style="height: auto; max-height: 480px;">
@@ -1111,6 +1122,7 @@
     let activeGateType = null; // 'prev' or 'next'
     let playerStatBoosts = { attack: 0, defense: 0, spAttack: 0, spDefense: 0 };
     let enemyStatBoosts = { attack: 0, defense: 0, spAttack: 0, spDefense: 0 };
+    let pendingTrainerBattle = null;
 
     const MAP_SIZE = 30;
     const TILE_SIZE = 48;
@@ -1549,18 +1561,38 @@ function endBattle(won) {
 }
 
     function checkNpcCollisions() {
-        if (encounterCooldown || typeof npc === 'undefined') return;
+    if (encounterCooldown || typeof npc === 'undefined') return;
 
-        for (let trainer of npc) {
-            if (trainer.route === currentRoute && !trainer.defeated) {
-                let dist = Math.hypot(playerPos.x - trainer.x, playerPos.y - trainer.y);
-                if (dist < 0.85) {
-                    triggerTrainerEncounter(trainer);
-                    break;
-                }
+    for (let trainer of npc) {
+        if (trainer.route === currentRoute && !trainer.defeated) {
+            let dist = Math.hypot(playerPos.x - trainer.x, playerPos.y - trainer.y);
+            if (dist < 0.85) {
+                triggerNpcDialogue(trainer); // Changed from triggerTrainerEncounter
+                break;
             }
         }
     }
+}
+
+    function triggerNpcDialogue(trainer) {
+    encounterCooldown = true; // Prevent multiple collision triggers
+    pendingTrainerBattle = trainer;
+
+    document.getElementById('npcDialogueName').innerText = trainer.name;
+    document.getElementById('npcDialogueText').innerText = trainer.dialogue || "Let's battle!";
+    document.getElementById('npcDialogueOverlay').classList.remove('hidden');
+}
+
+function advanceNpcDialogue() {
+    document.getElementById('npcDialogueOverlay').classList.add('hidden');
+    
+    // Now trigger the actual trainer battle after closing the dialogue box
+    if (pendingTrainerBattle) {
+        let trainer = pendingTrainerBattle;
+        pendingTrainerBattle = null;
+        triggerTrainerEncounter(trainer);
+    }
+}
 
     function openGateModal() {
     inGateModal = true;
