@@ -158,6 +158,38 @@ const route1Map = [
     ["wall", "water", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "water", "wall"],
     ["wall", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "next_gate", "wall"],
     ["wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall", "wall"]
+];
+    const cosmicGate1 = [
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "water", "water", "water", "tree", "gate_next", "tree", "water", "water", "water", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "grass", "grass", "grass", "tree", "grass", "tree", "grass", "grass", "grass", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "grass", "grass", "grass", "tree", "grass", "tree", "grass", "grass", "grass", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "planks", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "grass", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "stone", "stone", "stone", "tree", "gate_prev", "tree", "stone", "stone", "stone", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"],
+    ["void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void", "void"]
 ]
     
     const allMaps = [
@@ -165,5 +197,6 @@ const route1Map = [
     route2Map,
     route3Map,
     route4Map,
-    route5Map
+    route5Map,
+    cosmicGate1
 ];
