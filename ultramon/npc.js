@@ -96,5 +96,26 @@ const npc = [
         ],
         rewards: { coins: 500 },
         defeated: false
+    },
+    {
+        id: "cosmic1",
+        name: "Cosmic Leader Milo",
+        route: 6,
+        x: 15,
+        y: 12,
+        color: "#e67e22",
+        img: "npcpng/milo.png",
+        team: [
+            { id: "bouldercap", lvl: 16 },
+            { id: "malime", lvl: 16 },
+            { id: "bladee", lvl: 16 },
+            { id: "turnace", lvl: 16 },
+            { id: "venefish", lvl: 16 },
+            { id: "cosmo", lvl: 16 },
+            
+            
+        ],
+        rewards: { coins: 10000 },
+        defeated: false
     }
 ];
