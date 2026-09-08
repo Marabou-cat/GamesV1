@@ -669,6 +669,29 @@ const PETS = {
             { id: "reform", levelToLearn: 20 },
             { id: "meteor_rain", levelToLearn: 20 }
         ]
+    },
+    cosmo: {
+        id: "cosmo",
+        name: "Cosmo",
+        type: ["basic"],
+        spawn_routes: [],
+        img: "petpng/cosmo.png",
+        catchRate: 45,
+        evolvingLevel: 25,
+        evolutionId: "",
+        size: 1.2,
+        baseStats: { hp: 250, attack: 50, defense: 60, spAttack: 50, spDefense: 60, speed: 300 },
+        maxStats:  { hp: 800, attack: 250, defense: 200, spAttack: 250, spDefense: 200, speed: 1000 },
+        moves: [
+            { id: "power_punch", levelToLearn: 1 },
+            { id: "rock_throw", levelToLearn: 1 },
+            { id: "spark_wing", levelToLearn: 1 },
+            { id: "vine_whip", levelToLearn: 5 },
+            { id: "rage", levelToLearn: 15 },
+            { id: "stone_edge", levelToLearn: 15 },
+            { id: "reform", levelToLearn: 20 },
+            { id: "meteor_rain", levelToLearn: 20 }
+        ]
     }
 };
 
