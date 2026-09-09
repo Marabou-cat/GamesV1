@@ -962,7 +962,7 @@
         <div id="npcDialogueName" style="font-weight: 900; color: var(--gold); font-size: 18px; margin-bottom: 10px;">Trainer Name</div>
         <div id="npcDialogueText" style="font-size: 15px; color: #fff; line-height: 1.5; min-height: 50px; margin-bottom: 20px;">Dialogue text goes here...</div>
         <div style="text-align: right;">
-            <button class="btn-action" onclick="advanceNpcDialogue()" style="padding: 8px 20px; background: var(--p0);">Continue ➔</button>
+            <button class="btn-action" onclick="handleDialogueContinue()" style="padding: 8px 20px; background: var(--p0);">Continue ➔</button>
         </div>
     </div>
 </div>
@@ -1123,6 +1123,7 @@
     let playerStatBoosts = { attack: 0, defense: 0, spAttack: 0, spDefense: 0 };
     let enemyStatBoosts = { attack: 0, defense: 0, spAttack: 0, spDefense: 0 };
     let pendingTrainerBattle = null;
+    let pendingPostBattleTrainer = null;
 
     const MAP_SIZE = 30;
     const TILE_SIZE = 48;
@@ -1591,6 +1592,29 @@ function advanceNpcDialogue() {
         let trainer = pendingTrainerBattle;
         pendingTrainerBattle = null;
         triggerTrainerEncounter(trainer);
+    }
+}
+
+function triggerPostBattleDialogue(trainer) {
+    pendingPostBattleTrainer = trainer;
+    document.getElementById('npcDialogueName').innerText = trainer.name;
+    // You can customize this message or add a custom postBattleDialogue property to your npc.js objects
+    document.getElementById('npcDialogueText').innerText = trainer.postBattleDialogue || "You're strong! I need to train harder.";
+    document.getElementById('npcDialogueOverlay').classList.remove('hidden');
+}
+
+function advancePostBattleDialogue() {
+    document.getElementById('npcDialogueOverlay').classList.add('hidden');
+    pendingPostBattleTrainer = null;
+    // Finally close the battle overlay and save data
+    endBattle(true);
+}
+
+    function handleDialogueContinue() {
+    if (pendingPostBattleTrainer) {
+        advancePostBattleDialogue();
+    } else {
+        advanceNpcDialogue();
     }
 }
 
@@ -2177,6 +2201,16 @@ let finalDamage = Math.max(1, Math.floor(baseDamage * typeMultiplier));
                 coins += rewardCoins;
                 updateUI();
                 defeatText += ` You defeated ${activeTrainer.name}! Earned +${rewardCoins} coins!`;
+                
+                document.getElementById('battleDialogueText').innerText += defeatText;
+                
+                // Keep the battle open for a moment, then pop up the NPC's post-battle dialogue
+                let currentTrainerRef = activeTrainer;
+                setTimeout(() => {
+                    document.getElementById('battleOverlay').classList.remove('active');
+                    triggerPostBattleDialogue(currentTrainerRef);
+                }, 2500);
+                return;
             } else {
                 coins += 40;
                 updateUI();
