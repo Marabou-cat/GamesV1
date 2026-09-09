@@ -85,6 +85,9 @@ const ATTACKS = {
     dragon_claw: { name: "Dragon Claw", type: "dragon", damage: 55, powerCost: 20, damageType: "physical", effectImg: "petpng/dragon_scratch.png" },
     tsunami: { name: "Tsunami", type: "water", damage: 75, powerCost: 45, damageType: "special", effectImg: "petpng/water_hit.png" },
     rage: { name: "Rage", type: "basic", damage: 125, powerCost: 100, damageType: "physical", effectImg: "petpng/basic_hit.png" },
+    shock: { name: "Shock", type: "electric", damage: 55, powerCost: 25, damageType: "special", effectImg: "petpng/electric_hit.png" },
+    electro_claw: { name: "Electro Claw", type: "electric", damage: 75, powerCost: 45, damageType: "physical", effectImg: "petpng/electric_hit.png" },
+    thunder_storm: { name: "Thunder Storm", type: "electric", damage: 110, powerCost: 100, damageType: "special", effectImg: "petpng/electric_hit.png" },
     
     // Boost Moves
     focus_energy: { name: "Focus Energy", type: "basic", damage: 0, powerCost: 0, damageType: "boost", boostType: "energy", amount: 50, effectImg: "petpng/basic_hit.png" },
@@ -94,7 +97,9 @@ const ATTACKS = {
     mystic_water: { name: "Mystic Water", type: "water", damage: 15, powerCost: 25, damageType: "boost", boostType: "stat", statTarget: "spAttack", amount: 25, effectImg: "petpng/water_hit.png" },
     healing_drop: { name: "Healing Drop", type: "water", damage: 0, powerCost: 20, damageType: "boost", boostType: "hp", amount: 40, effectImg: "petpng/grass_hit.png" },
     magma_shell: { name: "Magma Shell", type: "fire", damage: 0, powerCost: 40, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 40, effectImg: "petpng/water_hit.png" },
-    reform: { name: "Reform", type: "basic", damage: 0, powerCost: 100, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 80, effectImg: "petpng/water_hit.png" }
+    reform: { name: "Reform", type: "basic", damage: 0, powerCost: 100, damageType: "boost", boostType: "stat", statTarget: "spDefense", amount: 80, effectImg: "petpng/water_hit.png" },
+    output: { name: "Output", type: "electric", damage: 0, powerCost: 100, damageType: "boost", boostType: "stat", statTarget: "spAttack", amount: 100, effectImg: "petpng/water_hit.png" },
+    close_combat: { name: "Close Combat", type: "combat", damage: 0, powerCost: 100, damageType: "boost", boostType: "stat", statTarget: "attack", amount: 100, effectImg: "petpng/water_hit.png" }
 };
 
 let isActionLocked = false; // Prevents spamming and input abuse during animations
@@ -691,6 +696,72 @@ const PETS = {
             { id: "stone_edge", levelToLearn: 15 },
             { id: "reform", levelToLearn: 20 },
             { id: "meteor_rain", levelToLearn: 20 }
+        ]
+    },
+    electromon: {
+        id: "electromon",
+        name: "Electromon",
+        type: ["stone", "electric"],
+        spawn_routes: [5],
+        img: "petpng/electromon.png",
+        catchRate: 45,
+        evolvingLevel: 16,
+        evolutionId: "demoider",
+        size: 0.8,
+        baseStats: { hp: 110, attack: 15, defense: 25, spAttack: 15, spDefense: 25, speed: 25 },
+        maxStats:  { hp: 450, attack: 125, defense: 100, spAttack: 125, spDefense: 100, speed: 150 },
+        moves: [
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "rock_throw", levelToLearn: 1 },
+            { id: "shock", levelToLearn: 1 },
+            { id: "electro_claw", levelToLearn: 5 },
+            { id: "thunder_storm", levelToLearn: 15 },
+            { id: "stone_edge", levelToLearn: 15 }
+        ]
+    },
+    demoider: {
+        id: "demoider",
+        name: "Demoider",
+        type: ["stone", "electric"],
+        spawn_routes: [],
+        img: "petpng/demoider.png",
+        catchRate: 45,
+        evolvingLevel: 32,
+        evolutionId: "enermon",
+        size: 1.2,
+        baseStats: { hp: 130, attack: 25, defense: 25, spAttack: 25, spDefense: 25, speed: 25 },
+        maxStats:  { hp: 550, attack: 155, defense: 100, spAttack: 155, spDefense: 100, speed: 150 },
+        moves: [
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "rock_throw", levelToLearn: 1 },
+            { id: "shock", levelToLearn: 1 },
+            { id: "electro_claw", levelToLearn: 5 },
+            { id: "thunder_storm", levelToLearn: 15 },
+            { id: "stone_edge", levelToLearn: 15 },
+            { id: "output", levelToLearn: 15 }
+        ]
+    },
+    enermon: {
+        id: "enermon",
+        name: "Enermon",
+        type: ["stone", "electric"],
+        spawn_routes: [],
+        img: "petpng/enermon.png",
+        catchRate: 45,
+        evolvingLevel: 32,
+        evolutionId: "",
+        size: 1.5,
+        baseStats: { hp: 200, attack: 35, defense: 40, spAttack: 25, spDefense: 30, speed: 25 },
+        maxStats:  { hp: 750, attack: 225, defense: 180, spAttack: 175, spDefense: 135, speed: 150 },
+        moves: [
+            { id: "focus_energy", levelToLearn: 1 },
+            { id: "rock_throw", levelToLearn: 1 },
+            { id: "shock", levelToLearn: 1 },
+            { id: "electro_claw", levelToLearn: 5 },
+            { id: "thunder_storm", levelToLearn: 15 },
+            { id: "stone_edge", levelToLearn: 15 },
+            { id: "output", levelToLearn: 15 },
+            { id: "close_combat", levelToLearn: 25 }
         ]
     }
 };
